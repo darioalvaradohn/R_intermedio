@@ -1,0 +1,15 @@
+---
+title: "Introducción al curso"
+output: html_document
+header-includes:
+- \usepackage{float}
+- \floatstyle{boxed}
+- \restylefloat{figure}
+---
+
+
+<br>
+
+<div style="display:flex; align-items:center;">
+  <img src="Imagenes/HNBI_LOGO2.jpeg" alt="Texto alternativo de la imagen" style="width:1000px;">
+</div>
