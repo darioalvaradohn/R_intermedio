@@ -31,7 +31,7 @@ Este es un curso de análisis estadístico en R utilizando R Studio. Utilizaremo
 
 [Clase 1: Limpieza y manejo de datos](Limpieza.html)
 
-[Clase 2: ]()
+[Clase 2: Modelo lineal general](Modelo_lineal.html)
 
 [Clase 3: ]()
 
