@@ -29,7 +29,7 @@ Este es un curso de análisis estadístico en R utilizando R Studio. Utilizaremo
 
 [Introducción al curso](Introduccion.html)
 
-[Clase 1: ]()
+[Clase 1: Limpieza y manejo de datos](Limpieza.html)
 
 [Clase 2: ]()
 
