@@ -21,7 +21,23 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### dplyr
 
+- `select()`: seleccionar columnas
+- `filter()`: filtrar filas
+- `arrange()`: reordenar filas
+- `mutate()`: crear nuevas columnas
+- `summarise()`: resumen de valores
+- `group_by()`: agrupar
+
+#### magrittr
+
+- `pipes`: %>%
+
 #### tidyr
+
+- `gather()`: 
+- `spread()`:
+- `separate()`:
+- `unite()`:
 
 #### lubridate
 
