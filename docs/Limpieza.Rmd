@@ -19,3 +19,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ### Contenido{.tabset .tabset-pills}
 
+#### dplyr
+
+#### tidyr
+
+#### lubridate
+
+#### ggplot2
+
