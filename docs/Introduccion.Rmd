@@ -1,0 +1,29 @@
+---
+title: "Introducción al curso"
+output: html_document
+header-includes:
+- \usepackage{float}
+- \floatstyle{boxed}
+- \restylefloat{figure}
+---
+
+Este es un curso de análisis estadístico en R utilizando R Studio. Utilizaremos el formato R Markdown para crear nuestros códigos y presentar nuestros resultados de una forma ordenada. Analizaremos nuestros datos mediante modelos lineales generales, modelos lineales generalizados (glm) para datos con distribución de Poisson y distribución de Bernoulli, y análisis multivariado con el análisis de componentes principales (PCA) y el análisis permutacional de varianza multivariada (PERMANOVA).
+
+<br>
+
+Puedes visitar nuestra página principal y conocer un poco más de nosotros.
+
+Sitio web: [Página principal](https://www.hnbiology.org/)
+
+Recuerda que puedes ingresar a todo el material del curso con el siguiente enlace:
+
+Curso R intermedio: [Página del curso](https://www.hnbiology.org/)
+
+<br>
+
+<br>
+
+
+<div style="display:flex; align-items:center;">
+  <img src="Imagenes/HNBI_LOGO2.jpeg" alt="Texto alternativo de la imagen" style="width:1000px;">
+</div>

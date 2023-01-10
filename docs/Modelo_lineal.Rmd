@@ -1,0 +1,157 @@
+---
+output: html_document
+header-includes:
+  - \usepackage{float}
+  - \floatstyle{boxed}
+  - \restylefloat{figure}
+---
+
+<div style="display:flex; align-items:center;">
+  <h1 style="margin:0;">Modelo lineal general</h1>
+  <img src="Imagenes/HNBI_LOGO1.jpeg" alt="Texto alternativo de la imagen" style="width:100px; margin-left:20px;">
+</div>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE}
+library(palmerpenguins)
+library(tidyverse)
+library(parameters)
+library(performance)
+library(AICcmodavg)
+library(sjPlot)
+library(estimatr)
+```
+
+```{r}
+data("penguins")
+head(penguins)
+```
+
+```{r}
+p <- penguins |>
+  drop_na()
+```
+
+```{r}
+ggplot(p, aes(body_mass_g, bill_length_mm)) +
+  geom_point()
+```
+
+
+### Contenido{.tabset .tabset-pills}
+
+#### Modelo lineal general
+
+$$
+y_i = \beta_0 + \beta_1x_i +\epsilon_i
+$$
+
+```{r}
+m1 <- lm(bill_length_mm ~ body_mass_g, data = p)
+```
+
+```{r}
+summary(m1)
+```
+
+```{r}
+parameters(m1)
+```
+
+```{r}
+performance(m1)
+```
+
+#### Validacion del modelo (cumplimiento de supuestos)
+
+El modelo lineal tiene dos supuestos que deben cumplirse, la normalidad de los residuales y la homogeneidad de la varianza de los residuales.
+
+```{r}
+plot(m1)
+```
+
+```{r}
+check_model(m1)
+```
+
+```{r}
+cn <- check_normality(m1)
+cn
+plot(cn)
+```
+
+```{r}
+chc <- check_heteroscedasticity(m1)
+chc
+plot(chc)
+```
+
+#### Selección del mejor modelo
+
+```{r}
+m2 <- lm(bill_length_mm ~ flipper_length_mm, data = p)
+m3 <- lm(bill_length_mm ~ species, data = p)
+m4 <- lm(bill_length_mm ~ island, data = p)
+```
+
+```{r}
+modelos <- list(m1, m2, m3, m4)
+nombres <- c("m1", "m2", "m3", "m4")
+```
+
+```{r}
+aictab(modelos, nombres, sort = T)
+```
+
+```{r}
+cp <- compare_performance(m1, m2, m3, m4, rank = T)
+cp
+```
+
+```{r}
+summary(m3)
+```
+
+```{r}
+parameters(m3)
+```
+
+
+```{r}
+plot_model(m3, type = "pred")
+```
+
+```{r}
+check_normality(m3)
+```
+
+```{r}
+check_homogeneity(m3)
+```
+
+```{r}
+performance(m3)
+```
+
+```{r}
+m3r <- lm_robust(bill_length_mm ~ species, data = p)
+summary(m3r)
+```
+
+```{r}
+parameters(m3r)
+```
+
+```{r}
+performance(m3r)
+```
+
+
+```{r}
+plot_model(m3, type = "pred", vcov.args = "HC2")
+```
+
