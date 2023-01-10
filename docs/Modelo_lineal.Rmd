@@ -24,6 +24,7 @@ library(performance)
 library(AICcmodavg)
 library(sjPlot)
 library(estimatr)
+library(report)
 ```
 
 ```{r}
@@ -71,7 +72,7 @@ performance(m1)
 El modelo lineal tiene dos supuestos que deben cumplirse, la normalidad de los residuales y la homogeneidad de la varianza de los residuales.
 
 ```{r}
-plot(m1)
+plot(m1, which = c(1:6))
 ```
 
 ```{r}
@@ -153,5 +154,9 @@ performance(m3r)
 
 ```{r}
 plot_model(m3, type = "pred", vcov.args = "HC2")
+```
+
+```{r}
+report(m3)
 ```
 
