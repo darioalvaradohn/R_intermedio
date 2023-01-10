@@ -24,6 +24,7 @@ library(performance)
 library(AICcmodavg)
 library(sjPlot)
 library(estimatr)
+library(ggeffects)
 library(report)
 ```
 
@@ -91,17 +92,26 @@ chc
 plot(chc)
 ```
 
+```{r}
+plot_model(m1, type = "pred", 
+           show.data = T, 
+           dot.size = 1,
+           title = "Largo del pico en relación a la masa corporal de los pingüinos",
+           axis.title = c("Masa corporal (g)", "Largo del pico (mm)"))
+```
+
 #### Selección del mejor modelo
 
 ```{r}
 m2 <- lm(bill_length_mm ~ flipper_length_mm, data = p)
 m3 <- lm(bill_length_mm ~ species, data = p)
 m4 <- lm(bill_length_mm ~ island, data = p)
+m5 <- lm(bill_length_mm ~ flipper_length_mm + species, data = p)
 ```
 
 ```{r}
-modelos <- list(m1, m2, m3, m4)
-nombres <- c("m1", "m2", "m3", "m4")
+modelos <- list(m1, m2, m3, m4, m5)
+nombres <- c("m1", "m2", "m3", "m4", "m5")
 ```
 
 ```{r}
@@ -109,54 +119,65 @@ aictab(modelos, nombres, sort = T)
 ```
 
 ```{r}
-cp <- compare_performance(m1, m2, m3, m4, rank = T)
+cp <- compare_performance(m1, m2, m3, m4, m5, rank = T)
 cp
 ```
 
 ```{r}
-summary(m3)
+summary(m5)
 ```
 
 ```{r}
-parameters(m3)
+parameters(m5)
+```
+
+```{r}
+plot_model(m5, type = "pred")
+```
+
+```{r}
+check_normality(m5)
+```
+
+```{r}
+check_heteroscedasticity(m5)
+```
+
+```{r}
+performance(m5)
+```
+
+```{r}
+m5r <- lm_robust(bill_length_mm ~ species, data = p)
+summary(m5r)
+```
+
+```{r}
+parameters(m5r)
+```
+
+```{r}
+performance(m5r)
+```
+
+```{r}
+plot_model(m5, type = "pred", vcov.args = "HC2",
+           terms=c("flipper_length_mm","species"), colors = "Set1") + aes(linetype=group, color=group)
+```
+
+```{r}
+g <- ggpredict(m5, terms = c("flipper_length_mm","species"))
+ggplot(g, aes(x, predicted)) + 
+    geom_line(aes(linetype=group, color=group)) +
+    geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
+    scale_linetype_manual(values = c("solid", "dashed", "dotted")) +
+  theme_bw() +
+  ylab("Largo del pico (mm)") +
+  xlab("Largo de la aleta (mm)")
 ```
 
 
 ```{r}
-plot_model(m3, type = "pred")
-```
-
-```{r}
-check_normality(m3)
-```
-
-```{r}
-check_homogeneity(m3)
-```
-
-```{r}
-performance(m3)
-```
-
-```{r}
-m3r <- lm_robust(bill_length_mm ~ species, data = p)
-summary(m3r)
-```
-
-```{r}
-parameters(m3r)
-```
-
-```{r}
-performance(m3r)
-```
-
-
-```{r}
-plot_model(m3, type = "pred", vcov.args = "HC2")
-```
-
-```{r}
-report(m3)
+report(m5)
 ```
 
