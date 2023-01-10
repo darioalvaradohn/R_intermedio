@@ -162,7 +162,8 @@ performance(m5r)
 
 ```{r}
 plot_model(m5, type = "pred", vcov.args = "HC2",
-           terms=c("flipper_length_mm","species"), colors = "Set1") + aes(linetype=group, color=group)
+           terms=c("flipper_length_mm","species"), colors = "Set1") + aes(linetype=group, color=group) +
+  theme_bw()
 ```
 
 ```{r}
