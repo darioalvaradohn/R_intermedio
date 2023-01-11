@@ -306,25 +306,29 @@ Podemos graficar el modelo con la función `plot_model()` del paquete `sjPlot` c
 
 ```{r}
 plot_model(m6, type = "pred",
-           terms=c("body_mass_kg","species"), colors = "Set1") + aes(linetype=group, color=group) +
+           show.data = T, 
+           title = "Largo del pico en relación a la masa corporal de los pingüinos",
+           axis.title = c("Masa corporal (kg)", "Largo del pico (mm)"),
+           terms=c("body_mass_kg","species"), colors = "Set1") + 
+  aes(linetype=group, color=group) +
   theme_bw()
 ```
 
 Y también podemos generar el gráfico utilizando el resultado de la función `ggpredict` del paquete `ggeffects` como entrada para los argumentos de `ggplot2`.
 
 ```{r}
-g <- ggpredict(m5, terms = c("flipper_length_mm","species"))
+g <- ggpredict(m6, terms = c("body_mass_kg","species"))
 g
 ```
 
 ```{r}
-ggplot(g, aes(x, predicted)) + 
+ggplot(g, aes(x, predicted)) +
     geom_line(aes(linetype=group, color=group)) +
     geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
     scale_linetype_manual(values = c("solid", "dashed", "dotted")) +
   theme_bw() +
   ylab("Largo del pico (mm)") +
-  xlab("Largo de la aleta (mm)")
+  xlab("Masa corporal (kg)")
 ```
 
 #### Bonus
