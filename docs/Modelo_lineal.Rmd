@@ -162,15 +162,6 @@ chc
 plot(chc)
 ```
 
-```{r}
-#plot_model(m1, type = "pred", 
- #          show.data = T, 
-  #       title = "Largo del pico en relación a la masa corporal de los pingüinos",
-   #        axis.title = c("Masa corporal (g)", "Largo del pico (mm)"),
-    #       terms = "body_mass_kg") +
-  #theme_bw()
-```
-
 <br>
 
 #### Corrección del modelo
