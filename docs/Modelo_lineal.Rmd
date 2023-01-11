@@ -16,6 +16,8 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+#### Paquetes 
+
 ```{r, warning=FALSE, message=FALSE}
 library(palmerpenguins)
 library(tidyverse)
@@ -24,22 +26,39 @@ library(performance)
 library(AICcmodavg)
 library(sjPlot)
 library(estimatr)
+library(modelbased)
+library(emmeans)
 library(ggeffects)
 library(report)
 ```
+
+#### Datos
 
 ```{r}
 data("penguins")
 head(penguins)
 ```
 
+Primero eliminamos los NA de nuestra base de datos con la función `drop_na()` del paquete `tidyr`.
+
 ```{r}
 p <- penguins |>
   drop_na()
 ```
 
+Para este ejercicio nos conviene pasar la masa corporal de gramos a kilogramos.
+
 ```{r}
-ggplot(p, aes(body_mass_g, bill_length_mm)) +
+p <- p %>%
+  mutate(body_mass_kg = body_mass_g / 1000)
+
+head(p)
+```
+
+Exploramos la relación existente entre nuestras variables de interés con un gráfico de dispersión.
+
+```{r}
+ggplot(p, aes(body_mass_kg, bill_length_mm)) +
   geom_point()
 ```
 
@@ -48,43 +67,94 @@ ggplot(p, aes(body_mass_g, bill_length_mm)) +
 
 #### Modelo lineal general
 
+Un modelo lineal general parte de la ecuación de regresión lineal simple. Son utilizados para evaluar la influencia de una variable predictora (independiente) sobre una variable respuesta (dependiente). A diferencia de un ANOVA, en un modelo lineal, la variable predicotora puede ser numérica.
+
 $$
 y_i = \beta_0 + \beta_1x_i +\epsilon_i
 $$
 
+Donde:
+
+  y = variable respuesta
+  
+  x = variable predictora
+  
+  β = parámetros del modelo
+  
+  ϵ = error (variable aleatoria que explica la variabilidad en la variable respuesta que no puede ser explicada con la relación lineal entre esta y la variable predictora)
+  
+Creamos nuestro modelo con la función `lm` y colocamos nuestra variable respuesta y nuestra variable predictora separadas por una virgulilla (`~`).
+
 ```{r}
-m1 <- lm(bill_length_mm ~ body_mass_g, data = p)
+m1 <- lm(bill_length_mm ~ body_mass_kg, data = p)
 ```
+
+Para ver el resultado de nuestro modelo hacemos un `summary`.
 
 ```{r}
 summary(m1)
 ```
 
+- El intercepto nos muestra el valor que tendría nuestra variable respuesta cuando nuestra variable predictora es igual a 0.
+- El estimado muestra la respuesta de nuestra variable respuesta por cada incremento de una unidad en nuestra variable predictora.
+- El valor de P indica si el efecto de la variable predictora sobre la variable respuesta es estadísticamente significativo.
+- El R^2^ y el R^2^ ajustado indica cuánto explica la variable predictora la varianza de la variable respuesta.
+
+La interpretación de este modelo sería: Por cada kg de masa corporal que aumenten los pingüinos, el largo del pico aumentará 4.0 mm (valor de p < 2e-16).
+La masa corporal de los pingüinos explica el 34.5% de la variabilidad en la varianza del largo del pico.
+
+También podemos ver los parámetros del modelo con la función `parameters` del paquete `parameters`.
+
 ```{r}
 parameters(m1)
 ```
+
+Con esta función obtenemos el intervalo de confianza al 95% de la respuesta de nuestra variable respuesta por cada incremento de una unidad de nuestra variable predictora. Esto también se puede agregar a la interpretación.
+
+La interpretación de este modelo sería: Por cada kg de masa corporal que aumenten los pingüinos, el largo del pico aumentará 4.0 mm (IC95% = 3.41, 4.60; valor de p < 0.001).
+
+También podemos evaluar el rendimiento o ajuste de nuestro modelo con la función `performance` del paquete `performance`.
 
 ```{r}
 performance(m1)
 ```
 
+- Aquí podemos observar el valor del criterio de información de Akaike (AIC) y un AIC ajustado para muestras pequeñas (AICc).
+- También observamos el criterio de información Bayesiano (BIC).
+- El R^2^ y el R^2^ ajustado indican cuánto explica la variable predictora la varianza de la variable respuesta. 
+- El RMSE es el error cuadrático medio (root-mean square error), este indica el error del modelo, la diferencia entre los valores predichos por el modelo y los valores observados. El RMSE está en las unidades de la variable respuesta.
+
+La masa corporal de los pingüinos explica el 34.5% de la variabilidad de la varianza del largo del pico. Y el error del modelo de la regresión de la masa corporal sobre el largo del pico de los pingüinos es de 4.41 mm.
+
+<br>
+
 #### Validacion del modelo (cumplimiento de supuestos)
 
-El modelo lineal tiene dos supuestos que deben cumplirse, la normalidad de los residuales y la homogeneidad de la varianza de los residuales.
+El modelo lineal tiene algunos supuestos que deben cumplirse, la normalidad de los residuales, la homogeneidad de la varianza de los residuales, la independencia de los datos y la relación lineal entre las variables.
+
+Podemos evaluar estos supuestos de forma gráfica con la función `plot`.
 
 ```{r}
 plot(m1, which = c(1:6))
 ```
 
+También podemos utilizar la función `check_model()` del paquete `performance`.
+
 ```{r}
 check_model(m1)
 ```
+
+Y podemos evaluarlo de manera individual con algunas funciones del paquete `performance`.
+
+Para evaluar la normalidad de los residuales utilizamos la función `check_normality`.
 
 ```{r}
 cn <- check_normality(m1)
 cn
 plot(cn)
 ```
+
+Para evaluar la homogeneidad de la varianza de los residuales utilizamos la función `check_heteroscedasticity`.
 
 ```{r}
 chc <- check_heteroscedasticity(m1)
@@ -93,81 +163,161 @@ plot(chc)
 ```
 
 ```{r}
-plot_model(m1, type = "pred", 
-           show.data = T, 
-           dot.size = 1,
-           title = "Largo del pico en relación a la masa corporal de los pingüinos",
-           axis.title = c("Masa corporal (g)", "Largo del pico (mm)"))
+#plot_model(m1, type = "pred", 
+ #          show.data = T, 
+  #       title = "Largo del pico en relación a la masa corporal de los pingüinos",
+   #        axis.title = c("Masa corporal (g)", "Largo del pico (mm)"),
+    #       terms = "body_mass_kg") +
+  #theme_bw()
 ```
 
+<br>
+
+#### Corrección del modelo
+
+Cuando el modelo no cumple con alguno de los supuestos se puede realizar una corrección o ajuste con la función `lm_robust()` del paquete `estimatr`.
+
+```{r}
+m1r <- lm_robust(bill_length_mm ~ body_mass_kg, data = p)
+```
+
+```{r}
+summary(m1r)
+```
+Esto genera un modelo con errores estándar robustos para corregir la falta de normalidad y homogeneidad de la varianza.
+
+<br>
+
 #### Selección del mejor modelo
+
+Podemos generar varios modelos para determinar cuál de nuestras variables es la que mejor explica el comportamiento de nuestra variable respuesta.
 
 ```{r}
 m2 <- lm(bill_length_mm ~ flipper_length_mm, data = p)
 m3 <- lm(bill_length_mm ~ species, data = p)
 m4 <- lm(bill_length_mm ~ island, data = p)
 m5 <- lm(bill_length_mm ~ flipper_length_mm + species, data = p)
+m6 <- lm(bill_length_mm ~ body_mass_kg + species, data = p)
+m0 <- lm(bill_length_mm ~ 0, data = p)
 ```
 
-```{r}
-modelos <- list(m1, m2, m3, m4, m5)
-nombres <- c("m1", "m2", "m3", "m4", "m5")
-```
+Para comparar nuestros modelos y determinar cuál se ajusta mejor a nuestros datos utilizaremos el criterio de información de Akaike (AIC). Podemos realizar la comparación con la función `aictab` del paquete `AICcmodavg.
+
+Antes debemos generar una lista con nuestros modelos y para facilitar la identificación también es recomendable generar un vector con los nombres de los modelos en el orden en que aparecen en la lista.
 
 ```{r}
-aictab(modelos, nombres, sort = T)
+modelos <- list(m1, m2, m3, m4, m5, m6, m0)
+nombres <- c("m1", "m2", "m3", "m4", "m5", "m6", "m0")
 ```
 
+Ahora ejecutamos la función `aictab`. 
+
 ```{r}
-cp <- compare_performance(m1, m2, m3, m4, m5, rank = T)
+aictab(modelos, nombres)
+```
+
+El resultado nos muestra el valor de AIC para los modelos y los ordena de forma descendente respecto al valor de AIC. Entre menor sea el valor de AIC, mejor se ajusta el modelo a nuestros datos. Si el resultado no muestra los modelos en orden, podemos especificarlo con el argumento `sort = TRUE`.
+
+También podemos realizar la comparación entre modelos con la función `compare_performance` del paquete `performance`. Con el argumento `rank = T` se crea una columna con la puntuación del rendimiento de cada modelo generada a partir de la normalización de los índices de los modelos.
+
+```{r}
+cp <- compare_performance(m1, m2, m3, m4, m5, m6, m0, rank = T)
 cp
 ```
 
+Podemos graficar el rendimiento de los modelos aplicando la función `plot` al objeto que contiene la comparación. Esto genera un gráfico de "tela de araña" con el rendimiento de cada modelo respecto a los índices de comparación.
+
 ```{r}
-summary(m5)
+plot(cp)
+```
+
+El mejor modelo o el modelo que mejor se ajusta a nuestros datos es el modelo 6. Este modelo tiene como variables predictoras la masa corporal y la especie de los pingüinos.
+
+```{r}
+summary(m6)
 ```
 
 ```{r}
-parameters(m5)
+parameters(m6)
 ```
 
 ```{r}
-plot_model(m5, type = "pred")
+performance(m6)
+```
+
+La interpretación de este modelo sería: Por cada kg de masa corporal que aumenten los pingüinos, el largo del pico aumentará 3.75 mm (IC95% = 3.19, 4.32 mm; valor de p < 0.001). El pico de la especie Chinstrap es 9.91 mm (IC95% = 9.21, 10.61 mm; p < 0.001) más largo que la especie Adelie, y el pico de la especie Gentoo es 3.54 mm (IC95% = 2.56, 4.52 mm; p < 0.001) más largo que la especie Adelie.
+La masa corporal y la especie de los pingüinos explica el 80.4% de la variabilidad en la varianza del largo del pico.
+
+La especie 2 y la especie 3 se comparan con la especie 1, pero no hay comparación entre la especie 2 y la especie 3. Para generar la comparación podemos aplicar la función `estimate_contrast()` del paquete `modelbased`.
+
+```{r}
+estimate_contrasts(m6)
+```
+
+También podemos hacerlo de la siguiente manera:
+Primero calculamos las medias de cada especie (en este caso serían las medias del largo del pico) con la función `emmeans` del paquete `emmeans` y se especifica la variable para la que se quiere ver las medias.
+
+```{r}
+medias <- emmeans(m6, "species")
+medias
+```
+
+Ahora se realiza la comparacion de pares (contrastes; diferencia entre medias) con la funcion `pairs`.
+
+```{r}
+contraste <- pairs(medias)
+contraste
+```
+
+Se puede agregar el intervalo de confianza con la funcion `confint`.
+
+```{r}
+confint(contraste)
+```
+
+Y se puede graficar el contraste con la función `plot`.
+
+```{r}
+plot(contraste) +
+  geom_vline(xintercept = 0)
+```
+
+<br>
+
+Al obtener el modelo que mejor se ajusta a nuestros datos debemos validarlo revisando si cumple con los supuestos de un modelo lineal.
+
+```{r}
+cnm6 <- check_normality(m6)
+cnm6
+plot(cnm6)
 ```
 
 ```{r}
-check_normality(m5)
+chm6 <- check_heteroscedasticity(m5)
+chm6
+plot(chm6)
 ```
 
-```{r}
-check_heteroscedasticity(m5)
-```
+<br>
+
+#### Gráfico del modelo
+
+Podemos graficar el modelo con la función `plot_model()` del paquete `sjPlot` combinado con algunos argumentos de `ggplot2`.
 
 ```{r}
-performance(m5)
-```
-
-```{r}
-m5r <- lm_robust(bill_length_mm ~ species, data = p)
-summary(m5r)
-```
-
-```{r}
-parameters(m5r)
-```
-
-```{r}
-performance(m5r)
-```
-
-```{r}
-plot_model(m5, type = "pred", vcov.args = "HC2",
-           terms=c("flipper_length_mm","species"), colors = "Set1") + aes(linetype=group, color=group) +
+plot_model(m6, type = "pred",
+           terms=c("body_mass_kg","species"), colors = "Set1") + aes(linetype=group, color=group) +
   theme_bw()
 ```
 
+Y también podemos generar el gráfico utilizando el resultado de la función `ggpredict` del paquete `ggeffects` como entrada para los argumentos de `ggplot2`.
+
 ```{r}
 g <- ggpredict(m5, terms = c("flipper_length_mm","species"))
+g
+```
+
+```{r}
 ggplot(g, aes(x, predicted)) + 
     geom_line(aes(linetype=group, color=group)) +
     geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) +
@@ -177,8 +327,11 @@ ggplot(g, aes(x, predicted)) +
   xlab("Largo de la aleta (mm)")
 ```
 
+#### Bonus
+
+Si la interpretación del modelo te resulta complicada, el paquete `report` genera un reporte con la interpretación del modelo mediante la función `report`.
 
 ```{r}
-report(m5)
+report(m6)
 ```
 
