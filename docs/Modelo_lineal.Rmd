@@ -83,13 +83,13 @@ Donde:
   
   ϵ = error (variable aleatoria que explica la variabilidad en la variable respuesta que no puede ser explicada con la relación lineal entre esta y la variable predictora)
   
-Creamos nuestro modelo con la función `lm` y colocamos nuestra variable respuesta y nuestra variable predictora separadas por una virgulilla (`~`).
+Creamos nuestro modelo con la función `lm()` y colocamos nuestra variable respuesta y nuestra variable predictora separadas por una virgulilla (`~`).
 
 ```{r}
 m1 <- lm(bill_length_mm ~ body_mass_kg, data = p)
 ```
 
-Para ver el resultado de nuestro modelo hacemos un `summary`.
+Para ver el resultado de nuestro modelo hacemos un `summary()`.
 
 ```{r}
 summary(m1)
@@ -103,7 +103,7 @@ summary(m1)
 La interpretación de este modelo sería: Por cada kg de masa corporal que aumenten los pingüinos, el largo del pico aumentará 4.0 mm (valor de p < 2e-16).
 La masa corporal de los pingüinos explica el 34.5% de la variabilidad en la varianza del largo del pico.
 
-También podemos ver los parámetros del modelo con la función `parameters` del paquete `parameters`.
+También podemos ver los parámetros del modelo con la función `parameters()` del paquete `parameters`.
 
 ```{r}
 parameters(m1)
@@ -113,7 +113,7 @@ Con esta función obtenemos el intervalo de confianza al 95% de la respuesta de 
 
 La interpretación de este modelo sería: Por cada kg de masa corporal que aumenten los pingüinos, el largo del pico aumentará 4.0 mm (IC95% = 3.41, 4.60; valor de p < 0.001).
 
-También podemos evaluar el rendimiento o ajuste de nuestro modelo con la función `performance` del paquete `performance`.
+También podemos evaluar el rendimiento o ajuste de nuestro modelo con la función `performance()` del paquete `performance`.
 
 ```{r}
 performance(m1)
@@ -132,7 +132,7 @@ La masa corporal de los pingüinos explica el 34.5% de la variabilidad de la var
 
 El modelo lineal tiene algunos supuestos que deben cumplirse, la normalidad de los residuales, la homogeneidad de la varianza de los residuales, la independencia de los datos y la relación lineal entre las variables.
 
-Podemos evaluar estos supuestos de forma gráfica con la función `plot`.
+Podemos evaluar estos supuestos de forma gráfica con la función `plot()`.
 
 ```{r}
 plot(m1, which = c(1:6))
@@ -146,7 +146,7 @@ check_model(m1)
 
 Y podemos evaluarlo de manera individual con algunas funciones del paquete `performance`.
 
-Para evaluar la normalidad de los residuales utilizamos la función `check_normality`.
+Para evaluar la normalidad de los residuales utilizamos la función `check_normality()`.
 
 ```{r}
 cn <- check_normality(m1)
@@ -154,7 +154,7 @@ cn
 plot(cn)
 ```
 
-Para evaluar la homogeneidad de la varianza de los residuales utilizamos la función `check_heteroscedasticity`.
+Para evaluar la homogeneidad de la varianza de los residuales utilizamos la función `check_heteroscedasticity()`.
 
 ```{r}
 chc <- check_heteroscedasticity(m1)
@@ -175,6 +175,7 @@ m1r <- lm_robust(bill_length_mm ~ body_mass_kg, data = p)
 ```{r}
 summary(m1r)
 ```
+
 Esto genera un modelo con errores estándar robustos para corregir la falta de normalidad y homogeneidad de la varianza.
 
 <br>
@@ -192,7 +193,7 @@ m6 <- lm(bill_length_mm ~ body_mass_kg + species, data = p)
 m0 <- lm(bill_length_mm ~ 0, data = p)
 ```
 
-Para comparar nuestros modelos y determinar cuál se ajusta mejor a nuestros datos utilizaremos el criterio de información de Akaike (AIC). Podemos realizar la comparación con la función `aictab` del paquete `AICcmodavg.
+Para comparar nuestros modelos y determinar cuál se ajusta mejor a nuestros datos utilizaremos el criterio de información de Akaike (AIC). Podemos realizar la comparación con la función `aictab()` del paquete `AICcmodavg`.
 
 Antes debemos generar una lista con nuestros modelos y para facilitar la identificación también es recomendable generar un vector con los nombres de los modelos en el orden en que aparecen en la lista.
 
@@ -201,7 +202,7 @@ modelos <- list(m1, m2, m3, m4, m5, m6, m0)
 nombres <- c("m1", "m2", "m3", "m4", "m5", "m6", "m0")
 ```
 
-Ahora ejecutamos la función `aictab`. 
+Ahora ejecutamos la función `aictab()`. 
 
 ```{r}
 aictab(modelos, nombres)
@@ -209,14 +210,14 @@ aictab(modelos, nombres)
 
 El resultado nos muestra el valor de AIC para los modelos y los ordena de forma descendente respecto al valor de AIC. Entre menor sea el valor de AIC, mejor se ajusta el modelo a nuestros datos. Si el resultado no muestra los modelos en orden, podemos especificarlo con el argumento `sort = TRUE`.
 
-También podemos realizar la comparación entre modelos con la función `compare_performance` del paquete `performance`. Con el argumento `rank = T` se crea una columna con la puntuación del rendimiento de cada modelo generada a partir de la normalización de los índices de los modelos.
+También podemos realizar la comparación entre modelos con la función `compare_performance()` del paquete `performance`. Con el argumento `rank = T` se crea una columna con la puntuación del rendimiento de cada modelo generada a partir de la normalización de los índices de los modelos.
 
 ```{r}
 cp <- compare_performance(m1, m2, m3, m4, m5, m6, m0, rank = T)
 cp
 ```
 
-Podemos graficar el rendimiento de los modelos aplicando la función `plot` al objeto que contiene la comparación. Esto genera un gráfico de "tela de araña" con el rendimiento de cada modelo respecto a los índices de comparación.
+Podemos graficar el rendimiento de los modelos aplicando la función `plot()` al objeto que contiene la comparación. Esto genera un gráfico de "tela de araña" con el rendimiento de cada modelo respecto a los índices de comparación.
 
 ```{r}
 plot(cp)
@@ -246,27 +247,27 @@ estimate_contrasts(m6)
 ```
 
 También podemos hacerlo de la siguiente manera:
-Primero calculamos las medias de cada especie (en este caso serían las medias del largo del pico) con la función `emmeans` del paquete `emmeans` y se especifica la variable para la que se quiere ver las medias.
+Primero calculamos las medias de cada especie (en este caso serían las medias del largo del pico) con la función `emmeans()` del paquete `emmeans` y se especifica la variable para la que se quiere ver las medias.
 
 ```{r}
 medias <- emmeans(m6, "species")
 medias
 ```
 
-Ahora se realiza la comparacion de pares (contrastes; diferencia entre medias) con la funcion `pairs`.
+Ahora se realiza la comparacion de pares (contrastes; diferencia entre medias) con la funcion `pairs()`.
 
 ```{r}
 contraste <- pairs(medias)
 contraste
 ```
 
-Se puede agregar el intervalo de confianza con la funcion `confint`.
+Se puede agregar el intervalo de confianza con la funcion `confint()`.
 
 ```{r}
 confint(contraste)
 ```
 
-Y se puede graficar el contraste con la función `plot`.
+Y se puede graficar el contraste con la función `plot()`.
 
 ```{r}
 plot(contraste) +
@@ -305,7 +306,7 @@ plot_model(m6, type = "pred",
   theme_bw()
 ```
 
-Y también podemos generar el gráfico utilizando el resultado de la función `ggpredict` del paquete `ggeffects` como entrada para los argumentos de `ggplot2`.
+Y también podemos generar el gráfico utilizando el resultado de la función `ggpredict()` del paquete `ggeffects` como entrada para los argumentos de `ggplot2`.
 
 ```{r}
 g <- ggpredict(m6, terms = c("body_mass_kg","species"))
@@ -324,7 +325,7 @@ ggplot(g, aes(x, predicted)) +
 
 #### Bonus
 
-Si la interpretación del modelo te resulta complicada, el paquete `report` genera un reporte con la interpretación del modelo mediante la función `report`.
+Si la interpretación del modelo te resulta complicada, el paquete `report` genera un reporte con la interpretación del modelo mediante la función `report()`.
 
 ```{r}
 report(m6)
