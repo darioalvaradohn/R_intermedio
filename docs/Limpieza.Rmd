@@ -16,30 +16,83 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+#### Paquetes
+
+```{r, warning=FALSE, message=FALSE}
+library(palmerpenguins)
+library(tidyverse)
+```
+
+#### Datos
+
+```{r}
+data("penguins")
+head(penguins)
+```
 
 ### Contenido{.tabset .tabset-pills}
 
-#### dplyr
+#### `dplyr`
 
 - `select()`: seleccionar columnas
+
+```{r}
+sp_islas <- select(penguins, species, island)
+head(sp_islas)
+summary(sp_islas)
+```
+
 - `filter()`: filtrar filas
+
+```{r}
+sp_Adelie <- filter(penguins, species == "Adelie")
+summary(sp_Adelie)
+```
+
 - `arrange()`: reordenar filas
+
+```{r}
+orden <- arrange(penguins, desc(bill_length_mm))
+head(orden)
+```
+
 - `mutate()`: crear nuevas columnas
+
+```{r}
+peso_kg <- mutate(penguins, body_mass_kg = body_mass_g / 1000)
+head(peso_kg)
+```
+
 - `summarise()`: resumen de valores
+
+```{r}
+resumen <- summarise(penguins, range(na.omit(bill_length_mm)))
+resumen
+```
+
+
 - `group_by()`: agrupar
 
-#### magrittr
-
-- `pipes`: %>%
+```{r}
+medias <- penguins %>%
+  group_by(species) %>%
+  summarise(mean(na.omit(body_mass_g)))
+medias
+```
 
 #### tidyr
 
+- `drop_na()`:
 - `gather()`: 
 - `spread()`:
 - `separate()`:
 - `unite()`:
+- `pivot_longer()`:
+- `pivot_wider()`:
 
 #### lubridate
+
+- `as_date()`:
 
 #### ggplot2
 
