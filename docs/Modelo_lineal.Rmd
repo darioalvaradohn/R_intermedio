@@ -302,7 +302,8 @@ plot_model(m6, type = "pred",
            title = "Largo del pico en relación a la masa corporal de los pingüinos",
            axis.title = c("Masa corporal (kg)", "Largo del pico (mm)"),
            terms=c("body_mass_kg","species"), colors = "Set1") + 
-  aes(linetype=group, color=group) +
+  aes(linetype=group, color=group, fill=group) +
+  labs(linetype="Especie", color="Especie", fill="Especie") +
   theme_bw()
 ```
 
