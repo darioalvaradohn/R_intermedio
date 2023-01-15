@@ -320,7 +320,8 @@ ggplot(g, aes(x, predicted)) +
     scale_linetype_manual(values = c("solid", "dashed", "dotted")) +
   theme_bw() +
   ylab("Largo del pico (mm)") +
-  xlab("Masa corporal (kg)")
+  xlab("Masa corporal (kg)") +
+  labs(linetype= "Especie", color = "Especie", fill = "Especie")
 ```
 
 #### Bonus
