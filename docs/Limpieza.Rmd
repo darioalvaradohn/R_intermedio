@@ -21,6 +21,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, warning=FALSE, message=FALSE}
 library(palmerpenguins)
 library(tidyverse)
+library(kableExtra)
 ```
 
 #### Datos
@@ -32,7 +33,7 @@ head(penguins)
 
 ### Contenido{.tabset .tabset-pills}
 
-#### `dplyr`
+#### Funciones del paquete `dplyr`
 
 - `select()`: seleccionar columnas
 
@@ -42,6 +43,17 @@ head(sp_islas)
 summary(sp_islas)
 ```
 
+```{r}
+pin_sin_sexo <- select(penguins, -sex)
+head(pin_sin_sexo)
+```
+
+```{r}
+numericas <- select(penguins, bill_length_mm:body_mass_g)
+head(numericas)
+```
+
+
 - `filter()`: filtrar filas
 
 ```{r}
@@ -49,11 +61,26 @@ sp_Adelie <- filter(penguins, species == "Adelie")
 summary(sp_Adelie)
 ```
 
+```{r}
+masamayor4500 <- filter(penguins, body_mass_g > 4500)
+summary(masamayor4500)
+```
+
+```{r}
+combinado <- filter(penguins, body_mass_g > 4500 & bill_depth_mm < 15)
+summary(combinado)
+```
+
 - `arrange()`: reordenar filas
 
 ```{r}
-orden <- arrange(penguins, desc(bill_length_mm))
-head(orden)
+ordenascend <- arrange(penguins, bill_length_mm)
+head(ordenascend)
+```
+
+```{r}
+ordendescend <- arrange(penguins, desc(bill_length_mm))
+head(ordendescend)
 ```
 
 - `mutate()`: crear nuevas columnas
@@ -63,24 +90,50 @@ peso_kg <- mutate(penguins, body_mass_kg = body_mass_g / 1000)
 head(peso_kg)
 ```
 
-- `summarise()`: resumen de valores
-
 ```{r}
-resumen <- summarise(penguins, range(na.omit(bill_length_mm)))
-resumen
+pesos <- mutate(penguins, body_mass_kg = body_mass_g / 1000, body_mass_mg = body_mass_g * 1000, body_mass_lbs = body_mass_kg * 2.20462)
+head(pesos)
 ```
 
 
-- `group_by()`: agrupar
+- `rename()`: cambiar nombre de columnas
+
+```{r}
+rename(peso_kg, pesokg = body_mass_kg)
+```
+
+```{r}
+rename(peso_kg, largo_pico_mm = bill_length_mm, alto_pico_mm = bill_depth_mm, largo_aleta_mm = flipper_length_mm, masa_g = body_mass_g, sexo = sex, peso_kg = body_mass_kg)
+```
+
+
+- `summarise()`: crea un nuevo dataframe con los argumentos que especifiquemos
+
+```{r}
+rango_largo_pico <- summarise(penguins, range(na.omit(bill_length_mm)))
+rango_largo_pico
+```
+
+```{r}
+media_largo_aleta <- summarise(penguins, mean(na.omit(flipper_length_mm)))
+media_largo_aleta
+```
+
+```{r}
+medias <- summarise(penguins, aleta = mean(na.omit(flipper_length_mm)), pico = mean(na.omit(bill_length_mm)), masa = mean(na.omit(body_mass_g)))
+medias
+```
+
+- `group_by()`: agrupar los datos. Muy útil combinado con la función `summarise()`.
 
 ```{r}
 medias <- penguins %>%
   group_by(species) %>%
-  summarise(mean(na.omit(body_mass_g)))
+  summarise(masa_corporal = mean(na.omit(body_mass_g)))
 medias
 ```
 
-#### tidyr
+#### Funciones del paquete `tidyr`
 
 - `drop_na()`:
 - `gather()`: 
@@ -90,9 +143,11 @@ medias
 - `pivot_longer()`:
 - `pivot_wider()`:
 
-#### lubridate
+cambiar , por . en un vector
+
+#### Manejo de fechas con el paquete `lubridate`
 
 - `as_date()`:
 
-#### ggplot2
+#### Creación y modificación de cuadros con el paquete `kableExtra`
 

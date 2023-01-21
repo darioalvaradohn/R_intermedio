@@ -361,7 +361,8 @@ Limpieza y manejo de datos
 <div id="paquetes" class="section level4">
 <h4>Paquetes</h4>
 <pre class="r"><code>library(palmerpenguins)
-library(tidyverse)</code></pre>
+library(tidyverse)
+library(kableExtra)</code></pre>
 </div>
 <div id="datos" class="section level4">
 <h4>Datos</h4>
@@ -380,8 +381,8 @@ head(penguins)</code></pre>
 </div>
 <div id="contenido" class="section level3 tabset tabset-pills">
 <h3 class="tabset tabset-pills">Contenido</h3>
-<div id="dplyr" class="section level4">
-<h4><code>dplyr</code></h4>
+<div id="funciones-del-paquete-dplyr" class="section level4">
+<h4>Funciones del paquete <code>dplyr</code></h4>
 <ul>
 <li><code>select()</code>: seleccionar columnas</li>
 </ul>
@@ -401,6 +402,29 @@ head(sp_islas)</code></pre>
 ##  Adelie   :152   Biscoe   :168  
 ##  Chinstrap: 68   Dream    :124  
 ##  Gentoo   :124   Torgersen: 52</code></pre>
+<pre class="r"><code>pin_sin_sexo &lt;- select(penguins, -sex)
+head(pin_sin_sexo)</code></pre>
+<pre><code>## # A tibble: 6 × 7
+##   species island    bill_length_mm bill_depth_mm flipper_length_mm body_…¹  year
+##   &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;   &lt;int&gt; &lt;int&gt;
+## 1 Adelie  Torgersen           39.1          18.7               181    3750  2007
+## 2 Adelie  Torgersen           39.5          17.4               186    3800  2007
+## 3 Adelie  Torgersen           40.3          18                 195    3250  2007
+## 4 Adelie  Torgersen           NA            NA                  NA      NA  2007
+## 5 Adelie  Torgersen           36.7          19.3               193    3450  2007
+## 6 Adelie  Torgersen           39.3          20.6               190    3650  2007
+## # … with abbreviated variable name ¹​body_mass_g</code></pre>
+<pre class="r"><code>numericas &lt;- select(penguins, bill_length_mm:body_mass_g)
+head(numericas)</code></pre>
+<pre><code>## # A tibble: 6 × 4
+##   bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
+##            &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;
+## 1           39.1          18.7               181        3750
+## 2           39.5          17.4               186        3800
+## 3           40.3          18                 195        3250
+## 4           NA            NA                  NA          NA
+## 5           36.7          19.3               193        3450
+## 6           39.3          20.6               190        3650</code></pre>
 <ul>
 <li><code>filter()</code>: filtrar filas</li>
 </ul>
@@ -422,11 +446,55 @@ summary(sp_Adelie)</code></pre>
 ##  3rd Qu.:195       3rd Qu.:4000               3rd Qu.:2009  
 ##  Max.   :210       Max.   :4775               Max.   :2009  
 ##  NA&#39;s   :1         NA&#39;s   :1</code></pre>
+<pre class="r"><code>masamayor4500 &lt;- filter(penguins, body_mass_g &gt; 4500)
+summary(masamayor4500)</code></pre>
+<pre><code>##       species          island    bill_length_mm  bill_depth_mm  
+##  Adelie   :  7   Biscoe   :109   Min.   :39.20   Min.   :13.10  
+##  Chinstrap:  2   Dream    :  4   1st Qu.:45.45   1st Qu.:14.50  
+##  Gentoo   :106   Torgersen:  2   Median :47.50   Median :15.20  
+##                                  Mean   :47.61   Mean   :15.49  
+##                                  3rd Qu.:49.85   3rd Qu.:16.00  
+##                                  Max.   :59.60   Max.   :20.70  
+##  flipper_length_mm  body_mass_g       sex          year     
+##  Min.   :184.0     Min.   :4550   female:42   Min.   :2007  
+##  1st Qu.:213.0     1st Qu.:4750   male  :70   1st Qu.:2007  
+##  Median :217.0     Median :5100   NA&#39;s  : 3   Median :2008  
+##  Mean   :216.6     Mean   :5159               Mean   :2008  
+##  3rd Qu.:222.0     3rd Qu.:5500               3rd Qu.:2009  
+##  Max.   :231.0     Max.   :6300               Max.   :2009</code></pre>
+<pre class="r"><code>combinado &lt;- filter(penguins, body_mass_g &gt; 4500 &amp; bill_depth_mm &lt; 15)
+summary(combinado)</code></pre>
+<pre><code>##       species         island   bill_length_mm  bill_depth_mm  
+##  Adelie   : 0   Biscoe   :43   Min.   :40.90   Min.   :13.10  
+##  Chinstrap: 0   Dream    : 0   1st Qu.:44.90   1st Qu.:13.95  
+##  Gentoo   :43   Torgersen: 0   Median :46.20   Median :14.30  
+##                                Mean   :46.00   Mean   :14.23  
+##                                3rd Qu.:47.45   3rd Qu.:14.50  
+##                                Max.   :51.30   Max.   :14.90  
+##  flipper_length_mm  body_mass_g       sex          year     
+##  Min.   :203.0     Min.   :4550   female:35   Min.   :2007  
+##  1st Qu.:211.5     1st Qu.:4700   male  : 6   1st Qu.:2007  
+##  Median :214.0     Median :4850   NA&#39;s  : 2   Median :2008  
+##  Mean   :213.8     Mean   :4901               Mean   :2008  
+##  3rd Qu.:217.0     3rd Qu.:5025               3rd Qu.:2009  
+##  Max.   :222.0     Max.   :5850               Max.   :2009</code></pre>
 <ul>
 <li><code>arrange()</code>: reordenar filas</li>
 </ul>
-<pre class="r"><code>orden &lt;- arrange(penguins, desc(bill_length_mm))
-head(orden)</code></pre>
+<pre class="r"><code>ordenascend &lt;- arrange(penguins, bill_length_mm)
+head(ordenascend)</code></pre>
+<pre><code>## # A tibble: 6 × 8
+##   species island    bill_length_mm bill_depth_mm flipper_l…¹ body_…² sex    year
+##   &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;       &lt;int&gt;   &lt;int&gt; &lt;fct&gt; &lt;int&gt;
+## 1 Adelie  Dream               32.1          15.5         188    3050 fema…  2009
+## 2 Adelie  Dream               33.1          16.1         178    2900 fema…  2008
+## 3 Adelie  Torgersen           33.5          19           190    3600 fema…  2008
+## 4 Adelie  Dream               34            17.1         185    3400 fema…  2008
+## 5 Adelie  Torgersen           34.1          18.1         193    3475 &lt;NA&gt;   2007
+## 6 Adelie  Torgersen           34.4          18.4         184    3325 fema…  2007
+## # … with abbreviated variable names ¹​flipper_length_mm, ²​body_mass_g</code></pre>
+<pre class="r"><code>ordendescend &lt;- arrange(penguins, desc(bill_length_mm))
+head(ordendescend)</code></pre>
 <pre><code>## # A tibble: 6 × 8
 ##   species   island bill_length_mm bill_depth_mm flipper_le…¹ body_…² sex    year
 ##   &lt;fct&gt;     &lt;fct&gt;           &lt;dbl&gt;         &lt;dbl&gt;        &lt;int&gt;   &lt;int&gt; &lt;fct&gt; &lt;int&gt;
@@ -453,32 +521,95 @@ head(peso_kg)</code></pre>
 ## 6 Adelie  Torgersen           39.3      20.6     190    3650 male   2007    3.65
 ## # … with abbreviated variable names ¹​bill_depth_mm, ²​flipper_length_mm,
 ## #   ³​body_mass_g, ⁴​body_mass_kg</code></pre>
+<pre class="r"><code>pesos &lt;- mutate(penguins, body_mass_kg = body_mass_g / 1000, body_mass_mg = body_mass_g * 1000, body_mass_lbs = body_mass_kg * 2.20462)
+head(pesos)</code></pre>
+<pre><code>## # A tibble: 6 × 11
+##   species island    bill_l…¹ bill_…² flipp…³ body_…⁴ sex    year body_…⁵ body_…⁶
+##   &lt;fct&gt;   &lt;fct&gt;        &lt;dbl&gt;   &lt;dbl&gt;   &lt;int&gt;   &lt;int&gt; &lt;fct&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1 Adelie  Torgersen     39.1    18.7     181    3750 male   2007    3.75 3750000
+## 2 Adelie  Torgersen     39.5    17.4     186    3800 fema…  2007    3.8  3800000
+## 3 Adelie  Torgersen     40.3    18       195    3250 fema…  2007    3.25 3250000
+## 4 Adelie  Torgersen     NA      NA        NA      NA &lt;NA&gt;   2007   NA         NA
+## 5 Adelie  Torgersen     36.7    19.3     193    3450 fema…  2007    3.45 3450000
+## 6 Adelie  Torgersen     39.3    20.6     190    3650 male   2007    3.65 3650000
+## # … with 1 more variable: body_mass_lbs &lt;dbl&gt;, and abbreviated variable names
+## #   ¹​bill_length_mm, ²​bill_depth_mm, ³​flipper_length_mm, ⁴​body_mass_g,
+## #   ⁵​body_mass_kg, ⁶​body_mass_mg</code></pre>
 <ul>
-<li><code>summarise()</code>: resumen de valores</li>
+<li><code>rename()</code>: cambiar nombre de columnas</li>
 </ul>
-<pre class="r"><code>resumen &lt;- summarise(penguins, range(na.omit(bill_length_mm)))
-resumen</code></pre>
+<pre class="r"><code>rename(peso_kg, pesokg = body_mass_kg)</code></pre>
+<pre><code>## # A tibble: 344 × 9
+##    species island    bill_length_mm bill_de…¹ flipp…² body_…³ sex    year pesokg
+##    &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;     &lt;dbl&gt;   &lt;int&gt;   &lt;int&gt; &lt;fct&gt; &lt;int&gt;  &lt;dbl&gt;
+##  1 Adelie  Torgersen           39.1      18.7     181    3750 male   2007   3.75
+##  2 Adelie  Torgersen           39.5      17.4     186    3800 fema…  2007   3.8 
+##  3 Adelie  Torgersen           40.3      18       195    3250 fema…  2007   3.25
+##  4 Adelie  Torgersen           NA        NA        NA      NA &lt;NA&gt;   2007  NA   
+##  5 Adelie  Torgersen           36.7      19.3     193    3450 fema…  2007   3.45
+##  6 Adelie  Torgersen           39.3      20.6     190    3650 male   2007   3.65
+##  7 Adelie  Torgersen           38.9      17.8     181    3625 fema…  2007   3.62
+##  8 Adelie  Torgersen           39.2      19.6     195    4675 male   2007   4.68
+##  9 Adelie  Torgersen           34.1      18.1     193    3475 &lt;NA&gt;   2007   3.48
+## 10 Adelie  Torgersen           42        20.2     190    4250 &lt;NA&gt;   2007   4.25
+## # … with 334 more rows, and abbreviated variable names ¹​bill_depth_mm,
+## #   ²​flipper_length_mm, ³​body_mass_g</code></pre>
+<pre class="r"><code>rename(peso_kg, largo_pico_mm = bill_length_mm, alto_pico_mm = bill_depth_mm, largo_aleta_mm = flipper_length_mm, masa_g = body_mass_g, sexo = sex, peso_kg = body_mass_kg)</code></pre>
+<pre><code>## # A tibble: 344 × 9
+##    species island    largo_pico_mm alto_pic…¹ largo…² masa_g sexo   year peso_kg
+##    &lt;fct&gt;   &lt;fct&gt;             &lt;dbl&gt;      &lt;dbl&gt;   &lt;int&gt;  &lt;int&gt; &lt;fct&gt; &lt;int&gt;   &lt;dbl&gt;
+##  1 Adelie  Torgersen          39.1       18.7     181   3750 male   2007    3.75
+##  2 Adelie  Torgersen          39.5       17.4     186   3800 fema…  2007    3.8 
+##  3 Adelie  Torgersen          40.3       18       195   3250 fema…  2007    3.25
+##  4 Adelie  Torgersen          NA         NA        NA     NA &lt;NA&gt;   2007   NA   
+##  5 Adelie  Torgersen          36.7       19.3     193   3450 fema…  2007    3.45
+##  6 Adelie  Torgersen          39.3       20.6     190   3650 male   2007    3.65
+##  7 Adelie  Torgersen          38.9       17.8     181   3625 fema…  2007    3.62
+##  8 Adelie  Torgersen          39.2       19.6     195   4675 male   2007    4.68
+##  9 Adelie  Torgersen          34.1       18.1     193   3475 &lt;NA&gt;   2007    3.48
+## 10 Adelie  Torgersen          42         20.2     190   4250 &lt;NA&gt;   2007    4.25
+## # … with 334 more rows, and abbreviated variable names ¹​alto_pico_mm,
+## #   ²​largo_aleta_mm</code></pre>
+<ul>
+<li><code>summarise()</code>: crea un nuevo dataframe con los argumentos
+que especifiquemos</li>
+</ul>
+<pre class="r"><code>rango_largo_pico &lt;- summarise(penguins, range(na.omit(bill_length_mm)))
+rango_largo_pico</code></pre>
 <pre><code>## # A tibble: 2 × 1
 ##   `range(na.omit(bill_length_mm))`
 ##                              &lt;dbl&gt;
 ## 1                             32.1
 ## 2                             59.6</code></pre>
+<pre class="r"><code>media_largo_aleta &lt;- summarise(penguins, mean(na.omit(flipper_length_mm)))
+media_largo_aleta</code></pre>
+<pre><code>## # A tibble: 1 × 1
+##   `mean(na.omit(flipper_length_mm))`
+##                                &lt;dbl&gt;
+## 1                               201.</code></pre>
+<pre class="r"><code>medias &lt;- summarise(penguins, aleta = mean(na.omit(flipper_length_mm)), pico = mean(na.omit(bill_length_mm)), masa = mean(na.omit(body_mass_g)))
+medias</code></pre>
+<pre><code>## # A tibble: 1 × 3
+##   aleta  pico  masa
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1  201.  43.9 4202.</code></pre>
 <ul>
-<li><code>group_by()</code>: agrupar</li>
+<li><code>group_by()</code>: agrupar los datos. Muy útil combinado con
+la función <code>summarise()</code>.</li>
 </ul>
 <pre class="r"><code>medias &lt;- penguins %&gt;%
   group_by(species) %&gt;%
-  summarise(mean(na.omit(body_mass_g)))
+  summarise(masa_corporal = mean(na.omit(body_mass_g)))
 medias</code></pre>
 <pre><code>## # A tibble: 3 × 2
-##   species   `mean(na.omit(body_mass_g))`
-##   &lt;fct&gt;                            &lt;dbl&gt;
-## 1 Adelie                           3701.
-## 2 Chinstrap                        3733.
-## 3 Gentoo                           5076.</code></pre>
+##   species   masa_corporal
+##   &lt;fct&gt;             &lt;dbl&gt;
+## 1 Adelie            3701.
+## 2 Chinstrap         3733.
+## 3 Gentoo            5076.</code></pre>
 </div>
-<div id="tidyr" class="section level4">
-<h4>tidyr</h4>
+<div id="funciones-del-paquete-tidyr" class="section level4">
+<h4>Funciones del paquete <code>tidyr</code></h4>
 <ul>
 <li><code>drop_na()</code>:</li>
 <li><code>gather()</code>:</li>
@@ -488,15 +619,17 @@ medias</code></pre>
 <li><code>pivot_longer()</code>:</li>
 <li><code>pivot_wider()</code>:</li>
 </ul>
+<p>cambiar , por . en un vector</p>
 </div>
-<div id="lubridate" class="section level4">
-<h4>lubridate</h4>
+<div id="manejo-de-fechas-con-el-paquete-lubridate" class="section level4">
+<h4>Manejo de fechas con el paquete <code>lubridate</code></h4>
 <ul>
 <li><code>as_date()</code>:</li>
 </ul>
 </div>
-<div id="ggplot2" class="section level4">
-<h4>ggplot2</h4>
+<div id="creación-y-modificación-de-cuadros-con-el-paquete-kableextra" class="section level4">
+<h4>Creación y modificación de cuadros con el paquete
+<code>kableExtra</code></h4>
 </div>
 </div>
 
