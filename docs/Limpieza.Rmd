@@ -339,7 +339,7 @@ anscombe %>%
 #### Creación y modificación de cuadros con el paquete `kableExtra`
 
 ```{r}
-cuadro <- kable_styling(kable(medias), full_width = FALSE, position = "center", font_size = 12)
+cuadro <- kable_styling(kable(medias, digits = 2), "striped", full_width = FALSE, position = "center", font_size = 12)
 cuadro
 ```
 

@@ -24,6 +24,7 @@ library(tidyverse)
 library(parameters)
 library(performance)
 library(AICcmodavg)
+library(bbmle)
 library(sjPlot)
 library(estimatr)
 library(modelbased)
@@ -119,10 +120,11 @@ También podemos evaluar el rendimiento o ajuste de nuestro modelo con la funci�
 performance(m1)
 ```
 
-- Aquí podemos observar el valor del criterio de información de Akaike (AIC) y un AIC ajustado para muestras pequeñas (AICc).
+- Aquí podemos observar el valor del criterio de información de Akaike (AIC) y un AIC ajustado para un tamaño de muestra pequeño (AICc).
 - También observamos el criterio de información Bayesiano (BIC).
-- El R^2^ y el R^2^ ajustado indican cuánto explica la variable predictora la varianza de la variable respuesta. 
+- El R^2^ y el R^2^ ajustado indican cuánto explica la variable predictora la varianza de la variable respuesta. el R^2^ ajustado tiene una corrección para la cantidad de parámetros del modelo. 
 - El RMSE es el error cuadrático medio (root-mean square error), este indica el error del modelo, la diferencia entre los valores predichos por el modelo y los valores observados. El RMSE está en las unidades de la variable respuesta.
+- El Sigma es el error residual estándar también indica un error del modelo en las unidades de la variable respuesta, la única diferencia es que en su fórmula está dividido entre los grados de libertad, y el RMSE está dividido entre el número de observaciones, por esa razón, el Sigma (error estándar residual) siempre va a ser un poco mayor que el RMSE.
 
 La masa corporal de los pingüinos explica el 34.5% de la variabilidad de la varianza del largo del pico. Y el error del modelo de la regresión de la masa corporal sobre el largo del pico de los pingüinos es de 4.41 mm.
 
@@ -188,18 +190,33 @@ Podemos generar varios modelos para determinar cuál de nuestras variables es la
 m2 <- lm(bill_length_mm ~ flipper_length_mm, data = p)
 m3 <- lm(bill_length_mm ~ species, data = p)
 m4 <- lm(bill_length_mm ~ island, data = p)
-m5 <- lm(bill_length_mm ~ flipper_length_mm + species, data = p)
-m6 <- lm(bill_length_mm ~ body_mass_kg + species, data = p)
 m0 <- lm(bill_length_mm ~ 0, data = p)
 ```
+
+Modelos de regresión múltiple
+Aditivos
+
+```{r}
+m5 <- lm(bill_length_mm ~ flipper_length_mm + species, data = p)
+m6 <- lm(bill_length_mm ~ body_mass_kg + species, data = p)
+```
+
+Modelos de regresión múltiple
+Con interacción
+
+```{r}
+m7 <- lm(bill_length_mm ~ flipper_length_mm * species, data = p)
+m8 <- lm(bill_length_mm ~ body_mass_kg * species, data = p)
+```
+
 
 Para comparar nuestros modelos y determinar cuál se ajusta mejor a nuestros datos utilizaremos el criterio de información de Akaike (AIC). Podemos realizar la comparación con la función `aictab()` del paquete `AICcmodavg`.
 
 Antes debemos generar una lista con nuestros modelos y para facilitar la identificación también es recomendable generar un vector con los nombres de los modelos en el orden en que aparecen en la lista.
 
 ```{r}
-modelos <- list(m1, m2, m3, m4, m5, m6, m0)
-nombres <- c("m1", "m2", "m3", "m4", "m5", "m6", "m0")
+modelos <- list(m1, m2, m3, m4, m5, m6, m7, m8, m0)
+nombres <- c("m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m0")
 ```
 
 Ahora ejecutamos la función `aictab()`. 
@@ -213,7 +230,7 @@ El resultado nos muestra el valor de AIC para los modelos y los ordena de forma 
 También podemos realizar la comparación entre modelos con la función `compare_performance()` del paquete `performance`. Con el argumento `rank = T` se crea una columna con la puntuación del rendimiento de cada modelo generada a partir de la normalización de los índices de los modelos.
 
 ```{r}
-cp <- compare_performance(m1, m2, m3, m4, m5, m6, m0, rank = T)
+cp <- compare_performance(m1, m2, m3, m4, m5, m6, m7, m8, m0, rank = T)
 cp
 ```
 
@@ -224,6 +241,14 @@ plot(cp)
 ```
 
 El mejor modelo o el modelo que mejor se ajusta a nuestros datos es el modelo 6. Este modelo tiene como variables predictoras la masa corporal y la especie de los pingüinos.
+
+Si tuviesemos un tamaño de muestra pequeño, podemos usar la función `AICtab()` del paquete `bbmle` y especificamos el argumento `base = TRUE` para que nos incluya el resultado de AICc que es un valor ajustado de AIC para tamaños de muestra pequeños.
+
+```{r}
+AICtab(m1, m2, m3, m4, m5, m6, m7, m8, m0, base = TRUE, delta = TRUE, sort = TRUE, weights = TRUE, nobs = 333)
+```
+
+No podemos dejar de lado los modelos que tienen un rendimiento similar, en este caso, el modelo 8 (interacción entre especies y masa corporal) también presenta un valor de AIC bajo y un delta de 0.5 comparado con el modelo 6. Se pueden tomar en cuenta los modelos que tengan un delta hasta de 2 respecto al "mejor" modelo.
 
 ```{r}
 summary(m6)
