@@ -136,21 +136,210 @@ medias <- penguins %>%
 medias
 ```
 
+- `mutate_at()` combinado con la función `format()` para cambiar el separador de decimales
+ - de punto a coma
+```{r}
+decimalescoma <- mutate_at(penguins, vars(bill_length_mm, bill_depth_mm), funs(format(.,nsmall=2,decimal.mark=",")))
+head(decimalescoma)
+```
+
+ - de coma a punto
+```{r}
+decimalespunto <- mutate_at(penguins, vars(bill_length_mm, bill_depth_mm), funs(format(.,nsmall=2,decimal.mark=".")))
+head(decimalespunto)
+```
+
+ - para darle formato numérico después de realizar el cambio de separador de decimales
+```{r}
+decimalespunto <- decimalespunto |>
+  mutate_if(is.character, as.numeric)
+head(decimalespunto)
+```
+
 #### Funciones del paquete `tidyr`
 
-- `drop_na()`:
-- `gather()`: 
+- `drop_na()`: para eliminar los NA
+
+```{r}
+drop_na(penguins, flipper_length_mm)
+```
+
+```{r}
+pin <- penguins |>
+  drop_na()
+pin
+```
+
 - `spread()`:
-- `separate()`:
-- `unite()`:
-- `pivot_longer()`:
+
+```{r}
+#expandir <- spread(pin, key = "species", value = "flipper_length_mm")
+#expandir
+```
+
+- `gather()`: 
+
+```{r}
+#reunir <- gather(expandir, key = "species", value = "flipper_length_mm", -island, -bill_length_mm, -bill_depth_mm, -body_mass_g, -sex, -year)
+#reunir
+```
+
+
+- `unite()`: unión de dos o más columnas en una sola 
+
+```{r}
+union <- unite(pin, col = speciesXisland, species, island, sep = "_")
+head(union)
+```
+
+- `separate()`: separar una columna en varias columnas
+
+```{r}
+separar <- separate(union, col = speciesXisland, into = c("species", "island"), sep = "_")
+head(separar)
+```
+
+
 - `pivot_wider()`:
 
-cambiar , por . en un vector
+```{r}
+fish_encounters
+```
+
+
+```{r}
+pivot_wider(fish_encounters, names_from = station, values_from = seen, values_fill = 0 )
+```
+
+```{r}
+us_rent_income
+```
+
+```{r}
+us_rent_income %>%
+  pivot_wider(
+    names_from = variable,
+    values_from = c(estimate, moe)
+  )
+```
+
+```{r}
+us_rent_income %>%
+  pivot_wider(
+    names_from = variable,
+    values_from = c(estimate, moe),
+    names_vary = "slowest"
+  )
+```
+
+```{r}
+us_rent_income %>%
+  pivot_wider(
+    names_from = variable,
+    names_sep = ".",
+    values_from = c(estimate, moe)
+  )
+```
+
+```{r}
+us_rent_income %>%
+  pivot_wider(
+    names_from = variable,
+    names_glue = "{variable}_{.value}",
+    values_from = c(estimate, moe)
+  )
+```
+
+```{r}
+warpbreaks <- as_tibble(warpbreaks[c("wool", "tension", "breaks")])
+warpbreaks
+```
+
+```{r}
+warpbreaks %>%
+  pivot_wider(
+    names_from = wool,
+    values_from = breaks,
+    values_fn = mean
+  )
+```
+
+```{r}
+warpbreaks$breaks[1] <- NA
+warpbreaks %>%
+  pivot_wider(
+    names_from = wool,
+    values_from = breaks,
+    values_fn = ~mean(.x, na.rm = TRUE)
+  )
+```
+
+
+- `pivot_longer()`:
+
+```{r}
+relig_income
+```
+
+```{r}
+relig_income %>%
+  pivot_longer(!religion, names_to = "income", values_to = "count")
+```
+
+```{r}
+billboard
+```
+
+```{r}
+billboard %>%
+  pivot_longer(
+    cols = starts_with("wk"),
+    names_to = "week",
+    names_prefix = "wk",
+    values_to = "rank",
+    values_drop_na = TRUE
+  )
+```
+
+```{r}
+who
+```
+
+
+```{r}
+who %>% pivot_longer(
+  cols = new_sp_m014:newrel_f65,
+  names_to = c("diagnosis", "gender", "age"),
+  names_pattern = "new_?(.*)_(.)(.*)",
+  values_to = "count"
+)
+```
+
+```{r}
+anscombe
+```
+
+```{r}
+anscombe %>%
+  pivot_longer(
+    everything(),
+    names_to = c(".value", "set"),
+    names_pattern = "(.)(.)"
+  )
+```
+
 
 #### Manejo de fechas con el paquete `lubridate`
 
 - `as_date()`:
 
+
+
+
 #### Creación y modificación de cuadros con el paquete `kableExtra`
+
+```{r}
+cuadro <- kable_styling(kable(medias), full_width = FALSE, position = "center", font_size = 12)
+cuadro
+```
 
