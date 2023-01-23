@@ -639,22 +639,33 @@ head(pin_sin_sexo)</code></pre>
 ## 5 Adelie  Torgersen           36.7          19.3               193    3450  2007
 ## 6 Adelie  Torgersen           39.3          20.6               190    3650  2007
 ## # … with abbreviated variable name ¹​body_mass_g</code></pre>
-<pre class="r"><code>numericas &lt;- select(penguins, bill_length_mm:body_mass_g)
+<pre class="r"><code>numericas &lt;- select(penguins, species, bill_length_mm:body_mass_g)
 head(numericas)</code></pre>
-<pre><code>## # A tibble: 6 × 4
-##   bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
-##            &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;
-## 1           39.1          18.7               181        3750
-## 2           39.5          17.4               186        3800
-## 3           40.3          18                 195        3250
-## 4           NA            NA                  NA          NA
-## 5           36.7          19.3               193        3450
-## 6           39.3          20.6               190        3650</code></pre>
+<pre><code>## # A tibble: 6 × 5
+##   species bill_length_mm bill_depth_mm flipper_length_mm body_mass_g
+##   &lt;fct&gt;            &lt;dbl&gt;         &lt;dbl&gt;             &lt;int&gt;       &lt;int&gt;
+## 1 Adelie            39.1          18.7               181        3750
+## 2 Adelie            39.5          17.4               186        3800
+## 3 Adelie            40.3          18                 195        3250
+## 4 Adelie            NA            NA                  NA          NA
+## 5 Adelie            36.7          19.3               193        3450
+## 6 Adelie            39.3          20.6               190        3650</code></pre>
 <ul>
-<li><code>filter()</code>: filtrar filas</li>
+<li><code>filter()</code>: filtrar filas (observaciones)</li>
 </ul>
 <pre class="r"><code>sp_Adelie &lt;- filter(penguins, species == &quot;Adelie&quot;)
-summary(sp_Adelie)</code></pre>
+head(sp_Adelie)</code></pre>
+<pre><code>## # A tibble: 6 × 8
+##   species island    bill_length_mm bill_depth_mm flipper_l…¹ body_…² sex    year
+##   &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;       &lt;int&gt;   &lt;int&gt; &lt;fct&gt; &lt;int&gt;
+## 1 Adelie  Torgersen           39.1          18.7         181    3750 male   2007
+## 2 Adelie  Torgersen           39.5          17.4         186    3800 fema…  2007
+## 3 Adelie  Torgersen           40.3          18           195    3250 fema…  2007
+## 4 Adelie  Torgersen           NA            NA            NA      NA &lt;NA&gt;   2007
+## 5 Adelie  Torgersen           36.7          19.3         193    3450 fema…  2007
+## 6 Adelie  Torgersen           39.3          20.6         190    3650 male   2007
+## # … with abbreviated variable names ¹​flipper_length_mm, ²​body_mass_g</code></pre>
+<pre class="r"><code>summary(sp_Adelie)</code></pre>
 <pre><code>##       species          island   bill_length_mm  bill_depth_mm  
 ##  Adelie   :152   Biscoe   :44   Min.   :32.10   Min.   :15.50  
 ##  Chinstrap:  0   Dream    :56   1st Qu.:36.75   1st Qu.:17.50  
@@ -730,8 +741,39 @@ head(ordendescend)</code></pre>
 ## 5 Gentoo    Biscoe           55.1          16            230    5850 male   2009
 ## 6 Gentoo    Biscoe           54.3          15.7          231    5650 male   2008
 ## # … with abbreviated variable names ¹​flipper_length_mm, ²​body_mass_g</code></pre>
+<pre class="r"><code>ordenvarias &lt;- arrange(penguins, bill_length_mm, bill_depth_mm, flipper_length_mm)
+head(ordenvarias)</code></pre>
+<pre><code>## # A tibble: 6 × 8
+##   species island    bill_length_mm bill_depth_mm flipper_l…¹ body_…² sex    year
+##   &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;       &lt;int&gt;   &lt;int&gt; &lt;fct&gt; &lt;int&gt;
+## 1 Adelie  Dream               32.1          15.5         188    3050 fema…  2009
+## 2 Adelie  Dream               33.1          16.1         178    2900 fema…  2008
+## 3 Adelie  Torgersen           33.5          19           190    3600 fema…  2008
+## 4 Adelie  Dream               34            17.1         185    3400 fema…  2008
+## 5 Adelie  Torgersen           34.1          18.1         193    3475 &lt;NA&gt;   2007
+## 6 Adelie  Torgersen           34.4          18.4         184    3325 fema…  2007
+## # … with abbreviated variable names ¹​flipper_length_mm, ²​body_mass_g</code></pre>
+<pre class="r"><code>experimento &lt;- import(&quot;data/Experimento.xlsx&quot;)
+head(experimento)</code></pre>
+<pre><code>##   Tratamiento Repeticion Semana Conteo
+## 1           1          1      1      0
+## 2           1          1      2      1
+## 3           1          1      3      2
+## 4           1          1      4      2
+## 5           2          1      1      0
+## 6           2          1      2      2</code></pre>
+<pre class="r"><code>ordenvarias2 &lt;- arrange(experimento, desc(Tratamiento), desc(Repeticion), Semana)
+head(ordenvarias2)</code></pre>
+<pre><code>##   Tratamiento Repeticion Semana Conteo
+## 1           3          5      1      0
+## 2           3          5      2      0
+## 3           3          5      3      1
+## 4           3          5      4      2
+## 5           3          4      1      0
+## 6           3          4      2      0</code></pre>
 <ul>
-<li><code>mutate()</code>: crear nuevas columnas</li>
+<li><code>mutate()</code>: crear nuevas columnas en una tabla de
+datos</li>
 </ul>
 <pre class="r"><code>peso_kg &lt;- mutate(penguins, body_mass_kg = body_mass_g / 1000)
 head(peso_kg)</code></pre>
@@ -760,15 +802,15 @@ head(pesos)</code></pre>
 ## # … with 1 more variable: body_mass_lbs &lt;dbl&gt;, and abbreviated variable names
 ## #   ¹​bill_length_mm, ²​bill_depth_mm, ³​flipper_length_mm, ⁴​body_mass_g,
 ## #   ⁵​body_mass_kg, ⁶​body_mass_mg</code></pre>
-<pre class="r"><code>medidas &lt;- import(&quot;C:/Users/dario/OneDrive/HN_Biology_Investigation/CURSOS/R_basico/docs/data/medidas_personas.csv&quot;)</code></pre>
-<pre class="r"><code>summary(medidas)</code></pre>
-<pre><code>##      sexo               altura         peso             edad      
-##  Length:100         Min.   :130   Min.   : 48.00   Min.   :18.00  
-##  Class :character   1st Qu.:149   1st Qu.: 64.00   1st Qu.:26.75  
-##  Mode  :character   Median :160   Median : 73.00   Median :34.50  
-##                     Mean   :160   Mean   : 74.44   Mean   :34.71  
-##                     3rd Qu.:171   3rd Qu.: 83.75   3rd Qu.:43.25  
-##                     Max.   :192   Max.   :110.00   Max.   :50.00</code></pre>
+<pre class="r"><code>medidas &lt;- import(&quot;data/medidas_personas.csv&quot;)
+head(medidas)</code></pre>
+<pre><code>##   sexo altura peso edad
+## 1    M    170   71   47
+## 2    M    162   79   36
+## 3    M    149   86   43
+## 4    M    181   97   23
+## 5    M    156   98   29
+## 6    M    165  107   49</code></pre>
 <pre class="r"><code>medidas &lt;- mutate(medidas, IMC = round((peso/(altura/100)^2), digits = 2))
 head(medidas)</code></pre>
 <pre><code>##   sexo altura peso edad   IMC
@@ -779,7 +821,7 @@ head(medidas)</code></pre>
 ## 5    M    156   98   29 40.27
 ## 6    M    165  107   49 39.30</code></pre>
 <pre class="r"><code>medidas &lt;- medidas |&gt;
-  mutate(grupo = cut(medidas$peso, breaks = c(min(medidas$peso), 60, 70, 80, 90, max(medidas$peso)), 
+  mutate(grupo = cut(medidas$peso, breaks = c(min(medidas$peso-1), 60, 70, 80, 90, max(medidas$peso+1)), 
                      labels = c(&quot;Bajo&quot;, &quot;Medio Bajo&quot;, &quot;Medio&quot;, &quot;Medio Alto&quot;, &quot;Alto&quot;)))
 
 medidas</code></pre>
@@ -859,10 +901,10 @@ medidas</code></pre>
 ## 73     F    154   59   35 24.88       Bajo
 ## 74     F    152   79   26 34.19      Medio
 ## 75     F    160   67   27 26.17 Medio Bajo
-## 76     F    160   48   19 18.75       &lt;NA&gt;
+## 76     F    160   48   19 18.75       Bajo
 ## 77     F    142   65   28 32.24 Medio Bajo
 ## 78     F    157   49   41 19.88       Bajo
-## 79     F    163   48   38 18.07       &lt;NA&gt;
+## 79     F    163   48   38 18.07       Bajo
 ## 80     F    163   78   20 29.36      Medio
 ## 81     F    146   77   47 36.12      Medio
 ## 82     F    158   71   43 28.44      Medio
@@ -885,9 +927,9 @@ medidas</code></pre>
 ## 99     F    139   49   34 25.36       Bajo
 ## 100    F    144   67   44 32.31 Medio Bajo</code></pre>
 <pre class="r"><code>medidas &lt;- medidas |&gt; 
-  mutate(grupo = cut(medidas$peso, breaks = c(min(medidas$peso), 60, 70, 80, 90, max(medidas$peso)), 
+  mutate(grupo = cut(medidas$peso, breaks = c(min(medidas$peso -1), 60, 70, 80, 90, max(medidas$peso +1)), 
             labels = c(&quot;Bajo&quot;, &quot;Medio Bajo&quot;, &quot;Medio&quot;, &quot;Medio Alto&quot;, &quot;Alto&quot;))) |&gt;
-  mutate(grupo = paste0(grupo, &#39;-&#39;, cut(medidas$altura, breaks = c(min(medidas$altura), 160, 175, max(medidas$altura)),                                 labels = c(&quot;Baja&quot;, &quot;Media&quot;, &quot;Alta&quot;))))
+  mutate(grupo = paste0(grupo, &#39;-&#39;, cut(medidas$altura, breaks = c(min(medidas$altura -1), 160, 175, max(medidas$altura +1)),                                 labels = c(&quot;Baja&quot;, &quot;Media&quot;, &quot;Alta&quot;))))
 
 head(medidas)</code></pre>
 <pre><code>##   sexo altura peso edad   IMC           grupo
@@ -898,7 +940,7 @@ head(medidas)</code></pre>
 ## 5    M    156   98   29 40.27       Alto-Baja
 ## 6    M    165  107   49 39.30      Alto-Media</code></pre>
 <pre class="r"><code>medidas &lt;- medidas |&gt; 
-  mutate(Comp_corp = cut(medidas$IMC, breaks = c(min(medidas$IMC), 18.5, 25, 30, max(medidas$IMC)), 
+  mutate(Comp_corp = cut(medidas$IMC, breaks = c(min(medidas$IMC -1), 18.5, 25, 30, max(medidas$IMC +1)), 
             labels = c(&quot;Inferior&quot;, &quot;Normal&quot;, &quot;Superior&quot;, &quot;Obesidad&quot;)))
 
 head(medidas)</code></pre>
@@ -909,6 +951,16 @@ head(medidas)</code></pre>
 ## 4    M    181   97   23 29.61       Alto-Alta  Superior
 ## 5    M    156   98   29 40.27       Alto-Baja  Obesidad
 ## 6    M    165  107   49 39.30      Alto-Media  Obesidad</code></pre>
+<ul>
+<li><code>distinct()</code>: para ver cuántos niveles tenemos en una
+variable</li>
+</ul>
+<pre class="r"><code>distinct(medidas, Comp_corp)</code></pre>
+<pre><code>##   Comp_corp
+## 1    Normal
+## 2  Obesidad
+## 3  Superior
+## 4  Inferior</code></pre>
 <ul>
 <li><code>rename()</code>: cambiar nombre de columnas</li>
 </ul>
@@ -986,7 +1038,7 @@ medias</code></pre>
 <code>format()</code> para cambiar el separador de decimales</li>
 <li>de punto a coma</li>
 </ul>
-<pre class="r"><code>decimalescoma &lt;- mutate_at(penguins, vars(bill_length_mm, bill_depth_mm), funs(format(.,nsmall=2,decimal.mark=&quot;,&quot;)))</code></pre>
+<pre class="r"><code>decimalescoma &lt;- mutate_at(penguins, vars(bill_length_mm, bill_depth_mm), funs(format(., nsmall=2, decimal.mark=&quot;,&quot;)))</code></pre>
 <pre><code>## Warning: `funs()` was deprecated in dplyr 0.8.0.
 ## ℹ Please use a list of either functions or lambdas:
 ## 
@@ -1009,7 +1061,7 @@ medias</code></pre>
 <ul>
 <li>de coma a punto</li>
 </ul>
-<pre class="r"><code>decimalespunto &lt;- mutate_at(penguins, vars(bill_length_mm, bill_depth_mm), funs(format(.,nsmall=2,decimal.mark=&quot;.&quot;)))
+<pre class="r"><code>decimalespunto &lt;- mutate_at(penguins, vars(bill_length_mm, bill_depth_mm), funs(format(., nsmall=2, decimal.mark=&quot;.&quot;)))
 head(decimalespunto)</code></pre>
 <pre><code>## # A tibble: 6 × 8
 ##   species island    bill_length_mm bill_depth_mm flipper_l…¹ body_…² sex    year
@@ -1065,32 +1117,27 @@ separador de decimales</li>
 ## #   ²​body_mass_g</code></pre>
 <pre class="r"><code>pin &lt;- penguins |&gt;
   drop_na()
-pin</code></pre>
-<pre><code>## # A tibble: 333 × 8
-##    species island    bill_length_mm bill_depth_mm flipper_…¹ body_…² sex    year
-##    &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;      &lt;int&gt;   &lt;int&gt; &lt;fct&gt; &lt;int&gt;
-##  1 Adelie  Torgersen           39.1          18.7        181    3750 male   2007
-##  2 Adelie  Torgersen           39.5          17.4        186    3800 fema…  2007
-##  3 Adelie  Torgersen           40.3          18          195    3250 fema…  2007
-##  4 Adelie  Torgersen           36.7          19.3        193    3450 fema…  2007
-##  5 Adelie  Torgersen           39.3          20.6        190    3650 male   2007
-##  6 Adelie  Torgersen           38.9          17.8        181    3625 fema…  2007
-##  7 Adelie  Torgersen           39.2          19.6        195    4675 male   2007
-##  8 Adelie  Torgersen           41.1          17.6        182    3200 fema…  2007
-##  9 Adelie  Torgersen           38.6          21.2        191    3800 male   2007
-## 10 Adelie  Torgersen           34.6          21.1        198    4400 male   2007
-## # … with 323 more rows, and abbreviated variable names ¹​flipper_length_mm,
-## #   ²​body_mass_g</code></pre>
-<ul>
-<li><code>spread()</code>:</li>
-</ul>
-<pre class="r"><code>#expandir &lt;- spread(pin, key = &quot;species&quot;, value = &quot;flipper_length_mm&quot;)
-#expandir</code></pre>
-<ul>
-<li><code>gather()</code>:</li>
-</ul>
-<pre class="r"><code>#reunir &lt;- gather(expandir, key = &quot;species&quot;, value = &quot;flipper_length_mm&quot;, -island, -bill_length_mm, -bill_depth_mm, -body_mass_g, -sex, -year)
-#reunir</code></pre>
+head(pin)</code></pre>
+<pre><code>## # A tibble: 6 × 8
+##   species island    bill_length_mm bill_depth_mm flipper_l…¹ body_…² sex    year
+##   &lt;fct&gt;   &lt;fct&gt;              &lt;dbl&gt;         &lt;dbl&gt;       &lt;int&gt;   &lt;int&gt; &lt;fct&gt; &lt;int&gt;
+## 1 Adelie  Torgersen           39.1          18.7         181    3750 male   2007
+## 2 Adelie  Torgersen           39.5          17.4         186    3800 fema…  2007
+## 3 Adelie  Torgersen           40.3          18           195    3250 fema…  2007
+## 4 Adelie  Torgersen           36.7          19.3         193    3450 fema…  2007
+## 5 Adelie  Torgersen           39.3          20.6         190    3650 male   2007
+## 6 Adelie  Torgersen           38.9          17.8         181    3625 fema…  2007
+## # … with abbreviated variable names ¹​flipper_length_mm, ²​body_mass_g</code></pre>
+<pre class="r"><code>medias &lt;- pin |&gt;
+  group_by(species) |&gt;
+  summarise(masa_corporal = mean(body_mass_g), largo_pico = mean(bill_length_mm), alto_pico = mean(bill_depth_mm), largo_aleta = mean(flipper_length_mm))
+medias</code></pre>
+<pre><code>## # A tibble: 3 × 5
+##   species   masa_corporal largo_pico alto_pico largo_aleta
+##   &lt;fct&gt;             &lt;dbl&gt;      &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;
+## 1 Adelie            3706.       38.8      18.3        190.
+## 2 Chinstrap         3733.       48.8      18.4        196.
+## 3 Gentoo            5092.       47.6      15.0        217.</code></pre>
 <ul>
 <li><code>unite()</code>: unión de dos o más columnas en una sola</li>
 </ul>
@@ -1122,355 +1169,94 @@ head(separar)</code></pre>
 ## 6 Adelie  Torgersen           38.9          17.8         181    3625 fema…  2007
 ## # … with abbreviated variable names ¹​flipper_length_mm, ²​body_mass_g</code></pre>
 <ul>
-<li><code>pivot_wider()</code>:</li>
+<li><code>pivot_wider()</code>: modificar una tabla en formato
+ancho</li>
 </ul>
-<pre class="r"><code>fish_encounters</code></pre>
-<pre><code>## # A tibble: 114 × 3
-##    fish  station  seen
-##    &lt;fct&gt; &lt;fct&gt;   &lt;int&gt;
-##  1 4842  Release     1
-##  2 4842  I80_1       1
-##  3 4842  Lisbon      1
-##  4 4842  Rstr        1
-##  5 4842  Base_TD     1
-##  6 4842  BCE         1
-##  7 4842  BCW         1
-##  8 4842  BCE2        1
-##  9 4842  BCW2        1
-## 10 4842  MAE         1
-## # … with 104 more rows</code></pre>
-<pre class="r"><code>pivot_wider(fish_encounters, names_from = station, values_from = seen, values_fill = 0 )</code></pre>
-<pre><code>## # A tibble: 19 × 12
-##    fish  Release I80_1 Lisbon  Rstr Base_TD   BCE   BCW  BCE2  BCW2   MAE   MAW
-##    &lt;fct&gt;   &lt;int&gt; &lt;int&gt;  &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt;
-##  1 4842        1     1      1     1       1     1     1     1     1     1     1
-##  2 4843        1     1      1     1       1     1     1     1     1     1     1
-##  3 4844        1     1      1     1       1     1     1     1     1     1     1
-##  4 4845        1     1      1     1       1     0     0     0     0     0     0
-##  5 4847        1     1      1     0       0     0     0     0     0     0     0
-##  6 4848        1     1      1     1       0     0     0     0     0     0     0
-##  7 4849        1     1      0     0       0     0     0     0     0     0     0
-##  8 4850        1     1      0     1       1     1     1     0     0     0     0
-##  9 4851        1     1      0     0       0     0     0     0     0     0     0
-## 10 4854        1     1      0     0       0     0     0     0     0     0     0
-## 11 4855        1     1      1     1       1     0     0     0     0     0     0
-## 12 4857        1     1      1     1       1     1     1     1     1     0     0
-## 13 4858        1     1      1     1       1     1     1     1     1     1     1
-## 14 4859        1     1      1     1       1     0     0     0     0     0     0
-## 15 4861        1     1      1     1       1     1     1     1     1     1     1
-## 16 4862        1     1      1     1       1     1     1     1     1     0     0
-## 17 4863        1     1      0     0       0     0     0     0     0     0     0
-## 18 4864        1     1      0     0       0     0     0     0     0     0     0
-## 19 4865        1     1      1     0       0     0     0     0     0     0     0</code></pre>
-<pre class="r"><code>us_rent_income</code></pre>
-<pre><code>## # A tibble: 104 × 5
-##    GEOID NAME       variable estimate   moe
-##    &lt;chr&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;
-##  1 01    Alabama    income      24476   136
-##  2 01    Alabama    rent          747     3
-##  3 02    Alaska     income      32940   508
-##  4 02    Alaska     rent         1200    13
-##  5 04    Arizona    income      27517   148
-##  6 04    Arizona    rent          972     4
-##  7 05    Arkansas   income      23789   165
-##  8 05    Arkansas   rent          709     5
-##  9 06    California income      29454   109
-## 10 06    California rent         1358     3
-## # … with 94 more rows</code></pre>
-<pre class="r"><code>us_rent_income %&gt;%
-  pivot_wider(
-    names_from = variable,
-    values_from = c(estimate, moe)
-  )</code></pre>
-<pre><code>## # A tibble: 52 × 6
-##    GEOID NAME                 estimate_income estimate_rent moe_income moe_rent
-##    &lt;chr&gt; &lt;chr&gt;                          &lt;dbl&gt;         &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt;
-##  1 01    Alabama                        24476           747        136        3
-##  2 02    Alaska                         32940          1200        508       13
-##  3 04    Arizona                        27517           972        148        4
-##  4 05    Arkansas                       23789           709        165        5
-##  5 06    California                     29454          1358        109        3
-##  6 08    Colorado                       32401          1125        109        5
-##  7 09    Connecticut                    35326          1123        195        5
-##  8 10    Delaware                       31560          1076        247       10
-##  9 11    District of Columbia           43198          1424        681       17
-## 10 12    Florida                        25952          1077         70        3
-## # … with 42 more rows</code></pre>
-<pre class="r"><code>us_rent_income %&gt;%
-  pivot_wider(
-    names_from = variable,
-    values_from = c(estimate, moe),
-    names_vary = &quot;slowest&quot;
-  )</code></pre>
-<pre><code>## # A tibble: 52 × 6
-##    GEOID NAME                 estimate_income moe_income estimate_rent moe_rent
-##    &lt;chr&gt; &lt;chr&gt;                          &lt;dbl&gt;      &lt;dbl&gt;         &lt;dbl&gt;    &lt;dbl&gt;
-##  1 01    Alabama                        24476        136           747        3
-##  2 02    Alaska                         32940        508          1200       13
-##  3 04    Arizona                        27517        148           972        4
-##  4 05    Arkansas                       23789        165           709        5
-##  5 06    California                     29454        109          1358        3
-##  6 08    Colorado                       32401        109          1125        5
-##  7 09    Connecticut                    35326        195          1123        5
-##  8 10    Delaware                       31560        247          1076       10
-##  9 11    District of Columbia           43198        681          1424       17
-## 10 12    Florida                        25952         70          1077        3
-## # … with 42 more rows</code></pre>
-<pre class="r"><code>us_rent_income %&gt;%
-  pivot_wider(
-    names_from = variable,
-    names_sep = &quot;.&quot;,
-    values_from = c(estimate, moe)
-  )</code></pre>
-<pre><code>## # A tibble: 52 × 6
-##    GEOID NAME                 estimate.income estimate.rent moe.income moe.rent
-##    &lt;chr&gt; &lt;chr&gt;                          &lt;dbl&gt;         &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt;
-##  1 01    Alabama                        24476           747        136        3
-##  2 02    Alaska                         32940          1200        508       13
-##  3 04    Arizona                        27517           972        148        4
-##  4 05    Arkansas                       23789           709        165        5
-##  5 06    California                     29454          1358        109        3
-##  6 08    Colorado                       32401          1125        109        5
-##  7 09    Connecticut                    35326          1123        195        5
-##  8 10    Delaware                       31560          1076        247       10
-##  9 11    District of Columbia           43198          1424        681       17
-## 10 12    Florida                        25952          1077         70        3
-## # … with 42 more rows</code></pre>
-<pre class="r"><code>us_rent_income %&gt;%
-  pivot_wider(
-    names_from = variable,
-    names_glue = &quot;{variable}_{.value}&quot;,
-    values_from = c(estimate, moe)
-  )</code></pre>
-<pre><code>## # A tibble: 52 × 6
-##    GEOID NAME                 income_estimate rent_estimate income_moe rent_moe
-##    &lt;chr&gt; &lt;chr&gt;                          &lt;dbl&gt;         &lt;dbl&gt;      &lt;dbl&gt;    &lt;dbl&gt;
-##  1 01    Alabama                        24476           747        136        3
-##  2 02    Alaska                         32940          1200        508       13
-##  3 04    Arizona                        27517           972        148        4
-##  4 05    Arkansas                       23789           709        165        5
-##  5 06    California                     29454          1358        109        3
-##  6 08    Colorado                       32401          1125        109        5
-##  7 09    Connecticut                    35326          1123        195        5
-##  8 10    Delaware                       31560          1076        247       10
-##  9 11    District of Columbia           43198          1424        681       17
-## 10 12    Florida                        25952          1077         70        3
-## # … with 42 more rows</code></pre>
-<pre class="r"><code>warpbreaks &lt;- as_tibble(warpbreaks[c(&quot;wool&quot;, &quot;tension&quot;, &quot;breaks&quot;)])
-warpbreaks</code></pre>
-<pre><code>## # A tibble: 54 × 3
-##    wool  tension breaks
-##    &lt;fct&gt; &lt;fct&gt;    &lt;dbl&gt;
-##  1 A     L           26
-##  2 A     L           30
-##  3 A     L           54
-##  4 A     L           25
-##  5 A     L           70
-##  6 A     L           52
-##  7 A     L           51
-##  8 A     L           26
-##  9 A     L           67
-## 10 A     M           18
-## # … with 44 more rows</code></pre>
-<pre class="r"><code>warpbreaks %&gt;%
-  pivot_wider(
-    names_from = wool,
-    values_from = breaks,
-    values_fn = mean
-  )</code></pre>
-<pre><code>## # A tibble: 3 × 3
-##   tension     A     B
-##   &lt;fct&gt;   &lt;dbl&gt; &lt;dbl&gt;
-## 1 L        44.6  28.2
-## 2 M        24    28.8
-## 3 H        24.6  18.8</code></pre>
-<pre class="r"><code>warpbreaks$breaks[1] &lt;- NA
-warpbreaks %&gt;%
-  pivot_wider(
-    names_from = wool,
-    values_from = breaks,
-    values_fn = ~mean(.x, na.rm = TRUE)
-  )</code></pre>
-<pre><code>## # A tibble: 3 × 3
-##   tension     A     B
-##   &lt;fct&gt;   &lt;dbl&gt; &lt;dbl&gt;
-## 1 L        46.9  28.2
-## 2 M        24    28.8
-## 3 H        24.6  18.8</code></pre>
+<pre class="r"><code>ancho &lt;- pivot_wider(medidas, names_from = Comp_corp, values_from = IMC)
+ancho</code></pre>
+<pre><code>## # A tibble: 100 × 9
+##    sexo  altura  peso  edad grupo           Normal Obesidad Superior Inferior
+##    &lt;chr&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;            &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+##  1 M        170    71    47 Medio-Media       24.6     NA       NA         NA
+##  2 M        162    79    36 Medio-Media       NA       30.1     NA         NA
+##  3 M        149    86    43 Medio Alto-Baja   NA       38.7     NA         NA
+##  4 M        181    97    23 Alto-Alta         NA       NA       29.6       NA
+##  5 M        156    98    29 Alto-Baja         NA       40.3     NA         NA
+##  6 M        165   107    49 Alto-Media        NA       39.3     NA         NA
+##  7 M        172    74    50 Medio-Media       NA       NA       25.0       NA
+##  8 M        160    89    19 Medio Alto-Baja   NA       34.8     NA         NA
+##  9 M        190   109    28 Alto-Alta         NA       30.2     NA         NA
+## 10 M        180    89    18 Medio Alto-Alta   NA       NA       27.5       NA
+## # … with 90 more rows</code></pre>
+<pre class="r"><code>ancho2 &lt;- pivot_wider(experimento, names_from = Tratamiento, values_from = Conteo)
+ancho2</code></pre>
+<pre><code>## # A tibble: 20 × 5
+##    Repeticion Semana   `1`   `2`   `3`
+##    &lt;chr&gt;      &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 1          1          0     0     0
+##  2 1          2          1     2     0
+##  3 1          3          2     4     1
+##  4 1          4          2     6     2
+##  5 2          1          0     0     0
+##  6 2          2          0     1     0
+##  7 2          3          1     4     0
+##  8 2          4          2     5     1
+##  9 3          1          1     1     0
+## 10 3          2          1     3     1
+## 11 3          3          2     5     2
+## 12 3          4          3     6     2
+## 13 4          1          0     0     0
+## 14 4          2          1     1     0
+## 15 4          3          1     2     1
+## 16 4          4          1     2     1
+## 17 5          1          0     1     0
+## 18 5          2          1     2     0
+## 19 5          3          2     5     1
+## 20 5          4          4     6     2</code></pre>
 <ul>
-<li><code>pivot_longer()</code>:</li>
+<li><code>pivot_longer()</code>: modificar una tabla a formato largo
+(“tidy”)</li>
 </ul>
-<pre class="r"><code>relig_income</code></pre>
-<pre><code>## # A tibble: 18 × 11
-##    religion      `&lt;$10k` $10-2…¹ $20-3…² $30-4…³ $40-5…⁴ $50-7…⁵ $75-1…⁶ $100-…⁷
-##    &lt;chr&gt;           &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
-##  1 Agnostic           27      34      60      81      76     137     122     109
-##  2 Atheist            12      27      37      52      35      70      73      59
-##  3 Buddhist           27      21      30      34      33      58      62      39
-##  4 Catholic          418     617     732     670     638    1116     949     792
-##  5 Don’t know/r…      15      14      15      11      10      35      21      17
-##  6 Evangelical …     575     869    1064     982     881    1486     949     723
-##  7 Hindu               1       9       7       9      11      34      47      48
-##  8 Historically…     228     244     236     238     197     223     131      81
-##  9 Jehovah&#39;s Wi…      20      27      24      24      21      30      15      11
-## 10 Jewish             19      19      25      25      30      95      69      87
-## 11 Mainline Prot     289     495     619     655     651    1107     939     753
-## 12 Mormon             29      40      48      51      56     112      85      49
-## 13 Muslim              6       7       9      10       9      23      16       8
-## 14 Orthodox           13      17      23      32      32      47      38      42
-## 15 Other Christ…       9       7      11      13      13      14      18      14
-## 16 Other Faiths       20      33      40      46      49      63      46      40
-## 17 Other World …       5       2       3       4       2       7       3       4
-## 18 Unaffiliated      217     299     374     365     341     528     407     321
-## # … with 2 more variables: `&gt;150k` &lt;dbl&gt;, `Don&#39;t know/refused` &lt;dbl&gt;, and
-## #   abbreviated variable names ¹​`$10-20k`, ²​`$20-30k`, ³​`$30-40k`, ⁴​`$40-50k`,
-## #   ⁵​`$50-75k`, ⁶​`$75-100k`, ⁷​`$100-150k`</code></pre>
-<pre class="r"><code>relig_income %&gt;%
-  pivot_longer(!religion, names_to = &quot;income&quot;, values_to = &quot;count&quot;)</code></pre>
-<pre><code>## # A tibble: 180 × 3
-##    religion income             count
-##    &lt;chr&gt;    &lt;chr&gt;              &lt;dbl&gt;
-##  1 Agnostic &lt;$10k                 27
-##  2 Agnostic $10-20k               34
-##  3 Agnostic $20-30k               60
-##  4 Agnostic $30-40k               81
-##  5 Agnostic $40-50k               76
-##  6 Agnostic $50-75k              137
-##  7 Agnostic $75-100k             122
-##  8 Agnostic $100-150k            109
-##  9 Agnostic &gt;150k                 84
-## 10 Agnostic Don&#39;t know/refused    96
-## # … with 170 more rows</code></pre>
-<pre class="r"><code>billboard</code></pre>
-<pre><code>## # A tibble: 317 × 79
-##    artist track date.ent…¹   wk1   wk2   wk3   wk4   wk5   wk6   wk7   wk8   wk9
-##    &lt;chr&gt;  &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-##  1 2 Pac  Baby… 2000-02-26    87    82    72    77    87    94    99    NA    NA
-##  2 2Ge+h… The … 2000-09-02    91    87    92    NA    NA    NA    NA    NA    NA
-##  3 3 Doo… Kryp… 2000-04-08    81    70    68    67    66    57    54    53    51
-##  4 3 Doo… Loser 2000-10-21    76    76    72    69    67    65    55    59    62
-##  5 504 B… Wobb… 2000-04-15    57    34    25    17    17    31    36    49    53
-##  6 98^0   Give… 2000-08-19    51    39    34    26    26    19     2     2     3
-##  7 A*Tee… Danc… 2000-07-08    97    97    96    95   100    NA    NA    NA    NA
-##  8 Aaliy… I Do… 2000-01-29    84    62    51    41    38    35    35    38    38
-##  9 Aaliy… Try … 2000-03-18    59    53    38    28    21    18    16    14    12
-## 10 Adams… Open… 2000-08-26    76    76    74    69    68    67    61    58    57
-## # … with 307 more rows, 67 more variables: wk10 &lt;dbl&gt;, wk11 &lt;dbl&gt;, wk12 &lt;dbl&gt;,
-## #   wk13 &lt;dbl&gt;, wk14 &lt;dbl&gt;, wk15 &lt;dbl&gt;, wk16 &lt;dbl&gt;, wk17 &lt;dbl&gt;, wk18 &lt;dbl&gt;,
-## #   wk19 &lt;dbl&gt;, wk20 &lt;dbl&gt;, wk21 &lt;dbl&gt;, wk22 &lt;dbl&gt;, wk23 &lt;dbl&gt;, wk24 &lt;dbl&gt;,
-## #   wk25 &lt;dbl&gt;, wk26 &lt;dbl&gt;, wk27 &lt;dbl&gt;, wk28 &lt;dbl&gt;, wk29 &lt;dbl&gt;, wk30 &lt;dbl&gt;,
-## #   wk31 &lt;dbl&gt;, wk32 &lt;dbl&gt;, wk33 &lt;dbl&gt;, wk34 &lt;dbl&gt;, wk35 &lt;dbl&gt;, wk36 &lt;dbl&gt;,
-## #   wk37 &lt;dbl&gt;, wk38 &lt;dbl&gt;, wk39 &lt;dbl&gt;, wk40 &lt;dbl&gt;, wk41 &lt;dbl&gt;, wk42 &lt;dbl&gt;,
-## #   wk43 &lt;dbl&gt;, wk44 &lt;dbl&gt;, wk45 &lt;dbl&gt;, wk46 &lt;dbl&gt;, wk47 &lt;dbl&gt;, wk48 &lt;dbl&gt;, …</code></pre>
-<pre class="r"><code>billboard %&gt;%
-  pivot_longer(
-    cols = starts_with(&quot;wk&quot;),
-    names_to = &quot;week&quot;,
-    names_prefix = &quot;wk&quot;,
-    values_to = &quot;rank&quot;,
-    values_drop_na = TRUE
-  )</code></pre>
-<pre><code>## # A tibble: 5,307 × 5
-##    artist  track                   date.entered week   rank
-##    &lt;chr&gt;   &lt;chr&gt;                   &lt;date&gt;       &lt;chr&gt; &lt;dbl&gt;
-##  1 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   1        87
-##  2 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   2        82
-##  3 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   3        72
-##  4 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   4        77
-##  5 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   5        87
-##  6 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   6        94
-##  7 2 Pac   Baby Don&#39;t Cry (Keep... 2000-02-26   7        99
-##  8 2Ge+her The Hardest Part Of ... 2000-09-02   1        91
-##  9 2Ge+her The Hardest Part Of ... 2000-09-02   2        87
-## 10 2Ge+her The Hardest Part Of ... 2000-09-02   3        92
-## # … with 5,297 more rows</code></pre>
-<pre class="r"><code>who</code></pre>
-<pre><code>## # A tibble: 7,240 × 60
-##    country     iso2  iso3   year new_s…¹ new_s…² new_s…³ new_s…⁴ new_s…⁵ new_s…⁶
-##    &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt; &lt;int&gt;   &lt;int&gt;   &lt;int&gt;   &lt;int&gt;   &lt;int&gt;   &lt;int&gt;   &lt;int&gt;
-##  1 Afghanistan AF    AFG    1980      NA      NA      NA      NA      NA      NA
-##  2 Afghanistan AF    AFG    1981      NA      NA      NA      NA      NA      NA
-##  3 Afghanistan AF    AFG    1982      NA      NA      NA      NA      NA      NA
-##  4 Afghanistan AF    AFG    1983      NA      NA      NA      NA      NA      NA
-##  5 Afghanistan AF    AFG    1984      NA      NA      NA      NA      NA      NA
-##  6 Afghanistan AF    AFG    1985      NA      NA      NA      NA      NA      NA
-##  7 Afghanistan AF    AFG    1986      NA      NA      NA      NA      NA      NA
-##  8 Afghanistan AF    AFG    1987      NA      NA      NA      NA      NA      NA
-##  9 Afghanistan AF    AFG    1988      NA      NA      NA      NA      NA      NA
-## 10 Afghanistan AF    AFG    1989      NA      NA      NA      NA      NA      NA
-## # … with 7,230 more rows, 50 more variables: new_sp_m65 &lt;int&gt;,
-## #   new_sp_f014 &lt;int&gt;, new_sp_f1524 &lt;int&gt;, new_sp_f2534 &lt;int&gt;,
-## #   new_sp_f3544 &lt;int&gt;, new_sp_f4554 &lt;int&gt;, new_sp_f5564 &lt;int&gt;,
-## #   new_sp_f65 &lt;int&gt;, new_sn_m014 &lt;int&gt;, new_sn_m1524 &lt;int&gt;,
-## #   new_sn_m2534 &lt;int&gt;, new_sn_m3544 &lt;int&gt;, new_sn_m4554 &lt;int&gt;,
-## #   new_sn_m5564 &lt;int&gt;, new_sn_m65 &lt;int&gt;, new_sn_f014 &lt;int&gt;,
-## #   new_sn_f1524 &lt;int&gt;, new_sn_f2534 &lt;int&gt;, new_sn_f3544 &lt;int&gt;, …</code></pre>
-<pre class="r"><code>who %&gt;% pivot_longer(
-  cols = new_sp_m014:newrel_f65,
-  names_to = c(&quot;diagnosis&quot;, &quot;gender&quot;, &quot;age&quot;),
-  names_pattern = &quot;new_?(.*)_(.)(.*)&quot;,
-  values_to = &quot;count&quot;
-)</code></pre>
-<pre><code>## # A tibble: 405,440 × 8
-##    country     iso2  iso3   year diagnosis gender age   count
-##    &lt;chr&gt;       &lt;chr&gt; &lt;chr&gt; &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt; &lt;int&gt;
-##  1 Afghanistan AF    AFG    1980 sp        m      014      NA
-##  2 Afghanistan AF    AFG    1980 sp        m      1524     NA
-##  3 Afghanistan AF    AFG    1980 sp        m      2534     NA
-##  4 Afghanistan AF    AFG    1980 sp        m      3544     NA
-##  5 Afghanistan AF    AFG    1980 sp        m      4554     NA
-##  6 Afghanistan AF    AFG    1980 sp        m      5564     NA
-##  7 Afghanistan AF    AFG    1980 sp        m      65       NA
-##  8 Afghanistan AF    AFG    1980 sp        f      014      NA
-##  9 Afghanistan AF    AFG    1980 sp        f      1524     NA
-## 10 Afghanistan AF    AFG    1980 sp        f      2534     NA
-## # … with 405,430 more rows</code></pre>
-<pre class="r"><code>anscombe</code></pre>
-<pre><code>##    x1 x2 x3 x4    y1   y2    y3    y4
-## 1  10 10 10  8  8.04 9.14  7.46  6.58
-## 2   8  8  8  8  6.95 8.14  6.77  5.76
-## 3  13 13 13  8  7.58 8.74 12.74  7.71
-## 4   9  9  9  8  8.81 8.77  7.11  8.84
-## 5  11 11 11  8  8.33 9.26  7.81  8.47
-## 6  14 14 14  8  9.96 8.10  8.84  7.04
-## 7   6  6  6  8  7.24 6.13  6.08  5.25
-## 8   4  4  4 19  4.26 3.10  5.39 12.50
-## 9  12 12 12  8 10.84 9.13  8.15  5.56
-## 10  7  7  7  8  4.82 7.26  6.42  7.91
-## 11  5  5  5  8  5.68 4.74  5.73  6.89</code></pre>
-<pre class="r"><code>anscombe %&gt;%
-  pivot_longer(
-    everything(),
-    names_to = c(&quot;.value&quot;, &quot;set&quot;),
-    names_pattern = &quot;(.)(.)&quot;
-  )</code></pre>
-<pre><code>## # A tibble: 44 × 3
-##    set       x     y
-##    &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;
-##  1 1        10  8.04
-##  2 2        10  9.14
-##  3 3        10  7.46
-##  4 4         8  6.58
-##  5 1         8  6.95
-##  6 2         8  8.14
-##  7 3         8  6.77
-##  8 4         8  5.76
-##  9 1        13  7.58
-## 10 2        13  8.74
-## # … with 34 more rows</code></pre>
-</div>
-<div id="manejo-de-fechas-con-el-paquete-lubridate" class="section level4">
-<h4>Manejo de fechas con el paquete <code>lubridate</code></h4>
-<ul>
-<li><code>as_date()</code>:</li>
-</ul>
+<pre class="r"><code>tidy &lt;- pivot_longer(ancho, cols = Normal: Inferior, names_to = &quot;Comp_corp&quot;, values_to = &quot;IMC&quot;, values_drop_na = TRUE)
+tidy</code></pre>
+<pre><code>## # A tibble: 100 × 7
+##    sexo  altura  peso  edad grupo           Comp_corp   IMC
+##    &lt;chr&gt;  &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;           &lt;chr&gt;     &lt;dbl&gt;
+##  1 M        170    71    47 Medio-Media     Normal     24.6
+##  2 M        162    79    36 Medio-Media     Obesidad   30.1
+##  3 M        149    86    43 Medio Alto-Baja Obesidad   38.7
+##  4 M        181    97    23 Alto-Alta       Superior   29.6
+##  5 M        156    98    29 Alto-Baja       Obesidad   40.3
+##  6 M        165   107    49 Alto-Media      Obesidad   39.3
+##  7 M        172    74    50 Medio-Media     Superior   25.0
+##  8 M        160    89    19 Medio Alto-Baja Obesidad   34.8
+##  9 M        190   109    28 Alto-Alta       Obesidad   30.2
+## 10 M        180    89    18 Medio Alto-Alta Superior   27.5
+## # … with 90 more rows</code></pre>
+<pre class="r"><code>tidy2 &lt;- pivot_longer(ancho2, cols = c(&quot;1&quot;, &quot;2&quot;, &quot;3&quot;), names_to = &quot;Tratamiento&quot;, values_to = &quot;Conteo&quot;)
+tidy2</code></pre>
+<pre><code>## # A tibble: 60 × 4
+##    Repeticion Semana Tratamiento Conteo
+##    &lt;chr&gt;      &lt;chr&gt;  &lt;chr&gt;        &lt;dbl&gt;
+##  1 1          1      1                0
+##  2 1          1      2                0
+##  3 1          1      3                0
+##  4 1          2      1                1
+##  5 1          2      2                2
+##  6 1          2      3                0
+##  7 1          3      1                2
+##  8 1          3      2                4
+##  9 1          3      3                1
+## 10 1          4      1                2
+## # … with 50 more rows</code></pre>
 </div>
 <div id="creación-y-modificación-de-cuadros-con-el-paquete-kableextra" class="section level4">
 <h4>Creación y modificación de cuadros con el paquete
 <code>kableExtra</code></h4>
-<pre class="r"><code>cuadro &lt;- kable_styling(kable(medias, digits = 2), &quot;striped&quot;, full_width = FALSE, position = &quot;center&quot;, font_size = 12)
+<pre class="r"><code>cuadro &lt;- kable(medias, digits = 2) |&gt;
+  kable_styling(&quot;bordered&quot;, full_width = FALSE, position = &quot;center&quot;, font_size = 16)
 cuadro</code></pre>
-<table class="table table-striped" style="font-size: 12px; width: auto !important; margin-left: auto; margin-right: auto;">
+<table class="table table-bordered" style="font-size: 16px; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -1478,6 +1264,15 @@ species
 </th>
 <th style="text-align:right;">
 masa_corporal
+</th>
+<th style="text-align:right;">
+largo_pico
+</th>
+<th style="text-align:right;">
+alto_pico
+</th>
+<th style="text-align:right;">
+largo_aleta
 </th>
 </tr>
 </thead>
@@ -1487,7 +1282,16 @@ masa_corporal
 Adelie
 </td>
 <td style="text-align:right;">
-3700.66
+3706.16
+</td>
+<td style="text-align:right;">
+38.82
+</td>
+<td style="text-align:right;">
+18.35
+</td>
+<td style="text-align:right;">
+190.10
 </td>
 </tr>
 <tr>
@@ -1497,13 +1301,31 @@ Chinstrap
 <td style="text-align:right;">
 3733.09
 </td>
+<td style="text-align:right;">
+48.83
+</td>
+<td style="text-align:right;">
+18.42
+</td>
+<td style="text-align:right;">
+195.82
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
 Gentoo
 </td>
 <td style="text-align:right;">
-5076.02
+5092.44
+</td>
+<td style="text-align:right;">
+47.57
+</td>
+<td style="text-align:right;">
+15.00
+</td>
+<td style="text-align:right;">
+217.24
 </td>
 </tr>
 </tbody>
