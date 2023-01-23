@@ -25,6 +25,7 @@ library(parameters)
 library(performance)
 library(AICcmodavg)
 library(bbmle)
+library(glmulti)
 library(sjPlot)
 library(estimatr)
 library(modelbased)
@@ -250,6 +251,20 @@ AICtab(m1, m2, m3, m4, m5, m6, m7, m8, m0, base = TRUE, delta = TRUE, sort = TRU
 
 No podemos dejar de lado los modelos que tienen un rendimiento similar, en este caso, el modelo 8 (interacción entre especies y masa corporal) también presenta un valor de AIC bajo y un delta de 0.5 comparado con el modelo 6. Se pueden tomar en cuenta los modelos que tengan un delta hasta de 2 respecto al "mejor" modelo.
 
+
+```{r, include=FALSE}
+busqueda_modelos <- glmulti(m6, level = 2, crit = "aic")
+```
+
+```{r, include=FALSE}
+weightable(busqueda_modelos)
+```
+
+```{r, include=FALSE}
+plot(busqueda_modelos, type = "s")
+```
+
+
 ```{r}
 summary(m6)
 ```
@@ -310,10 +325,15 @@ plot(cnm6)
 ```
 
 ```{r}
-chm6 <- check_heteroscedasticity(m5)
+chm6 <- check_heteroscedasticity(m6)
 chm6
 plot(chm6)
 ```
+
+```{r}
+m6r <- lm_robust(bill_length_mm ~ body_mass_kg + species, data = p)
+```
+
 
 <br>
 
@@ -322,7 +342,7 @@ plot(chm6)
 Podemos graficar el modelo con la función `plot_model()` del paquete `sjPlot` combinado con algunos argumentos de `ggplot2`.
 
 ```{r}
-plot_model(m6, type = "pred",
+plot_model(m6r, type = "pred",
            show.data = T, 
            title = "Largo del pico en relación a la masa corporal de los pingüinos",
            axis.title = c("Masa corporal (kg)", "Largo del pico (mm)"),
@@ -335,7 +355,7 @@ plot_model(m6, type = "pred",
 Y también podemos generar el gráfico utilizando el resultado de la función `ggpredict()` del paquete `ggeffects` como entrada para los argumentos de `ggplot2`.
 
 ```{r}
-g <- ggpredict(m6, terms = c("body_mass_kg","species"))
+g <- ggpredict(m6r, terms = c("body_mass_kg","species"))
 g
 ```
 
@@ -350,11 +370,7 @@ ggplot(g, aes(x, predicted)) +
   labs(linetype= "Especie", color = "Especie", fill = "Especie")
 ```
 
-#### Bonus
-
-Si la interpretación del modelo te resulta complicada, el paquete `report` genera un reporte con la interpretación del modelo mediante la función `report()`.
-
-```{r}
+```{r, include=FALSE}
 report(m6)
 ```
 

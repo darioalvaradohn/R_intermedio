@@ -1,7 +1,7 @@
 ---
 output:
-  word_document: default
   html_document: default
+  word_document: default
   pdf_document: default
 header-includes:
 - \usepackage{float}
@@ -22,8 +22,10 @@ knitr::opts_chunk$set(echo = TRUE)
 #### Paquetes
 
 ```{r, warning=FALSE, message=FALSE}
+library(rio)
 library(palmerpenguins)
 library(tidyverse)
+library(lubridate)
 library(kableExtra)
 ```
 
@@ -96,6 +98,50 @@ head(peso_kg)
 ```{r}
 pesos <- mutate(penguins, body_mass_kg = body_mass_g / 1000, body_mass_mg = body_mass_g * 1000, body_mass_lbs = body_mass_kg * 2.20462)
 head(pesos)
+```
+
+```{r}
+medidas <- import("C:/Users/dario/OneDrive/HN_Biology_Investigation/CURSOS/R_basico/docs/data/medidas_personas.csv")
+```
+
+```{r}
+summary(medidas)
+```
+
+```{r}
+medidas <- mutate(medidas, IMC = round((peso/(altura/100)^2), digits = 2))
+head(medidas)
+```
+
+```{r}
+medidas <- medidas |>
+  mutate(grupo = cut(medidas$peso, breaks = c(min(medidas$peso), 60, 70, 80, 90, max(medidas$peso)), 
+                     labels = c("Bajo", "Medio Bajo", "Medio", "Medio Alto", "Alto")))
+
+medidas
+```
+
+```{r}
+medidas <- medidas |> 
+  mutate(grupo = cut(medidas$peso, breaks = c(min(medidas$peso), 60, 70, 80, 90, max(medidas$peso)), 
+            labels = c("Bajo", "Medio Bajo", "Medio", "Medio Alto", "Alto"))) |>
+  mutate(grupo = paste0(grupo, '-', cut(medidas$altura, breaks = c(min(medidas$altura), 160, 175, max(medidas$altura)),                                 labels = c("Baja", "Media", "Alta"))))
+
+head(medidas)
+```
+
+```{r}
+medidas <- medidas |> 
+  mutate(Comp_corp = cut(medidas$IMC, breaks = c(min(medidas$IMC), 18.5, 25, 30, max(medidas$IMC)), 
+            labels = c("Inferior", "Normal", "Superior", "Obesidad")))
+
+head(medidas)
+```
+
+- `distinct()`: para ver cuántos niveles tenemos en una variable
+
+```{r}
+distinct(medidas, Comp_corp)
 ```
 
 
@@ -202,144 +248,28 @@ head(separar)
 
 - `pivot_wider()`:
 
-```{r}
-fish_encounters
-```
-
-
-```{r}
-pivot_wider(fish_encounters, names_from = station, values_from = seen, values_fill = 0 )
-```
-
-```{r}
-us_rent_income
-```
-
-```{r}
-us_rent_income %>%
-  pivot_wider(
-    names_from = variable,
-    values_from = c(estimate, moe)
-  )
-```
-
-```{r}
-us_rent_income %>%
-  pivot_wider(
-    names_from = variable,
-    values_from = c(estimate, moe),
-    names_vary = "slowest"
-  )
-```
-
-```{r}
-us_rent_income %>%
-  pivot_wider(
-    names_from = variable,
-    names_sep = ".",
-    values_from = c(estimate, moe)
-  )
-```
-
-```{r}
-us_rent_income %>%
-  pivot_wider(
-    names_from = variable,
-    names_glue = "{variable}_{.value}",
-    values_from = c(estimate, moe)
-  )
-```
-
-```{r}
-warpbreaks <- as_tibble(warpbreaks[c("wool", "tension", "breaks")])
-warpbreaks
-```
-
-```{r}
-warpbreaks %>%
-  pivot_wider(
-    names_from = wool,
-    values_from = breaks,
-    values_fn = mean
-  )
-```
-
-```{r}
-warpbreaks$breaks[1] <- NA
-warpbreaks %>%
-  pivot_wider(
-    names_from = wool,
-    values_from = breaks,
-    values_fn = ~mean(.x, na.rm = TRUE)
-  )
-```
 
 
 - `pivot_longer()`:
 
-```{r}
-relig_income
-```
-
-```{r}
-relig_income %>%
-  pivot_longer(!religion, names_to = "income", values_to = "count")
-```
-
-```{r}
-billboard
-```
-
-```{r}
-billboard %>%
-  pivot_longer(
-    cols = starts_with("wk"),
-    names_to = "week",
-    names_prefix = "wk",
-    values_to = "rank",
-    values_drop_na = TRUE
-  )
-```
-
-```{r}
-who
-```
-
-
-```{r}
-who %>% pivot_longer(
-  cols = new_sp_m014:newrel_f65,
-  names_to = c("diagnosis", "gender", "age"),
-  names_pattern = "new_?(.*)_(.)(.*)",
-  values_to = "count"
-)
-```
-
-```{r}
-anscombe
-```
-
-```{r}
-anscombe %>%
-  pivot_longer(
-    everything(),
-    names_to = c(".value", "set"),
-    names_pattern = "(.)(.)"
-  )
-```
 
 
 #### Manejo de fechas con el paquete `lubridate`
 
 - `as_date()`:
 
-
+```{r}
+pin <- pin |>
+  as_date(year)
+```
 
 
 #### Creación y modificación de cuadros con el paquete `kableExtra`
 
+
 ```{r}
-cuadro <- kable_styling(kable(medias, digits = 2), "striped", full_width = FALSE, position = "center", font_size = 12)
+cuadro <- kable(medias, digits = 2) |>
+  kable_styling("bordered", full_width = FALSE, position = "center", font_size = 16)
 cuadro
 ```
 
