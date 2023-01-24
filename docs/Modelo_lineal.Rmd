@@ -127,6 +127,26 @@ performance(m1)
 
 La masa corporal de los pingüinos explica el 34.5% de la variabilidad de la varianza del largo del pico. Y el error del modelo de la regresión de la masa corporal sobre el largo del pico de los pingüinos es de 4.41 mm.
 
+La fórmula del modelo para predecir un valor sería:
+
+$$
+Largo del pico = 27.1507 + 4.0033 * Masacorporal
+$$
+
+```{r}
+27.1507 + 4.0033 * 3
+```
+
+```{r}
+PredLargoPico <- function(Peso){
+  27.1507 + 4.0033 * Peso
+}
+```
+
+```{r}
+PredLargoPico(Peso = 3)
+```
+
 <br>
 
 #### Validacion del modelo (cumplimiento de supuestos)
