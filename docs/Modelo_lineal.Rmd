@@ -25,13 +25,11 @@ library(parameters)
 library(performance)
 library(AICcmodavg)
 library(bbmle)
-library(glmulti)
 library(sjPlot)
 library(estimatr)
 library(modelbased)
 library(emmeans)
 library(ggeffects)
-library(report)
 ```
 
 #### Datos
@@ -243,7 +241,7 @@ plot(cp)
 
 El mejor modelo o el modelo que mejor se ajusta a nuestros datos es el modelo 6. Este modelo tiene como variables predictoras la masa corporal y la especie de los pingüinos.
 
-Si tuviesemos un tamaño de muestra pequeño, podemos usar la función `AICtab()` del paquete `bbmle` y especificamos el argumento `base = TRUE` para que nos incluya el resultado de AICc que es un valor ajustado de AIC para tamaños de muestra pequeños.
+Si tuviesemos un tamaño de muestra pequeño, podemos usar la función `AICtab()` del paquete `bbmle` y especificamos el argumento `base = TRUE` para que nos incluya el resultado de AICc (solo si el tamaño de muestra es pequeño).
 
 ```{r}
 AICtab(m1, m2, m3, m4, m5, m6, m7, m8, m0, base = TRUE, delta = TRUE, sort = TRUE, weights = TRUE, nobs = 333)
