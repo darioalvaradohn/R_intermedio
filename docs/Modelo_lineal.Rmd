@@ -270,19 +270,6 @@ AICtab(m1, m2, m3, m4, m5, m6, m7, m8, m0, base = TRUE, delta = TRUE, sort = TRU
 No podemos dejar de lado los modelos que tienen un rendimiento similar, en este caso, el modelo 8 (interacción entre especies y masa corporal) también presenta un valor de AIC bajo y un delta de 0.5 comparado con el modelo 6. Se pueden tomar en cuenta los modelos que tengan un delta hasta de 2 respecto al "mejor" modelo.
 
 
-```{r, include=FALSE}
-busqueda_modelos <- glmulti(m6, level = 2, crit = "aic")
-```
-
-```{r, include=FALSE}
-weightable(busqueda_modelos)
-```
-
-```{r, include=FALSE}
-plot(busqueda_modelos, type = "s")
-```
-
-
 ```{r}
 summary(m6)
 ```
@@ -386,9 +373,5 @@ ggplot(g, aes(x, predicted)) +
   ylab("Largo del pico (mm)") +
   xlab("Masa corporal (kg)") +
   labs(linetype= "Especie", color = "Especie", fill = "Especie")
-```
-
-```{r, include=FALSE}
-report(m6)
 ```
 
