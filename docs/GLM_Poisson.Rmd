@@ -28,7 +28,7 @@ library(sjPlot)
 library(performance)
 library(parameters)
 library(bbmle)
-library(agridat) #data series with agricultural origin
+library(agridat)
 library(MASS)
 library(rio)
 library(knitr)
