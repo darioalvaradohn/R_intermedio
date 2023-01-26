@@ -22,3 +22,298 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Contenido{.tabset .tabset-pills}
 
 
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(sjPlot)
+library(performance)
+library(parameters)
+library(bbmle)
+library(agridat) #data series with agricultural origin
+library(MASS)
+library(rio)
+library(knitr)
+```
+
+# Para modelos influenciados por ceros
+
+```{r}
+data("beall.webworms")
+```
+
+```{r}
+worms <- beall.webworms
+head(worms)
+```
+
+_Hyphantria cunea_
+
+```{r}
+include_graphics("Webworm.jpg")
+```
+
+```{r}
+summary(worms)
+```
+
+```{r}
+ggplot(worms, aes(y)) +
+  geom_histogram()
+```
+
+La variable y (conteo de orugas) tiene una distribución discreta con distribución de poisson
+
+```{r}
+mean(worms$y)
+```
+
+```{r}
+mp_01 <- glm(y ~ spray, data = worms, family = poisson)
+```
+
+# Hay una transformación logarítmica interna en el modelo 
+
+```{r}
+summary(mp_01)
+```
+
+Los coeficientes del modelo con distribución de Poisson están en escala logarítmica
+
+Para interpretar el coeficiente tendriamos que exponenciarlo (antilogaritmo):
+
+```{r}
+exp(0.11881)
+```
+
+```{r}
+exp(-0.89869)
+```
+
+Por cuánto aumenta o disminuye la variable respuesta por un factor
+Aumento de suelo el mes que viene por un factor de 1 = no hay incremento
+por un factor de 1.5 = el aumento es de 50%
+por un factor de 1.05 = el aumento es de 5%
+por un factor de 0.9 = hay una disminución del 10%
+
+Ejemplo: si su salario es 600$ y recibiran un aumento por un factor de 0.9, el salario será 10% menos 
+
+```{r}
+600*0.9
+```
+
+La reducción del conteo de orugas cuando se aplica aspersión de insecticida es por un factor de 0.41 = hay una disminución del 59%
+
+```{r}
+10*0.41
+```
+
+### Calculo de sobredispersion
+1 no hay sobredispersion
+>1 hay sobredispersion 
+
+desviacion residual / grados de libertad
+
+```{r}
+1767.2/1298  
+```
+
+para corregir sobredispersion de forma manual (se corrige el error estandar): se saca la raiz cuadrada del valor de sobredispersion
+
+```{r}
+sqrt(1.36)
+```
+Luego se multiplica por el valor del error estandar
+
+```{r}
+1.16619 * 0.06871
+```
+
+Ese seria el error estandar corregido
+
+```{r}
+model_parameters(mp_01)
+```
+
+```{r}
+parameters(mp_01, exponentiate = TRUE)
+```
+
+```{r}
+plot_model(mp_01, type = "pred")
+```
+
+```{r}
+check_overdispersion(mp_01)
+```
+
+cuando hay sobredispersion (>1), el coeficiente está bien, pero el error estándar está inflado
+
+```{r}
+check_zeroinflation(mp_01)
+```
+
+## Soluciones para corregir sobredispersion
+
+### Modelo quasipoisson 
+
+```{r}
+mp_01_q <- glm(y ~ spray, data = worms, family = quasipoisson)
+```
+
+```{r}
+model_parameters(mp_01_q, exponentiate = TRUE)
+```
+
+## Si se agrega otra variable, se agrega otro factor
+
+```{r}
+mp_02 <- glm(y ~ spray + lead, data = worms, family = poisson)
+```
+
+```{r}
+summary(mp_02)
+```
+
+```{r}
+check_overdispersion(mp_02)
+```
+
+```{r}
+mp_02_q <- glm(y ~ spray + lead, data = worms, family = quasipoisson)
+```
+
+```{r}
+summary(mp_02_q)
+```
+
+Cuando se hace el summary de un modelo quasipoisson desaparece el valor de AIC pero eso se puede calcular con AICtab de bblme
+
+
+```{r}
+plot_model(mp_02_q, type = "pred")
+```
+
+```{r}
+parameters(mp_02_q, exponentiate = TRUE)
+```
+
+### Modelo con distribucion binomial negativa
+
+```{r}
+mbn_02 <- glm.nb(y ~ spray + lead, data = worms)
+```
+
+```{r}
+plot_model(mbn_02, "pred")
+```
+
+```{r}
+parameters(mbn_02, exponentiate = TRUE)
+```
+
+## Seleccion de modelos
+
+```{r}
+summary(mp_02_q)
+```
+## AIC= NA
+
+```{r}
+model_performance(mp_02_q)
+```
+
+```{r}
+AICtab(mp_01_q, mp_02_q, base = TRUE, delta = T, sort = T, weights = T)
+```
+
+```{r}
+AICtab(mp_01, mp_02, base = TRUE, delta = T, sort = T, weights = T, dispersion = 1.450)
+```
+
+# qAIC = cuando hay sobredispersion
+
+```{r}
+mp_03 <- glm(y ~ spray * lead, data = worms, family = poisson)
+```
+
+```{r}
+check_overdispersion(mp_03)
+```
+
+```{r}
+AICtab(mp_01, mp_02, mp_03, base = TRUE, delta = T, sort = T, weights = T, dispersion = 1.450)
+```
+
+```{r}
+mp_03_q <- glm(y ~ spray * lead, data = worms, family = quasipoisson)
+```
+
+```{r}
+plot_model(mp_03_q, type = "int")
+```
+
+```{r}
+interaction.plot(worms$spray, worms$lead, worms$y)
+```
+
+Si las lineas no son paralelas significa que hay una interaccion entre las variables. En este caso, las lineas no se cruzan, asi que se puede decir que hay una leve interaccion entre la asperción y el tratamiento con plomo
+
+
+## Ejemplo con otra base de datos
+
+```{r}
+mejillones <- import("data/muss.txt")
+head(mejillones)
+```
+
+_Anadara australis_
+
+```{r}
+include_graphics("Anadara.jpg")
+```
+
+
+```{r}
+mejillones$subs <- factor(mejillones$subs)
+head(mejillones)
+```
+
+### Modelos
+
+```{r}
+modswan1 <- glm(swan ~ depth, family = poisson, data = mejillones)
+modswan2 <- glm(swan ~ subs, family = poisson, data = mejillones)
+modswan3 <- glm(swan ~ depth + subs, family = poisson, data = mejillones)
+modswan4 <- glm(swan ~ depth * subs, family = poisson, data = mejillones)
+```
+
+
+### Selección de modelos
+
+```{r}
+AICtab(modswan1, modswan2, modswan3, modswan4, base = TRUE, delta = TRUE, sort = TRUE, weights = TRUE)
+```
+
+```{r}
+summary(modswan1)
+```
+
+```{r}
+parameters(modswan1, exponentiate = TRUE)
+```
+
+```{r}
+performance(modswan1)
+```
+
+```{r}
+check_overdispersion(modswan1)
+```
+
+```{r}
+check_zeroinflation(modswan1)
+```
+
+```{r}
+plot_model(modswan1, type = "pred", show.data = TRUE)
+```
+
