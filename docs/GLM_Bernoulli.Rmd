@@ -17,8 +17,133 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-## GLM con distribución de Bernoulli (Binomial)
+## GLM con distribución de Bernoulli (Dicotómica) 
+### Regresión logística
 
 ### Contenido{.tabset .tabset-pills}
 
+### Paquetes
+
+```{r, message=FALSE, warning=FALSE}
+library(knitr)
+library(rio)
+library(tidyverse)
+library(parameters)
+library(performance)
+library(sjPlot)
+library(modelbased)
+library(DAAG)
+library(modEvA)
+```
+
+### Datos
+
+```{r}
+pez <- import("data/pumpkinseed.txt")
+pez <- pez |>
+  mutate_if(is.character, as.factor)
+head(pez)
+```
+
+_Lepornis gibbosus_
+
+```{r}
+include_graphics("Pumpkinseed.jpg")
+```
+
+```{r}
+ggplot(pez, aes(wt, spot)) +
+  geom_jitter(height = 0.2)
+```
+
+### Modelos
+
+```{r}
+binom1 <- glm(spot ~ wt, family = binomial, data = pez)
+binom2 <- glm(spot ~ sl, family = binomial, data = pez)
+binom3 <- glm(spot ~ pop, family = binomial, data = pez)
+binom4 <- glm(spot ~ sex, family = binomial, data = pez)
+binom5 <- glm(spot ~ tactic, family = binomial, data = pez)
+binom6 <- glm(spot ~ tactic + sex + wt, family = binomial, data = pez)
+```
+
+### Selección de modelos
+
+```{r}
+compare_performance(binom1, binom2, binom3, binom4, binom5, binom6, rank = TRUE, metrics = "all")
+```
+
+### Interpretación del mejor modelo
+
+Los coeficientes de un modelo con distribución binomial están en escala logit
+
+```{r}
+summary(binom6)
+```
+
+```{r, warning=FALSE}
+parameters(binom6)
+```
+
+```{r}
+distinct(pez, tactic)
+```
+
+
+```{r}
+binom6
+```
+
+Calcular la probabilidad
+
+```{r}
+cuadro <- data.frame(tactic = "terr", sex = "M", wt = 9)
+cuadro
+```
+
+```{r}
+estimate_response(binom6, data = cuadro)
+```
+
+```{r}
+estimate_expectation(binom6, data = cuadro)
+```
+
+```{r}
+plot_model(binom6, type = "pred")
+```
+
+### Ajuste del modelo 
+
+(solo para modelos con variables predictoras numéricas)
+
+```{r}
+performance_hosmer(binom6)
+```
+
+#### Precisión del modelo
+
+```{r}
+CVbinary(binom6)
+```
+
+#### Área bajo la curva
+
+```{r}
+performance_accuracy(binom6)
+```
+
+```{r}
+performance_roc(binom6)
+```
+
+```{r}
+AUC(binom6, simplif = TRUE)
+```
+
+#### Revisión de colinealidad
+
+```{r}
+check_collinearity(binom6)
+```
 
