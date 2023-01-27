@@ -20,3 +20,186 @@ knitr::opts_chunk$set(echo = TRUE)
 ### Contenido{.tabset .tabset-pills}
 
 
+### Paquetes
+
+```{r, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(rio)
+library(FactoMineR)
+library(factoextra)
+library(parameters)
+library(vegan)
+library(RVAideMemoire)
+```
+
+El PCA se usa para reducir la dimensionalidad (variables) de los datos perdiendo la menor cantidad de informaciín (varianza) posible. El PCA crea un nuevo set de variables ortogonales (no correlacionadas) que contienen la misma información que los datos originales. Sí el conjunto de datos originales tiene 10 variables, el pca creará 10 componentes principales (nuevas variables) que no están correlacionadas. Se espera que los primeros componentes capturen la mayoría de la varianza de los datos y vaya decreciendo hacia los últimos componentes.
+
+### Datos
+
+```{r}
+bettles <- import("data/bettles.xlsx") |>
+  mutate_if(is.character, as.factor)
+head(bettles)
+```
+
+```{r}
+distinct(bettles, Habitat)
+```
+
+### PCA
+
+```{r}
+bettles_pca <- PCA(bettles[,3:50], graph = FALSE)
+bettles_pca
+```
+
+Cuando las variables tienen unidades muy diferentes se puede hacer un escalado de esas variables con la función `scale()`
+
+```{r}
+summary(bettles_pca)
+```
+
+### Eigenvalues
+
+Eigen value es la porción del total de la varianza que explica cada componente principal (dimensión)
+
+```{r}
+valores <- get_eigenvalue(bettles_pca)
+valores
+```
+
+Deberíamos quedarnos con los componentes que expliquen el 70% de la varianza de forma acumulada.
+
+Podemos verlo gráficamente
+
+```{r}
+fviz_eig(bettles_pca, addlabels = TRUE)
+```
+
+### Gráfico de correlación entre las variables de los componentes principales
+
+```{r}
+fviz_pca_var(bettles_pca, repel = TRUE)
+```
+
+### Calidad de la represenutación de cada variable en los componentes principales
+
+cos2 (coseno al cuadrado, coordenadas al cuadrado)
+
+```{r}
+fviz_cos2(bettles_pca, choice = "var", axes = 1:4)
+```
+
+### Gráfico de correlación en base a calidad de representación
+
+```{r}
+fviz_pca_var(bettles_pca, col.var = "cos2",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE)
+```
+
+```{r}
+fviz_pca_var(bettles_pca, alpha.var = "cos2", repel = TRUE)
+```
+
+### Contribución de las variables a los PC
+
+```{r}
+fviz_contrib(bettles_pca, choice = "var", axes = 1:4, top = 40)
+```
+
+```{r}
+fviz_pca_var(bettles_pca, col.var = "contrib",
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE)
+```
+
+### Gráfico de los sitios de colecta
+
+```{r}
+fviz_pca_ind(bettles_pca)
+```
+
+### Calidad de representación de los sitios de colecta
+
+```{r}
+fviz_cos2(bettles_pca, choice = "ind", axes = 1:4)
+```
+
+```{r}
+fviz_pca_ind(bettles_pca, col.ind = "cos2", pointsize = "cos2", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+```
+
+### Contribución de los sitios de colecta
+
+```{r}
+fviz_contrib(bettles_pca, choice = "ind", axes = 1:4)
+```
+
+```{r}
+fviz_pca_ind(bettles_pca, col.ind = "contrib", pointsize = "contrib", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+```
+
+
+### Biplot
+
+Gráfico de correlación con variables y sitio
+
+```{r}
+fviz_pca_biplot(bettles_pca, repel = TRUE,
+                col.var = "#2E9FDF", 
+                col.ind = "#696969")
+```
+
+```{r}
+fviz_pca_biplot(bettles_pca, 
+                axes = c(1,2),
+                habillage = bettles$Habitat,
+                addEllipses = TRUE,
+                label = FALSE,
+                geom = FALSE,
+                palette = c("#00AFBB", "#E7B800", "#FC4E07"),
+                invisible = "var") +
+  theme_bw() +
+  labs(title = "Análisis de Componentes Principales",
+       subtitle = "Comunidad de escarabajos",
+       color = "Hábitat",
+       fill = "Hábitat")
+```
+
+### PCA con parameters
+
+```{r}
+pca.parameters <- principal_components(bettles[,3:50], n = 4)
+```
+
+```{r}
+pca.parameters
+```
+
+```{r}
+summary(pca.parameters)
+```
+
+```{r}
+plot(pca.parameters, type = "line") + 
+  theme_bw()
+```
+
+### PERMANOVA
+
+```{r}
+bettles_per <- adonis2(bettles[ , 3:50] ~ Habitat, data = bettles)
+bettles_per
+```
+
+### Prueba de contraste para el PERMANOVA
+
+```{r}
+contraste <- pairwise.perm.manova(dist(bettles[,3:50]), bettles$Habitat, nperm = 999)
+contraste
+```
