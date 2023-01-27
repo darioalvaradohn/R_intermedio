@@ -68,6 +68,11 @@ valores <- get_eigenvalue(bettles_pca)
 valores
 ```
 
+```{r}
+variables <- data.frame(bettles_pca$ind$coord)
+variables
+```
+
 Deberíamos quedarnos con los componentes que expliquen el 70% de la varianza de forma acumulada.
 
 Podemos verlo gráficamente
@@ -182,24 +187,14 @@ pca.parameters
 ```
 
 ```{r}
+export(pca.parameters, "pca.csv")
+```
+
+```{r}
 summary(pca.parameters)
 ```
 
 ```{r}
 plot(pca.parameters, type = "line") + 
   theme_bw()
-```
-
-### PERMANOVA
-
-```{r}
-bettles_per <- adonis2(bettles[ , 3:50] ~ Habitat, data = bettles)
-bettles_per
-```
-
-### Prueba de contraste para el PERMANOVA
-
-```{r}
-contraste <- pairwise.perm.manova(dist(bettles[,3:50]), bettles$Habitat, nperm = 999)
-contraste
 ```
