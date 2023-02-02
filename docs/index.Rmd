@@ -35,9 +35,11 @@ Este es un curso de análisis estadístico en R utilizando R Studio. Utilizaremo
 
 [Clase 3: GLM con distribución de Poisson](GLM_Poisson.html)
 
-[Clase 4: GLM con distribución de Bernoulli](GLM_Bernoulli.html)
+[Clase 4: GLM con distribución de Bernoulli (Binomial)](GLM_Bernoulli.html)
 
-[Clase 5: Análisis Multivariado](Multivariado.html)
+[GLM con distribución Binomial para proporciones](GLM_Binomial.html)
+
+[Clase 5: Análisis de componentes principales (PCA)](Multivariado.html)
 
 <br>
 
