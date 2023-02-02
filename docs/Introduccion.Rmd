@@ -7,7 +7,7 @@ header-includes:
 - \restylefloat{figure}
 ---
 
-Este es un curso de análisis estadístico en R utilizando R Studio. Utilizaremos el formato R Markdown para crear nuestros códigos y presentar nuestros resultados de una forma ordenada. Analizaremos nuestros datos mediante modelos lineales generales, modelos lineales generalizados (glm) para datos con distribución de Poisson y distribución de Bernoulli, y análisis multivariado con el análisis de componentes principales (PCA) y el análisis permutacional de varianza multivariada (PERMANOVA).
+Este es un curso de análisis estadístico en R utilizando R Studio. Utilizaremos el formato R Markdown para crear nuestros códigos y presentar nuestros resultados de una forma ordenada. Analizaremos nuestros datos mediante modelos lineales generales, modelos lineales generalizados (glm) para datos con distribución de Poisson, de Bernoulli y Binomial, y análisis multivariado con el análisis de componentes principales (PCA).
 
 <br>
 
