@@ -19,6 +19,14 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<br>
+
+*Atajo de teclado para crear un chunk de código en R Markdown:*
+
+**ctrl + alt + I**
+
+<br>
+
 #### Paquetes
 
 ```{r, warning=FALSE, message=FALSE}
@@ -28,6 +36,8 @@ library(tidyverse)
 library(kableExtra)
 ```
 
+<br>
+
 #### Datos
 
 ```{r}
@@ -35,62 +45,111 @@ data("penguins")
 head(penguins)
 ```
 
+<br>
+
 ### Contenido{.tabset .tabset-pills}
 
-#### Funciones del paquete `dplyr`
+<br>
 
-- `select()`: seleccionar columnas
+#### Seleccionar columnas
+
+- `select()` del paquete `dplyr` para seleccionar una o varias columnas (variables):
 
 ```{r}
-sp_islas <- select(penguins, species, island)
+sp_islas <- select(penguins, 
+                   species, 
+                   island)
 head(sp_islas)
-summary(sp_islas)
 ```
 
-```{r}
-pin_sin_sexo <- select(penguins, -sex)
-head(pin_sin_sexo)
-```
+Para excluir una o varias columnas (variables):
 
 ```{r}
-numericas <- select(penguins, species, bill_length_mm:body_mass_g)
+p_sinsexo <- select(penguins, 
+                    -sex) # especificamos la o las columnas a excluir con el signo "-".
+head(p_sinsexo)
+```
+
+Para seleccionar varias columnas que estén seguidas en la tabla de datos:
+
+```{r}
+numericas <- select(penguins, 
+                    species, 
+                    bill_length_mm:body_mass_g) # con ":" indicamos la primera columna (a la izquierda de los ":") y hasta cuál columna (a la derecha de los ":") queremos seleccionar.
 head(numericas)
 ```
 
-- `filter()`: filtrar filas (observaciones)
+<br>
+
+#### Filtrar observaciones
+
+- `filter()` del paquete `dplyr` para filtrar observaciones (filas) según un nivel específico de una variable:
 
 ```{r}
-sp_Adelie <- filter(penguins, species == "Adelie")
+sp_Adelie <- filter(penguins, 
+                    species == "Adelie") # para especificar un valor exacto (numérico o categórico) se deben colocar dos iguales "=="
 head(sp_Adelie)
 summary(sp_Adelie)
 ```
 
+Para filtrar según valores específicos de una variable:
+
 ```{r}
-masamayor4500 <- filter(penguins, body_mass_g > 4500)
+masamayor4500 <- filter(penguins, 
+                        body_mass_g > 4500)
 summary(masamayor4500)
 ```
 
 ```{r}
-combinado <- filter(penguins, body_mass_g > 4500 & bill_depth_mm < 15)
+unavariable <- filter(penguins, 
+                      body_mass_g >= 3500 & 
+                        body_mass_g <= 4500) # El símbolo `&` indica que se deben cumplir ambos argumentos condicionales en el filtrado.
+summary(unavariable)
+```
+
+```{r}
+unavariable <- filter(penguins, 
+                      body_mass_g >= 3500 | 
+                        body_mass_g <= 4500) # El símbolo `|` indica que se puede cumplir un argumento o el otro.
+summary(unavariable)
+```
+
+Para filtrar según valores específicos de más de una variable:
+
+```{r}
+combinado <- filter(penguins, 
+                    body_mass_g > 4500 & 
+                      flipper_length_mm < 215)
 summary(combinado)
 ```
 
-- `arrange()`: reordenar filas
+<br>
+
+#### Reordenar observaciones
+
+- `arrange()` del paquete `dplyr` para reordenar observaciones (filas):
 
 ```{r}
-ordenascend <- arrange(penguins, bill_length_mm)
-head(ordenascend)
+orden <- arrange(penguins, 
+                 body_mass_g) # Por defecto se hace en orden ascendente.
+head(orden)
 ```
 
 ```{r}
-ordendescend <- arrange(penguins, desc(bill_length_mm))
-head(ordendescend)
+ordendesc <- arrange(penguins, 
+                     desc(body_mass_g)) # Para que sea en orden descendente se especifica con `desc()` antes de la variable.
+head(ordendesc)
 ```
 
+También se pueden reordenar las observaciones según una variable categórica alfabéticamente en orden ascentente o descendente:
+
 ```{r}
-ordenvarias <- arrange(penguins, bill_length_mm, bill_depth_mm, flipper_length_mm)
-head(ordenvarias)
+ordenalf <- arrange(penguins, 
+                    desc(species))
+ordenalf
 ```
+
+Para reordenar las observaciones según valores o niveles de más de una variable (útil en caso de tener datos con variables anidadas)
 
 ```{r}
 experimento <- import("data/Experimento.xlsx")
@@ -98,20 +157,30 @@ head(experimento)
 ```
 
 ```{r}
-ordenvarias2 <- arrange(experimento, desc(Tratamiento), desc(Repeticion), Semana)
+ordenvarias2 <- arrange(experimento, 
+                        desc(Tratamiento), 
+                        desc(Repeticion), 
+                        Semana)
 head(ordenvarias2)
 ```
 
+<br>
 
-- `mutate()`: crear nuevas columnas en una tabla de datos
+#### Crear nuevas variables
+
+- `mutate()` del paquete `dplyr` para crear nuevas variables (columnas) en una tabla de datos existente:
 
 ```{r}
-peso_kg <- mutate(penguins, body_mass_kg = body_mass_g / 1000)
+peso_kg <- mutate(penguins, 
+                  body_mass_kg = body_mass_g / 1000) # especificamos el nombre de la nueva columna (peso_kg) y a qué será igual esa variable.
 head(peso_kg)
 ```
 
 ```{r}
-pesos <- mutate(penguins, body_mass_kg = body_mass_g / 1000, body_mass_mg = body_mass_g * 1000, body_mass_lbs = body_mass_kg * 2.20462)
+pesos <- mutate(penguins, 
+                body_mass_kg = body_mass_g / 1000, 
+                body_mass_mg = body_mass_g * 1000, 
+                body_mass_lbs = body_mass_kg * 2.20462)
 head(pesos)
 ```
 
@@ -121,167 +190,449 @@ head(medidas)
 ```
 
 ```{r}
-medidas <- mutate(medidas, IMC = round((peso/(altura/100)^2), digits = 2))
+medidas <- mutate(medidas, 
+                  IMC = round((peso/(altura/100)^2), 
+                              digits = 2)) # `round()` es para redondear y `digits =` es para especificar el número de decimales.
+
 head(medidas)
 ```
+
+- `mutate()` combinado con la función `cut()` y el argumento `breaks =` para crear una nueva variable categórica según valores específicos de otra variable dentro de la tabla de datos:
+
+```{r}
+medidas <- medidas |> # `|>` o `%>%` (pipes) sirven para encadenar funciones dirigidas hacia un conjunto de datos.
+  mutate(Comp_corp = cut(medidas$IMC, 
+                         breaks = c(min(medidas$IMC -1), 
+                                    18.5, 
+                                    25, 
+                                    30, 
+                                    max(medidas$IMC +1)), 
+                         labels = c("Inferior", 
+                                    "Normal", 
+                                    "Superior", 
+                                    "Obesidad")))
+
+head(medidas)
+
+# "Comp_corp" es el nombre de nuestra nueva variable; con `cut()` indicamos sobre qué variable se harán los cortes (la variable que tiene los valores específicos); con `breaks =` especificamos esos sitios de corte (los valores (rangos) de nuestra variable para separar los niveles de nuestra nueva variable categórica); y con `labels =` especificamos las etiquetas o nombres de cada nivel para nuestra variable categórica 
+
+#*Importante: El número de etiquetas debe ser igual al número de sitios de corte.
+```
+
+La función `distinct()` del paquete `dplyr` permite ver el nombre de los niveles de una variable categórica (muestra los valores únicos que hay en la variable):
+
+```{r}
+distinct(medidas, 
+         Comp_corp)
+```
+
+También podemos crear una variable categórica según los valores específicos de más de una variable en nuestra tabla de datos:
 
 ```{r}
 medidas <- medidas |>
-  mutate(grupo = cut(medidas$peso, breaks = c(min(medidas$peso-1), 60, 70, 80, 90, max(medidas$peso+1)), 
-                     labels = c("Bajo", "Medio Bajo", "Medio", "Medio Alto", "Alto")))
+  mutate(Grupos = cut(medidas$altura, 
+                      breaks = c(min(medidas$altura -1), 
+                                 150, 
+                                 160, 
+                                 170, 
+                                 180, 
+                                 190, 
+                                 max(medidas$altura +1)), 
+                      labels = c("Baja", 
+                                 "Medio Baja", 
+                                 "Media", 
+                                 "Medio Alta", 
+                                 "Alta", 
+                                 "Muy Alta"))) |>
+  mutate(Grupos = paste0(Grupos, 
+                         "-", 
+                         cut(medidas$peso, 
+                             breaks = c(min(medidas$peso -1), 
+                                        50, 
+                                        70, 
+                                        80, 
+                                        max(medidas$peso +1)),
+                             labels = c("Bajo", 
+                                        "Normal", 
+                                        "Alto", 
+                                        "Muy Alto"))))
+head(medidas)
 
-medidas
+# La primera parte del código es igual que el anterior. 
+# Para añadir los argumentos de la segunda variable colocamos un pipe (`|>` o `%>%`) para encadenar la siguiente función. 
+# En `mutate()` indicamos que la variable es la que ya creamos en la primera parte del código (en este caso, "Grupos =") y `paste0()` será la función que combine las etiquetas de los sitios de corte de la primera variable con las de la segunda variable especificando que se unirán en la variable "Grupos" y el separador de las etiquetas dentro de comillas (" "). El resto de la función es igual que el código anterior especificando los sitios de corte de la segunda variable y las etiquetas que deseamos.
 ```
 
-```{r}
-medidas <- medidas |> 
-  mutate(grupo = cut(medidas$peso, breaks = c(min(medidas$peso -1), 60, 70, 80, 90, max(medidas$peso +1)), 
-            labels = c("Bajo", "Medio Bajo", "Medio", "Medio Alto", "Alto"))) |>
-  mutate(grupo = paste0(grupo, '-', cut(medidas$altura, breaks = c(min(medidas$altura -1), 160, 175, max(medidas$altura +1)),                                 labels = c("Baja", "Media", "Alta"))))
+<br>
 
+#### Renombrar variables 
+
+- `rename()` del paquete `dplyr` para cambiar el nombre de una o más variables en la tabla de datos:
+
+```{r}
+medidas <- rename(medidas, 
+                  alturaXpeso = Grupos) # colocamos el nuevo nombre de la variable y con el "=" indicamos la variable a la que le cambieremos el nombre
 head(medidas)
 ```
 
 ```{r}
-medidas <- medidas |> 
-  mutate(Comp_corp = cut(medidas$IMC, breaks = c(min(medidas$IMC -1), 18.5, 25, 30, max(medidas$IMC +1)), 
-            labels = c("Inferior", "Normal", "Superior", "Obesidad")))
-
+medidas <- rename(medidas,
+                  Sexo = sexo,
+                  Altura_cm = altura,
+                  Peso_kg = peso,
+                  Edad = edad,
+                  Altura_Peso = alturaXpeso)
 head(medidas)
 ```
 
-- `distinct()`: para ver cuántos niveles tenemos en una variable
+<br>
 
-```{r}
-distinct(medidas, Comp_corp)
-```
+#### Resumir información
 
+- `summarise()` del paquete `dplyr` para generar un nuevo dataframe con un resumen de información basado en un argumento que especifiquemos dirigido a una o más variables de la tabla de datos:
 
-- `rename()`: cambiar nombre de columnas
-
-```{r}
-rename(peso_kg, pesokg = body_mass_kg)
-```
-
-```{r}
-rename(peso_kg, largo_pico_mm = bill_length_mm, alto_pico_mm = bill_depth_mm, largo_aleta_mm = flipper_length_mm, masa_g = body_mass_g, sexo = sex, peso_kg = body_mass_kg)
-```
-
-
-- `summarise()`: crea un nuevo dataframe con los argumentos que especifiquemos
-
-```{r}
-rango_largo_pico <- summarise(penguins, range(na.omit(bill_length_mm)))
-rango_largo_pico
+```{r, message=FALSE, warning=FALSE}
+rango_edad <- summarise(medidas, 
+                        range(Edad)) # podemos especificar cualquier función.
+rango_edad
 ```
 
 ```{r}
-media_largo_aleta <- summarise(penguins, mean(na.omit(flipper_length_mm)))
-media_largo_aleta
+media_edad <- summarise(medidas, 
+                        mean(Edad))
+media_edad
 ```
 
 ```{r}
-medias <- summarise(penguins, aleta = mean(na.omit(flipper_length_mm)), pico = mean(na.omit(bill_length_mm)), masa = mean(na.omit(body_mass_g)))
+medias <- summarise(medidas, 
+                    Altura = mean(Altura_cm), 
+                    Peso = mean(Peso_kg), 
+                    Edad = mean(Edad))
 medias
 ```
 
-- `group_by()`: agrupar los datos. Muy útil combinado con la función `summarise()`.
+También podemos hacerlo con la función `reframe()` del paquete `dplyr`:
 
 ```{r}
-medias <- penguins %>%
-  group_by(species) %>%
-  summarise(masa_corporal = mean(na.omit(body_mass_g)))
+rango_edad2 <- reframe(medidas, 
+                       range(Edad))
+rango_edad2
+```
+
+```{r}
+media_edad2 <- reframe(medidas, 
+                       mean(Edad))
+media_edad2
+```
+
+```{r}
+medias2 <- reframe(medidas, 
+                   Altura = mean(Altura_cm), 
+                   Peso = mean(Peso_kg), 
+                   Edad = mean(Edad))
+medias2
+```
+
+- `group_by()` del paquete `dplyr` para agrupar las observaciones de la tabla de datos según una variable categórica. Es muy útil si se combina con la función `summarise()`:
+
+```{r}
+medias <- medidas |>
+  group_by(Sexo) |>
+  summarise(Altura = mean(Altura_cm), 
+            Peso = mean(Peso_kg), 
+            Edad = mean(Edad),
+            IMC = mean(IMC))
 medias
 ```
 
-- `mutate_at()` combinado con la función `format()` para cambiar el separador de decimales
- - de punto a coma
-```{r}
-decimalescoma <- mutate_at(penguins, vars(bill_length_mm, bill_depth_mm), funs(format(., nsmall=2, decimal.mark=",")))
-head(decimalescoma)
+<br>
+
+#### Cambiar separador de decimales
+
+- `mutate_at()` del paquete `dplyr` combinado con la función `format()` para cambiar el separador de decimales de "." a ",":
+
+```{r, message=FALSE, warning=FALSE}
+decimales <- mutate_at(medidas, 
+                            vars(IMC), 
+                            funs(format(., 
+                                        nsmall = 2, 
+                                        decimal.mark = ",")))
+head(decimales)
+
+# con `vars()` especificamos la o las variables a las que queremos cambiar el separador de decimales. El punto "." en funs(format()) es una forma de referirse a cada una de las observaciones de la variable, y la función format() es aplicada a cada una de ellas para cambiar el separador de decimal de punto a coma. `nsmall =` es para indicar el número de decimales deseado.
 ```
 
- - de coma a punto
+R trabaja con bases de datos con variables numéricas continuas que sus decimales estén separados con ".", si están separados con "," no lo reconocerá como numérico y no podremos forzar a que esa variable sea numérica. Para eso debemos cambiar el separador de decimales a ".".
+
+`str_replace()` del paquete `stringr` para cambiar el separador de decimales de "," a ".":
+
 ```{r}
-decimalespunto <- mutate_at(penguins, vars(bill_length_mm, bill_depth_mm), funs(format(., nsmall=2, decimal.mark=".")))
-head(decimalespunto)
+decimales$IMC <- str_replace(decimales$IMC, 
+                             ",", 
+                             ".")
+head(decimales)
 ```
 
- - para darle formato numérico después de realizar el cambio de separador de decimales
+Después de realizar el cambio se debe modificar la clase o tipo de la variable de caracter a numérica:
+
 ```{r}
-decimalespunto <- decimalespunto |>
-  mutate_if(is.character, as.numeric)
-head(decimalespunto)
+decimales$IMC <- as.numeric(decimales$IMC)
+head(decimales)
 ```
 
-#### Funciones del paquete `tidyr`
+<br>
 
-- `drop_na()`: para eliminar los NA
+#### Eliminar valores NA
+
+- `drop_na()` del paquete `tidyr` para eliminar los NA de una o varias variables, o incluso de toda la tabla de datos:
 
 ```{r}
-drop_na(penguins, flipper_length_mm)
+penguins <- drop_na(penguins, 
+        flipper_length_mm) # indicamos la variable que contiene los NA.
+head(penguins)
+
+# La función elimina toda la o las filas de observaciones correspondientes al valor o valores NA que contiene la variable especificada. 
 ```
 
 ```{r}
-pin <- penguins |>
-  drop_na()
+pin <- drop_na(penguins) # para toda la tabla de datos
 head(pin)
 ```
 
+<br>
+
+#### Encadenamiento de funciones
+
+Para el encadenamiento de funciones como ya vimos en algunos ejemplos anteriores, se utilizan las "pipes". Podemos utilizar `%>%` del paquete `magrittr` o `|>` del paquete base, ambas pipes nos permiten encadenar funciones hacia un objeto.
+
 ```{r}
 medias <- pin |>
+  drop_na() |>
   group_by(species) |>
   summarise(masa_corporal = mean(body_mass_g), largo_pico = mean(bill_length_mm), alto_pico = mean(bill_depth_mm), largo_aleta = mean(flipper_length_mm))
 medias
+
+# todas las funciones están aplicadas al objeto "pin" que contiene nuestra tabla de datos y se ejecutan en el orden en el que están colocadas: primero se eliminan los NA (si hubiesen), luego los datos se agrupan por especies y por último se calculan las medias de las variables indicadas.
 ```
 
-- `unite()`: unión de dos o más columnas en una sola 
+<br>
+
+#### Unir y separar columnas
+
+- `unite()` del paquete `tidyr` para combinar dos o más columnas en una sola por medio de un separador: 
 
 ```{r}
-union <- unite(pin, col = speciesXisland, species, island, sep = "_")
+union <- unite(pin, 
+               col = Sp_Islas, # indicamos el nombre de la nueva columna
+               species, island, # indicamos las columnas que se uniran
+               sep = "_") # indicamos el separador que tendrán las observaciones
+
 head(union)
 ```
 
-- `separate()`: separar una columna en varias columnas
+- `separate()` del paquete `tidyr` para separar una columna en dos o más, especificando el o los separadores que hay en la columna:
 
 ```{r}
-separar <- separate(union, col = speciesXisland, into = c("species", "island"), sep = "_")
+separar <- separate(union, 
+                    col = Sp_Islas, # indicamos la columna que queremos separar
+                    into = c("Especie", "Islas"), # indicamos las nuevas columnas
+                    sep = "_") # indicamos el separador que divide las observaciones de la columna combinada
+
 head(separar)
 ```
 
+<br>
 
-- `pivot_wider()`: modificar una tabla en formato ancho
+#### Formatos de tablas de datos
+
+Una tabla de datos puede estar en formato ancho (cuando hay varias columnas que pertenecen a una sola variable) y en formato largo o "tidy" (cuando cada columna es una variable y cada fila es una observación)
 
 ```{r}
-ancho <- pivot_wider(medidas, names_from = Comp_corp, values_from = IMC)
-ancho
+head(medidas)
+
+# Esta tabla de datos está en formato largo (tidy)
+```
+
+- `pivot_wider()` del paquete `tidyr` para modificar una tabla de formato largo a formato ancho
+
+```{r}
+formatoancho <- pivot_wider(medidas, 
+                     names_from = Comp_corp, # indicamos la variable que contiene los niveles que pasarán a ser columnas
+                     values_from = IMC) # indicamos la variable que contiene los valores que pasarán a ser las observaciones de cada columna.
+
+head(formatoancho)
+```
+
+Ahora los niveles de la variable "Comp_copr" pasaron a ser columnas y los valores de la variable "IMC" pasaron a ser las observaciones de su columna correspondiente. Si para una columna no hay una observación correspondiente, automáticamente se coloca un NA.
+Podemos rellenar esos valores NA con el argumento `values_fill =`. Si colocamos `values_fill = 0` cambiará todos los valores NA por 0.
+
+- `pivot_longer()`para modificar una tabla de formato ancho a formato largo (tidy).
+
+```{r}
+formatotidy <- pivot_longer(formatoancho, 
+                            cols = Normal: Inferior, # seleccionamos todas las columnas que pasarán a ser los niveles de nuestra variable
+                            names_to = "Comp_corp", # indicamos el nombre que tendrá esa nueva variable
+                            values_to = "IMC", # indicamos el nombre de la variable a la que pasarán todos los valores que estaban en las columnas 
+                            values_drop_na = TRUE) # indicamos que todos los valores NA se eliminen de las observaciones.
+
+formatotidy
+```
+
+<br>
+
+#### Creación y modificación de tablas
+
+Las funciones `kable()` y `kable_styling()` del paquete `kableExtra` nos permiten crear y modificar el estilo de tablas de datos (útil para presentarlo en formato html):
+
+```{r}
+medias
 ```
 
 ```{r}
-ancho2 <- pivot_wider(experimento, names_from = Tratamiento, values_from = Conteo)
-ancho2
-```
-
-
-- `pivot_longer()`: modificar una tabla a formato largo ("tidy")
-
-```{r}
-tidy <- pivot_longer(ancho, cols = Normal: Inferior, names_to = "Comp_corp", values_to = "IMC", values_drop_na = TRUE)
-tidy
-```
-
-```{r}
-tidy2 <- pivot_longer(ancho2, cols = c("1", "2", "3"), names_to = "Tratamiento", values_to = "Conteo")
-tidy2
-```
-
-
-#### Creación y modificación de cuadros con el paquete `kableExtra`
-
-
-```{r}
-cuadro <- kable(medias, digits = 2) |>
-  kable_styling("bordered", full_width = FALSE, position = "center", font_size = 16)
+cuadro <- kable(medias, 
+                digits = 2) |>
+  kable_styling("bordered", 
+                full_width = FALSE, 
+                position = "center", 
+                font_size = 16)
 cuadro
 ```
 
+<br>
+
+#### Unificación de tablas
+
+Las tablas de datos deben tener una llave (key) o identificador en común, por ejemplo, una columna de código que se comparta en ambas tablas.
+
+<br>
+
+##### Tablas
+
+```{r}
+tipos <- import("data/union_tablas/tipos.xlsx") # tabla con los tipos de sitio de muestreo (Fincas de café de sombra, café bajo sol, y parches de bosque)
+
+head(tipos)
+```
+
+```{r}
+sitios <- import("data/union_tablas/sitios.xlsx") # tabla con los sitios de muestreo
+
+sitios
+```
+
+```{r}
+dosel <- import("data/union_tablas/dosel.xlsx") # tabla con alturas de dosel (m) medidas en cinco puntos diferentes de cada sitio de muestreo
+
+head(dosel)
+```
+
+```{r}
+ambientales <- import("data/union_tablas/ambientales.xlsx") # tabla con mediciones de temperatura (°C) y humedad relativa (%), las mediciones no se pudieron realizar en todos los puntos en algunos sitios de muestreo
+
+head(ambientales)
+```
+
+<br>
+
+##### Unificación de tablas
+
+Cuando ambas tablas tienen los mismos niveles en la columna llave, la unión se puede hacer con cualquier función (`full_join()`, `inner_join()`, `left_join()`, `right_join()`) del paquete `dplyr`. 
+
+Por ejemplo, la tabla `tipos` tiene los niveles "SOM", "SOL" y "BOS" en la columna `Tipo`, y la tabla `sitios` también tiene los mismos tres niveles para su columna `Tipo` (no hace falta ninguno).
+
+```{r}
+union1 <- full_join(sitios, tipos, # indicamos las tablas que queremos unificar
+                    by = "Tipo") # indicamos la llave que comparten ambas tablas
+union1
+```
+
+```{r}
+union1 <- inner_join(sitios, tipos, 
+                     by = "Tipo")
+union1
+```
+
+```{r}
+union1 <- left_join(sitios, tipos, 
+                    by = "Tipo")
+union1
+```
+
+```{r}
+union1 <- right_join(sitios, tipos, 
+                     by = "Tipo")
+union1
+```
+
+<br>
+
+Si uno o varios niveles de la columna llave no están presentes en alguna de las dos tablas, eso hará que el resultado de la unión varíe dependiendo de la función que se utilice.
+
+La tabla `dosel` tiene 45 niveles en la columna `Punto` (se midió la altura de dosel en 5 puntos diferentes en cada uno de los 9 sitios). En la tabla `ambientales` solamente hay 39 niveles en la columna `Punto` (en algunos sitios no se pudo medir las variables ambientales en todos los 5 puntos). Por ejemplo, en la tabla `ambientales` solo están los niveles "SOM1.1", "SOM1.2" y "SOM1.3", faltan los niveles "SOM1.4" y "SOM1.5" que sí están presentes en la tabla `dosel`.
+
+`full_join()` hace una unión completa de ambas tablas tomando como referencia la llave o el identificador común, esto conservará todas las observaciones de ambas tablas:
+
+```{r}
+# full_join(): hace una unión completa de ambas tablas tomando como referencia la llave o el identificador común
+union2 <- full_join(dosel, ambientales, 
+                    by = "Punto")
+union2
+```
+
+Como se repite la columna de `Sitio` podemos indicar que la unión se haga con dos llaves:
+
+```{r}
+union2 <- full_join(dosel, ambientales, 
+                    by = c("Punto", "Sitio"))
+head(union2)
+```
+
+<br>
+
+Si usamos la función `inner_join()`, las tablas se unirán y conservarán todos los datos que tengan en común, excluirá las observaciones que no se compartan en ambas columnas:
+
+```{r}
+#inner_join(): excluye las observaciones que no se comparten en ambas tablas
+union3 <- inner_join(dosel, ambientales, 
+                     by = c("Punto", "Sitio"))
+union3
+```
+
+En este caso, la tabla combinada conserva las 39 observaciones que se comparten en ambas tablas, pero excluye las observaciones de los niveles "SOM1.4", "SOM1.5", ... que solamente se encuentran en una de las tablas.
+
+<br>
+
+Si usamos la función `left_join()` las tablas se unirán y conservarán todos los datos que tenga la tabla que coloquemos primero, excluirá las observaciones de la segunda tabla que no se compartan con la primera:
+
+```{r}
+#left_join(): conserva todas las observaciones de la primera tabla y excluye las de la segunda que no se comparten con la primera.
+union4 <- left_join(dosel, ambientales, 
+                    by = c("Punto", "Sitio"))
+union4
+```
+
+En este caso, la tabla combinada conserva las 45 observaciones que hay en la tabla `dosel` que fue la que colocamos primero (a la izquierda). Si hubiesemos colocado la tabla `ambientales` primero y luego `dosel`, la tabla combinada hubiese conservado las observaciones de la tabla `ambientales`.
+
+<br>
+
+Si usamos la función `right_join()` las tablas se unirán y conservarán todos los datos que tenga la tabla que coloquemos de segundo, excluirá las observaciones de la primera tabla que no se compartan con la segunda:
+
+```{r}
+#right_join(): conserva todas las observaciones de la segunda tabla y excluye las de la primera que no se comparten con la segunda.
+union5 <- right_join(dosel, ambientales, 
+                     by = c("Punto", "Sitio"))
+union5
+```
+
+En este caso, la tabla combinada conserva las 39 observaciones que hay en la tabla `ambientales` que fue la que colocamos como segunda (a la derecha). Si hubiesemos colocado la tabla `ambientales` primero y luego `dosel`, la tabla combinada hubiese conservado las observaciones de la tabla `dosel`.
+
+<br>
+
+Ahora combinemos la información de las cuatro tablas con las uniones previas que hemos hecho:
+
+```{r}
+union6 <- full_join(union1, union2, by = "Sitio")
+union6
+```
+
+<br>
