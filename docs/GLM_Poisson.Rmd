@@ -16,11 +16,23 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<br>
 
-## GLM con distribución de Poisson
+Los modelos lineales generalizados utilizan una regresión lineal ordinaria que permite analizar variables respuesta que tienen una distribución de errores distintos a una distribución normal (gausiana).
 
-### Contenido{.tabset .tabset-pills}
+<br>
 
+### GLM con distribución de Poisson
+
+Los modelos con distribución de Poisson son utilizados para analizar datos cuando la variable respuesta tiene una alta cantidad de ceros (modelo influenciado por ceros), son especialmente útiles para analizar datos de conteos (0, 1, 2, 3, 4...).
+
+<br>
+
+#### Paquetes
+
+```{r, echo = FALSE}
+library(knitr)
+```
 
 ```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -31,253 +43,467 @@ library(bbmle)
 library(agridat)
 library(MASS)
 library(rio)
-library(knitr)
 ```
 
-# Para modelos influenciados por ceros
+<br>
+
+### Contenido{.tabset .tabset-pills}
+
+<br>
+
+#### Datos
+
+Trabajaremos con los datos de "beall.webworms" del paquete `agridat`
 
 ```{r}
 data("beall.webworms")
-```
-
-```{r}
 worms <- beall.webworms
 head(worms)
 ```
 
-_Hyphantria cunea_
+Esta base de dados contiene información de conteos de larvas de _Hyphantria cunea_, una polilla (Lepidoptera) de la familia Erebidae catalogada como plaga que se caracteriza por la construcción de nidos en forma de redes en las ramas de las plantas de cultivo que afecta disminuyendo su rendimiento. 
 
-```{r}
+```{r, echo=FALSE}
 include_graphics("Webworm.jpg")
 ```
 
 ```{r}
-summary(worms)
+str(worms)
 ```
+
+Los datos provienen de un experimiento con un diseño de bloques en donde se evaluaron cuatro tratamientos (variable "trt"):
+
+- "T1" : control (sin tratamiento)
+
+- "T2": aplicación de insecticidad de contacto
+
+- "T3": aplicación de arsenato de plomo
+
+- "T4": aplicación combinada de insecticida y arsenato de plomo
+
+La variable "spray" tiene dos niveles:
+
+- "Y": se aplicó insecticida
+
+- "N": No se aplicó insecticida
+
+Y la variable "lead" tiene dos niveles:
+
+- "Y": se aplicó arsenato de plomo
+
+- "N": No se aplicó arsenato de plomo
+
+
+<br>
+
+##### Exploración de datos
+
+```{r, message=FALSE, warning=FALSE}
+hist(worms$y)
+```
+
+La variable y (conteo de larvas) tiene una distribución discreta (Poisson) con mucha influencia de ceros
+
+<br>
+
+#### Modelo
+
+Para realizar un modelo lineal generalizado (GLM) utilizamos la función `glm()` del paquete base. Un GLM puede analizar una variable respuesta que tenga una distribución diferente a la distribución normal (gausiana), solamente tenemos que indicar la distribución de los datos con el argumento `family =`
 
 ```{r}
-ggplot(worms, aes(y)) +
-  geom_histogram()
+glm1 <- glm(y ~ spray, data = worms, family = poisson)
 ```
 
-La variable y (conteo de orugas) tiene una distribución discreta con distribución de poisson
+**En un GLM con distribución de Poisson hay una transformación logarítmica interna en el modelo**
+
+<br>
+
+##### Coeficientes del modelo
 
 ```{r}
-mean(worms$y)
+summary(glm1)
 ```
 
-```{r}
-mp_01 <- glm(y ~ spray, data = worms, family = poisson)
-```
+Los coeficientes del modelo con distribución de Poisson están en escala logarítmica.
 
-# Hay una transformación logarítmica interna en el modelo 
+- El intercepto es la media de la variable respuesta para el primer nivel de la variable predictora categórica o para el valor 0 de una variable predictora numérica. En este caso, la media de conteo de larvas por unidad de muestreo cuando NO se aplica insecticida ("sprayN") es de 0.11881 (en escala logarítmica).
 
-```{r}
-summary(mp_01)
-```
-
-Los coeficientes del modelo con distribución de Poisson están en escala logarítmica
-
-Para interpretar el coeficiente tendriamos que exponenciarlo (antilogaritmo):
+Para interpretar el coeficiente tenemos que exponenciarlo (aplicar el antilogaritmo):
 
 ```{r}
 exp(0.11881)
 ```
 
+Ahora si se puede interpretar con el valor en unidades de la variable respuesta: 
+
+La media de conteo de larvas por unidad de muestreo cuando NO se aplica insecticida (sprayN) es de 1.13.
+
+- El coeficiente de "sprayY" NO indica la media de conteo cuando si se aplica insecticida:
+
 ```{r}
 exp(-0.89869)
 ```
 
-Por cuánto aumenta o disminuye la variable respuesta por un factor
-Aumento de suelo el mes que viene por un factor de 1 = no hay incremento
-por un factor de 1.5 = el aumento es de 50%
-por un factor de 1.05 = el aumento es de 5%
-por un factor de 0.9 = hay una disminución del 10%
+Este coeficiente **es un factor de disminución o aumento** por el que se multiplica un valor X de la variable respuesta. Indica por cuánto aumenta o disminuye la variable respuesta por el factor de la variable predictora.
 
-Ejemplo: si su salario es 600$ y recibiran un aumento por un factor de 0.9, el salario será 10% menos 
+
+Si el factor es 1 = no hay incremento o disminución (el valor X de la variable respuesta se multiplica por 1).
+Si el factor es de 1.5 = el aumento es de 50%.
+Si el factor es de 1.05 = el aumento es de 5%
+Si el factor es de 0.9 = hay una disminución del 10%
+
+*Ejemplo de aumento de salario:* 
+
+Si nuestro salario es de $600 y nos dicen que el siguiente mes recibiremos un aumento por un factor de 1.5:
 
 ```{r}
-600*0.9
+600*1.5
 ```
 
-La reducción del conteo de orugas cuando se aplica aspersión de insecticida es por un factor de 0.41 = hay una disminución del 59%
+Nuestro salario aumentará 50%.
+
+Si nos dicen que el factor de aumento es de 1, el salario será el mismo porque se estará multiplicando por 1. 
+
+Si el factor es menor a 1, el salario disminuirá en lugar de aumentar:
+
+```{r}
+660*0.9
+```
+
+Volviendo a los datos de las larvas, el factor de 0.41 nos está indicando que cuando se aplica insecticida ("sprayY"), la cantidad de orugas disminuirá por un factor de 0.41. Esto quiere decir que la disminución será del 59% (1 - 0.41 = 0.59).
+
+Si tenemos 10 larvas por unidad de muestreo cuando no se aplica insecticida, ¿cuál será la cantidad de orugas que podríamos encontrar cuando si se aplicó insecticida:
 
 ```{r}
 10*0.41
 ```
 
-### Calculo de sobredispersion
-1 no hay sobredispersion
->1 hay sobredispersion 
+- En el summary ya no aparecen valores de R cuadrado múltiple o R cuadrado ajustado como en los modelos lineales. 
 
-desviacion residual / grados de libertad
+- Aparecen valores de desviación nula y desviación residual del modelo.
+
+- También aparece el valor de AIC del modelo.
+
+<br>
+
+La función `parameters()` incorpora el argumento `exponentiate =` para que nos muestre los coeficientes reales y no en escala logarítmica:
 
 ```{r}
-1767.2/1298  
+parameters(glm1, 
+           exponentiate = TRUE)
 ```
 
-para corregir sobredispersion de forma manual (se corrige el error estandar): se saca la raiz cuadrada del valor de sobredispersion
+<br>
+
+Verificamos el ajuste del modelo con la función `performance()` del paquete `performance`
 
 ```{r}
-sqrt(1.36)
-```
-Luego se multiplica por el valor del error estandar
-
-```{r}
-1.16619 * 0.06871
+performance(glm1)
 ```
 
-Ese seria el error estandar corregido
+El resultado nos muestra los valores de AIC, AICc y BIC que ya vimos en los modelos lineales.
 
-```{r}
-model_parameters(mp_01)
+También muestra un valor de pseudo R cuadrado que puede calcularse con diferentes métodos (por defecto utiliza el método de Nagelkerke).
+
+El RMSE y el Sigma se interpretan de la misma forma que en los modelos lineales.
+
+<br>
+
+#### Gráfico del modelo
+
+```{r, message=FALSE, warning=FALSE}
+plot_model(glm1, 
+           type = "pred")
 ```
 
+Observando el gráfico nos damos cuenta que el intercepto del modelo indicaba la media de la cantidad de larvas cuando no se aplicaba insecticida, pero si vemos el punto de la media para la cantidad de larvas cuando si se aplica insecticida no es el valor del coeficiente que nos aparece para "sprayY". 
+
+Para determinar cuál es ese valor de la media tenemos que multiplicar el intercepto por el factor de disminución:
+
 ```{r}
-parameters(mp_01, exponentiate = TRUE)
+1.13*0.41
 ```
 
+La media de la cantidad de larvas cuando se aplica insecticida es de 0.46 (para una cantidad de 1.13 orugas cuando no se aplica insecticida).
+
+<br>
+
+#### Validación del modelo
+
+Un GLM con distribución de Poisson debe cumplir algunos supuestos diferentes a los de un modelo lineal.
+
+<br>
+
+Debemos evaluar la sobredispersión del modelo. Para eso utilizamos la función `check_overdispersion()` del paquete `performance` 
+
 ```{r}
-plot_model(mp_01, type = "pred")
+check_overdispersion(glm1)
 ```
 
+Aquí observamos si el valor de "dispersion ratio" es igual o mayor a 1. El resultado debería ser igual a 1 o lo más cercano a 1 (1.00...). Si el resultado es mayor a 1, nuestro modelo presenta sobredispersión.
+
+El valor de p indica la significancia de la sobredispersión, p < 0.05 = la sobredispersión es significativa; p >= 0.05 = la sobredispersión NO es significativa.
+
+La prueba también nos da el resultado textual en la parte inferior: "Overdispersion detected"
+
+<br>
+
+También se puede calcular la sobredispersión de forma manual dividiendo la desviación residual (Residual deviance en el summary del modelo) entre los grados de libertad. El resultado varía un poco respecto al "dispersion ratio" de la función `check_overdispersion()`, pero la interpretación es la misma, el resultado debería ser 1 o lo más cercano a 1.
+
 ```{r}
-check_overdispersion(mp_01)
+1767.2 / 1298
 ```
 
-cuando hay sobredispersion (>1), el coeficiente está bien, pero el error estándar está inflado
+Cuando hay sobredispersión en el modelo, los coeficientes están bien, pero el error estándar y los intervalos de confianza están subestimados
+
+<br>
+
+También se debe evaluar la inflación de ceros que presenta el modelo. Para eso utilizamos la función `check_zeroinflation()` del paquete `performance`:
 
 ```{r}
-check_zeroinflation(mp_01)
+check_zeroinflation(glm1)
 ```
 
-## Soluciones para corregir sobredispersion
+Esta función compara los ceros predichos por el modelo contra los ceros observados y calcula una tasa dividiéndolos. Si la cantidad de ceros observados es igual que la de ceros predichos, la tasa es de 1 (no hay inflación de ceros). La cantidad de ceros observados no necesariamente tiene que ser igual a la de ceros predichos, pero ese valor debe estar dentro de un rango tolerable para que no se detecte inflación de ceros.
 
-### Modelo quasipoisson 
+<br>
+
+#### Correción de modelos
+
+Cuando el modelo con distribución de Poisson tiene problemas de sobredispersión se puede corregir mediante modelos con distribución quasiPoisson o con distribución binomial negativa.
+
+<br>
+
+##### Modelo con distribución quasipoisson 
 
 ```{r}
-mp_01_q <- glm(y ~ spray, data = worms, family = quasipoisson)
+glm1_q <- glm(y ~ spray, 
+               data = worms, 
+               family = quasipoisson) # solo cambiamos la familia de "poisson" a "quasipoisson"
 ```
 
-```{r}
-model_parameters(mp_01_q, exponentiate = TRUE)
-```
-
-## Si se agrega otra variable, se agrega otro factor
+Ahora comparemos los parámetros:
 
 ```{r}
-mp_02 <- glm(y ~ spray + lead, data = worms, family = poisson)
-```
-
-```{r}
-summary(mp_02)
-```
-
-```{r}
-check_overdispersion(mp_02)
-```
-
-```{r}
-mp_02_q <- glm(y ~ spray + lead, data = worms, family = quasipoisson)
-```
-
-```{r}
-summary(mp_02_q)
-```
-
-Cuando se hace el summary de un modelo quasipoisson desaparece el valor de AIC pero eso se puede calcular con AICtab de bblme
-
-
-```{r}
-plot_model(mp_02_q, type = "pred")
-```
-
-```{r}
-parameters(mp_02_q, exponentiate = TRUE)
-```
-
-### Modelo con distribucion binomial negativa
-
-```{r}
-mbn_02 <- glm.nb(y ~ spray + lead, data = worms)
-```
-
-```{r}
-plot_model(mbn_02, "pred")
-```
-
-```{r}
-parameters(mbn_02, exponentiate = TRUE)
-```
-
-## Seleccion de modelos
-
-```{r}
-summary(mp_02_q)
-```
-## AIC= NA
-
-```{r}
-model_performance(mp_02_q)
-```
-
-```{r}
-AICtab(mp_01_q, mp_02_q, base = TRUE, delta = T, sort = T, weights = T)
+parameters(glm1, 
+           exponentiate = TRUE,
+           digits = 4, # para indicar la cantidad de decimales del error estándar
+           ci_digits = 4) # para indicar la cantidad de decimales del intervalo de confianza
 ```
 
 ```{r}
-AICtab(mp_01, mp_02, base = TRUE, delta = T, sort = T, weights = T, dispersion = 1.450)
+parameters(glm1_q, 
+           exponentiate = TRUE,
+           digits = 4,
+           ci_digits = 4)
 ```
 
-# qAIC = cuando hay sobredispersion
+Los coeficientes seguirán siendo los mismos, lo que cambia es el error estándar y los intervalos de confianza. Un modelo con sobredispersión e inflación de ceros subestima el error estándar, para eso se corrige con la función quasipoisson.
 
-```{r}
-mp_03 <- glm(y ~ spray * lead, data = worms, family = poisson)
-```
+<br>
 
-```{r}
-check_overdispersion(mp_03)
-```
+##### Modelo con distribución binomial negativa
 
-```{r}
-AICtab(mp_01, mp_02, mp_03, base = TRUE, delta = T, sort = T, weights = T, dispersion = 1.450)
-```
+Para realizar un modelo con distribución binomial negativa utilizamos la función `glm.nb()` del paquete `MASS`
 
 ```{r}
-mp_03_q <- glm(y ~ spray * lead, data = worms, family = quasipoisson)
+glm1_bn <- glm.nb(y ~ spray, 
+              data = worms)
+```
+
+Ahora comparamos los parámetros.
+
+```{r}
+parameters(glm1_bn, 
+           exponentiate = TRUE, 
+           digits = 4, 
+           ci_digits = 4)
+```
+
+Este modelo realiza corrección similar a la del modelo con distribución quasipoisson sobre el error estándar y los intervalos de confianza.
+
+<br>
+
+#### Selección de modelos
+
+```{r}
+glm0 <- glm(y ~ 1, data = worms, family = poisson)
+glm1 <- glm(y ~ spray, data = worms, family = poisson)
+glm2 <- glm(y ~ trt, data = worms, family = poisson)
+glm3 <- glm(y ~ lead, data = worms, family = poisson)
+glm4 <- glm(y ~ spray + lead, data = worms, family = poisson)
+glm5 <- glm(y ~ spray * lead, data = worms, family = poisson)
+```
+
+Con la función `compare_performance()` del paquete `performance`
+
+```{r}
+compare_performance(glm0, glm1, glm2, glm3, glm4, glm5, rank = TRUE)
+```
+
+La sobredispersión puede afectar la selección de los modelos, y si hubo sobredispersión en nuestro primer modelo es muy propable que también haya en el resto de modelos porque está ligada a la variable respuesta (que es la misma en todos los modelos). 
+
+Verifiquémoslo en un par de modelos:
+
+```{r}
+check_overdispersion(glm2)
 ```
 
 ```{r}
-plot_model(mp_03_q, type = "int")
+check_overdispersion(glm4)
 ```
+
+Para evitar que la selección de modelos esté influenciada por la sobredispersión debemos realizarla sobre modelos corregidos:
+
+```{r}
+glm0_q <- glm(y ~ 1, data = worms, family = quasipoisson)
+glm1_q <- glm(y ~ spray, data = worms, family = quasipoisson)
+glm2_q <- glm(y ~ trt, data = worms, family = quasipoisson)
+glm3_q <- glm(y ~ lead, data = worms, family = quasipoisson)
+glm4_q <- glm(y ~ spray + lead, data = worms, family = quasipoisson)
+glm5_q <- glm(y ~ spray * lead, data = worms, family = quasipoisson)
+```
+
+```{r}
+compare_performance(glm0_q, glm1_q, glm2_q, glm3_q, glm4_q, glm5_q, rank = TRUE)
+```
+
+<br>
+
+Otra forma de seleccionar los modelos es con la funcion `AICtab` del paquete `bbmle`:
+
+```{r}
+AICtab(glm0, glm1, glm2, glm3, glm4, glm5, 
+       base = TRUE,
+       delta = TRUE, 
+       sort = TRUE,
+       weights = TRUE)
+```
+
+Sin embargo, con esta función no se puede realizar la selección sobre modelos corregidos con la distribución quasipoisson ya que el valor del AIC desaparece cuando se hace esa corrección ("AIC = NA"):
+
+```{r}
+summary(glm1_q)
+```
+
+```{r}
+AICtab(glm0_q, glm1_q, glm2_q, glm3_q, glm4_q, glm5_q, 
+       base = TRUE,
+       delta = TRUE, 
+       sort = TRUE,
+       weights = TRUE)
+```
+
+Para corregir ese problema podemos ajustar todos los modelos con distribución **binomial negativa** y hacer la selección en base a esos modelos.
+
+Otra forma es haciendo la selección sobre los modelos con distribución de Poisson (sin corrección) colocando un valor de sobredispersión con el argumento `dispersion =`:
+
+```{r}
+AICtab(glm0, glm1, glm2, glm3, glm4, glm5, 
+       base = TRUE,
+       delta = TRUE, 
+       sort = TRUE,
+       weights = TRUE,
+       dispersion = 1.370) # para indicar un valor de sobredispersión
+
+# El problema aquí es que solo se puede colocar un valor de sobredispersión (de un solo modelo), y ese valor puede alterar la selección. Si colocamos una media de la sobredispersión de todos los modelos también puede alterar el resultado de la selección de modelos.
+```
+
+Si observan la advertencia en el resultado de la selección del modelo, nos indica que la dispersión es diferente de 1 (!= 1) y que se cambió el criterio de selección de "AIC" a **"qAIC"**, que está ajustado para los modelos que presentan problemas de sobredispersión.
+
+<br>
+
+##### Interpretación del mejor modelo
+
+```{r}
+parameters(glm2_q,
+           exponentiate = TRUE)
+```
+
+La media para el conteo de larvas cuando no se aplica tratamiento (T1) es de 1.4 por unidad muestral (IC95% = 1.26, 1.56). Cuando se aplica insecticida de contacto (T2) hay una disminución de larvas por un factor de 0.36 con un IC95% = 0.29, 0.44 (disminución del 64%, IC95% = 71%, 56%); p < 0.001. Cuando se aplica arsenato de plomo (T3) hay una disminución de larvas por un factor de 0.61 con un IC95% = 0.51, 0.72 (disminución del 39%, IC95% = 49%, 28%); p < 0.001. Y cuando se aplica insecticida de contacto combinado con arsenato de plomo (T4) el efecto sobre la cantidad de larvas comparado con el T1 es una disminución por un factor de 0.29 con un IC95% = 0.23, 0.37 (disminución del 71%, IC95% = 77%, 63%); p < 0.001, siendo este último el tratamiento que produce la mayor disminución de larvas por unidad muestral.
+
+```{r}
+performance(glm2_q)
+```
+
+El pseudo R cuadrado de Nagelkerke es de 0.213, lo que indica que el tratamiento explica el 21.3% de la varianza de la cantidad de larvas por unidad muestral, y el error del modelo (RMSE) es de 1.067 larvas.
+
+<br>
+
+##### Gráfico del mejor modelo
+
+```{r}
+plot_model(glm2_q, 
+           type = "pred",
+           title = "Efecto de los tratamientos sobre la cantidad de larvas",
+           axis.title = c("Tratamiento", "Cantidad de larvas (promedio)"),
+           terms = "trt") +
+  theme_bw()
+```
+
+<br>
+
+##### Gráfico de modelo con interacción
+
+En el caso de que el modelo con interacción entre las variables fuese el que mejor se ajustó a nuestros datos.
+
+```{r}
+glm5_q <- glm(y ~ spray * lead, data = worms, family = quasipoisson)
+```
+
+```{r}
+plot_model(glm5_q, 
+           type = "int",
+           terms = c("spray", "lead")) +
+  aes(color = group) +
+  labs(title = "Número de larvas en base a la aplicación de insecticida y arsenato de plomo",
+       y = "Número de larvas (promedio)",
+       x = "Aplicación de insecticida",
+       color = "Aplicación de arsenato de plomo") +
+  theme_bw()
+```
+
+Podemos verificar la interacción porque el número de larvas cuando no se aplica insecticida es diferente dependiendo de si se aplica o no se aplica arsenato de plomo; cuando si se aplica insecticida el número de larvas es similar cuando se aplica o no se aplica arsenato de plomo.
+
+La interacción también puede verificarse con la función `interaction.plot()` del paquete base (cuando las variables predictoras son categóricas con pocos niveles):
 
 ```{r}
 interaction.plot(worms$spray, worms$lead, worms$y)
 ```
 
-Si las lineas no son paralelas significa que hay una interaccion entre las variables. En este caso, las lineas no se cruzan, asi que se puede decir que hay una leve interaccion entre la asperción y el tratamiento con plomo
+Si las líneas no son paralelas significa que hay una interaccion entre las variables. En este caso, las líneas no son paralelas, pero tampoco se cruzan, así que se puede decir que hay una leve interaccion entre la aplicación de insecticida y el tratamiento con arsenato de plomo que determina el efecto en el número de larvas.
 
+<br>
 
-## Ejemplo con otra base de datos
+#### Ejemplo con otra base de datos
+
+<br>
+
+##### Datos
 
 ```{r}
 mejillones <- import("data/muss.txt")
 head(mejillones)
 ```
 
-_Anadara australis_
+Esta base de datos tiene conteos para tres especies diferentes de mejillones, hay una columna por especie (unio, duck y swan), y las variables evaluadas son la profundidad (depth) y el sustrato (subs).
 
-```{r}
+Para este ejemplo desarrollaremos modelos para la especie swan ( _Anadara australis_ ).
+
+```{r, echo=FALSE}
 include_graphics("Anadara.jpg")
 ```
 
+<br>
+
+Como la variable de sustrato es de tipo caracter la convertimos a factor:
 
 ```{r}
 mejillones$subs <- factor(mejillones$subs)
 head(mejillones)
 ```
 
-### Modelos
+##### Modelos
 
 ```{r}
 modswan1 <- glm(swan ~ depth, family = poisson, data = mejillones)
@@ -286,34 +512,75 @@ modswan3 <- glm(swan ~ depth + subs, family = poisson, data = mejillones)
 modswan4 <- glm(swan ~ depth * subs, family = poisson, data = mejillones)
 ```
 
+##### Selección de modelos
 
-### Selección de modelos
+```{r}
+compare_performance(modswan1, modswan2, modswan3, modswan4, rank = TRUE)
+```
 
 ```{r}
 AICtab(modswan1, modswan2, modswan3, modswan4, base = TRUE, delta = TRUE, sort = TRUE, weights = TRUE)
 ```
+
+<br>
+
+##### Validación del mejor modelo
+
+```{r}
+check_overdispersion(modswan1)
+
+# No se detectó sobredispersión en el modelo
+```
+
+```{r}
+check_zeroinflation(modswan1)
+
+# No se detectó inflación de ceros en el modelo
+```
+
+##### Interpretación del mejor modelo
 
 ```{r}
 summary(modswan1)
 ```
 
 ```{r}
-parameters(modswan1, exponentiate = TRUE)
+parameters(modswan1, 
+           exponentiate = TRUE)
 ```
+
+De los modelos generados con una distribución de Poisson para explicar la varianza del número de mejillones, el que mejor se ajusta a los datos según el criterio de información de Akaike, es el modelo con la variable predictora de profundidad ("depth"). 
+
+Por cada metro que aumente la profundidad, el número de mejillones aumentará por un factor de 3.02 con un IC95% = 2.33, 3.96 (aumento del 202%, IC95% = 133%, 296%); p < 0.001, respecto al intercepto que es de 0.24 mejillones cuando la profundidad es de 0 metros.
+
+<br>
+
+También podemos interpretarlo de la siguiente manera: 
+
+```{r}
+0.24*3.02
+```
+
+Por cada metro que aumente la profundidad, el número de mejillones aumentará 0.72 mejillones.
 
 ```{r}
 performance(modswan1)
 ```
 
-```{r}
-check_overdispersion(modswan1)
-```
+El pseudo R cuadrado de Nagelkerke es de 0.636, lo que indica que la profundidad explica el 63.6% de la varianza del número de mejillones de esta especie, y el error del modelo (RMSE) es de 1.16 mejillones.
+
+<br>
+
+##### Gráfico del mejor modelo
 
 ```{r}
-check_zeroinflation(modswan1)
-```
-
-```{r}
-plot_model(modswan1, type = "pred", show.data = TRUE)
+plot_model(modswan1, 
+           type = "pred", 
+           show.data = TRUE,
+           terms = "depth") +
+  labs(title = "Número de mejillones en base a la profundidad",
+       y = "Número de mejillones",
+       x = "Profundidad (m)") +
+  theme_bw()
 ```
 
