@@ -99,6 +99,8 @@ parameters(binomial1)
 
 **Los coeficientes están en escala logit**
 
+<br>
+
 - Intercepto
 
 ```{r}
@@ -106,6 +108,8 @@ plogis(-0.7005)
 ```
 
 Indica que la probabilidad de que las semillas germinen si son de la variedad genética "a73" y si fueron tratadas con "extracto de frijol" es del 33.17%.
+
+<br>
 
 - Coeficientes
 
@@ -125,7 +129,9 @@ plogis(-0.7005 + 1.0647)
 
 Indica que la probabilidad de que las semillas germinen si son de la variedad genética "a73" y si fueron tratadas con "extracto de pepino" es del 59%.
 
-Para reportar esas probabilidades también debemos reportar el intervalo de confianza al 95%, pero antes hay que validar el modelo.
+<br>
+
+**Para reportar esas probabilidades también debemos reportar el intervalo de confianza al 95%, pero antes hay que validar el modelo.**
 
 <br>
 
@@ -193,6 +199,8 @@ check_overdispersion(binomial2)
 check_overdispersion(binomial3)
 ```
 
+<br>
+
 Realizamos la corrección de los modelos para la selección:
 
 ```{r}
@@ -202,11 +210,15 @@ binomial3_q <- glm(cbind(conteo, muestra-conteo) ~ orobanche, data = semillas, f
 binomial4_q <- glm(cbind(conteo, muestra-conteo) ~ extracto, data = semillas, family = quasibinomial)
 ```
 
-Con la función `compare_performance()` del paquete `performance`:
+<br>
+
+Y ahora la selección de modelos con la función `compare_performance()` del paquete `performance`:
 
 ```{r, message=FALSE}
 compare_performance(binomial1_q, binomial2_q, binomial3_q, binomial4_q, rank = TRUE)
 ```
+
+<br>
 
 Con la función `ICtab()` del paquete `bbmle` (similar a la función `AICtab()`:
 
@@ -234,12 +246,16 @@ summary(binomial2_q)
 parameters(binomial2_q)
 ```
 
-Estimamos las probabilidades indicando los valores condicionales:
+<br>
+
+Estimamos las probabilidades indicando los valores condicionales en un dataframe:
 
 ```{r}
 condicionales_semillas <- (data.frame(orobanche = c("a73", "a73", "a75", "a75"), extracto = c("bean", "cucumber", "bean", "cucumber")))
 condicionales_semillas
 ```
+
+Aplicamos la función `estimate_expectation()` del paquete `modelbased` para calcular las probabilidades:
 
 ```{r}
 estimate_expectation(binomial2_q, data = condicionales_semillas)

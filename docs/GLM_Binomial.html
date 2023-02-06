@@ -471,6 +471,7 @@ de semillas germinadas y no germinadas):</p>
 ## The model has a log- or logit-link. Consider using `exponentiate =
 ##   TRUE` to interpret coefficients as ratios.</code></pre>
 <p><strong>Los coeficientes están en escala logit</strong></p>
+<p><br></p>
 <ul>
 <li>Intercepto</li>
 </ul>
@@ -479,6 +480,7 @@ de semillas germinadas y no germinadas):</p>
 <p>Indica que la probabilidad de que las semillas germinen si son de la
 variedad genética “a73” y si fueron tratadas con “extracto de frijol” es
 del 33.17%.</p>
+<p><br></p>
 <ul>
 <li>Coeficientes</li>
 </ul>
@@ -494,8 +496,10 @@ del 39.41%.</p>
 <p>Indica que la probabilidad de que las semillas germinen si son de la
 variedad genética “a73” y si fueron tratadas con “extracto de pepino” es
 del 59%.</p>
-<p>Para reportar esas probabilidades también debemos reportar el
-intervalo de confianza al 95%, pero antes hay que validar el modelo.</p>
+<p><br></p>
+<p><strong>Para reportar esas probabilidades también debemos reportar el
+intervalo de confianza al 95%, pero antes hay que validar el
+modelo.</strong></p>
 <p><br></p>
 </div>
 <div id="validación-del-modelo" class="section level4">
@@ -582,12 +586,15 @@ presenten sobredispersión. Revisemos un par de modelos:</p>
 ##   Pearson&#39;s Chi-Squared =  91.551
 ##                 p-value = &lt; 0.001</code></pre>
 <pre><code>## Overdispersion detected.</code></pre>
+<p><br></p>
 <p>Realizamos la corrección de los modelos para la selección:</p>
 <pre class="r"><code>binomial1_q &lt;- glm(cbind(conteo, muestra-conteo) ~ orobanche + extracto, data = semillas, family = quasibinomial)
 binomial2_q &lt;- glm(cbind(conteo, muestra-conteo) ~ orobanche * extracto, data = semillas, family = quasibinomial)
 binomial3_q &lt;- glm(cbind(conteo, muestra-conteo) ~ orobanche, data = semillas, family = quasibinomial)
 binomial4_q &lt;- glm(cbind(conteo, muestra-conteo) ~ extracto, data = semillas, family = quasibinomial)</code></pre>
-<p>Con la función <code>compare_performance()</code> del paquete
+<p><br></p>
+<p>Y ahora la selección de modelos con la función
+<code>compare_performance()</code> del paquete
 <code>performance</code>:</p>
 <pre class="r"><code>compare_performance(binomial1_q, binomial2_q, binomial3_q, binomial4_q, rank = TRUE)</code></pre>
 <pre><code>## # Comparison of Model Performance Indices
@@ -598,6 +605,7 @@ binomial4_q &lt;- glm(cbind(conteo, muestra-conteo) ~ extracto, data = semillas,
 ## binomial1_q |   glm | 0.145 | 1.485 |            87.92%
 ## binomial4_q |   glm | 0.159 | 1.500 |            74.49%
 ## binomial3_q |   glm | 0.192 | 2.250 |             0.00%</code></pre>
+<p><br></p>
 <p>Con la función <code>ICtab()</code> del paquete <code>bbmle</code>
 (similar a la función <code>AICtab()</code>:</p>
 <pre class="r"><code>ICtab(binomial1, binomial2, binomial3, binomial4, 
@@ -653,7 +661,9 @@ función puede afectar la selecció del modelo.</p>
 <pre><code>## 
 ## Uncertainty intervals (profile-likelihood) and p-values (two-tailed)
 ##   computed using a Wald t-distribution approximation.</code></pre>
-<p>Estimamos las probabilidades indicando los valores condicionales:</p>
+<p><br></p>
+<p>Estimamos las probabilidades indicando los valores condicionales en
+un dataframe:</p>
 <pre class="r"><code>condicionales_semillas &lt;- (data.frame(orobanche = c(&quot;a73&quot;, &quot;a73&quot;, &quot;a75&quot;, &quot;a75&quot;), extracto = c(&quot;bean&quot;, &quot;cucumber&quot;, &quot;bean&quot;, &quot;cucumber&quot;)))
 condicionales_semillas</code></pre>
 <pre><code>##   orobanche extracto
@@ -661,6 +671,8 @@ condicionales_semillas</code></pre>
 ## 2       a73 cucumber
 ## 3       a75     bean
 ## 4       a75 cucumber</code></pre>
+<p>Aplicamos la función <code>estimate_expectation()</code> del paquete
+<code>modelbased</code> para calcular las probabilidades:</p>
 <pre class="r"><code>estimate_expectation(binomial2_q, data = condicionales_semillas)</code></pre>
 <pre><code>## Model-based Expectation
 ## 
