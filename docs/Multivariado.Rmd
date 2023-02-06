@@ -16,11 +16,13 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<br>
 
-### Contenido{.tabset .tabset-pills}
+El PCA se usa para reducir la dimensionalidad (variables) de los datos perdiendo la menor cantidad de informaciín (varianza) posible. El PCA crea un nuevo set de variables ortogonales (no correlacionadas) que contienen la misma información que los datos originales. Sí el conjunto de datos originales tiene 10 variables, el pca creará 10 componentes principales (nuevas variables) que no están correlacionadas. Se espera que los primeros componentes capturen la mayoría de la varianza de los datos y vaya decreciendo hacia los últimos componentes.
 
+<br>
 
-### Paquetes
+#### Paquetes
 
 ```{r, message=FALSE, warning=FALSE}
 library(tidyverse)
@@ -31,9 +33,13 @@ library(parameters)
 library(ade4)
 ```
 
-El PCA se usa para reducir la dimensionalidad (variables) de los datos perdiendo la menor cantidad de informaciín (varianza) posible. El PCA crea un nuevo set de variables ortogonales (no correlacionadas) que contienen la misma información que los datos originales. Sí el conjunto de datos originales tiene 10 variables, el pca creará 10 componentes principales (nuevas variables) que no están correlacionadas. Se espera que los primeros componentes capturen la mayoría de la varianza de los datos y vaya decreciendo hacia los últimos componentes.
+<br>
 
-### Datos
+### Contenido{.tabset .tabset-pills}
+
+<br>
+
+#### Datos
 
 ```{r}
 data("doubs")
@@ -41,32 +47,44 @@ vars <- doubs$env
 head(vars)
 ```
 
-### PCA
+<br>
+
+#### PCA
 
 ```{r}
 vars_pca <- PCA(vars, graph = FALSE)
 vars_pca
 ```
 
-Cuando las variables tienen unidades muy diferentes se puede hacer un escalado de esas variables con la función `scale()`
+<br>
+
+Cuando las variables tienen unidades muy diferentes se puede hacer un escalado de esas variables con la función `scale()`:
 
 ```{r}
 vars_escalado <- scale(vars)
 head(vars_escalado)
 ```
 
+<br>
+
+#### Revisión del PCA
+
 ```{r}
 summary(vars_pca)
 ```
 
-### Sitios
+<br>
+
+#### Componentes Principales para los sitios
 
 ```{r}
 sitios <- data.frame(vars_pca$ind$coord)
 sitios
 ```
 
-### Eigenvalues
+<br>
+
+#### Eigenvalues
 
 Eigen value es la porción del total de la varianza que explica cada componente principal (dimensión)
 
@@ -74,21 +92,28 @@ Eigen value es la porción del total de la varianza que explica cada componente 
 valores <- get_eigenvalue(vars_pca)
 valores
 ```
-Deberíamos quedarnos con los componentes que expliquen el 70% de la varianza de forma acumulada.
 
-Podemos verlo gráficamente
+**Deberíamos quedarnos con los componentes que expliquen el 70% de la varianza de forma acumulada.**
+
+<br>
+
+Podemos verlo gráficamente:
 
 ```{r}
 fviz_eig(vars_pca, addlabels = TRUE)
 ```
 
-### Gráfico de correlación entre las variables de los componentes principales
+<br>
+
+#### Gráfico de correlación entre las variables de los Componentes Principales
 
 ```{r}
 fviz_pca_var(vars_pca, repel = TRUE)
 ```
 
-### Calidad de la represenutación de cada variable en los componentes principales
+<br>
+
+#### Calidad de la represenutación de cada variable
 
 cos2 (coseno al cuadrado, coordenadas al cuadrado)
 
@@ -96,7 +121,9 @@ cos2 (coseno al cuadrado, coordenadas al cuadrado)
 fviz_cos2(vars_pca, choice = "var", axes = 1:2)
 ```
 
-### Gráfico de correlación en base a calidad de representación
+<br>
+
+##### Gráfico de correlación en base a calidad de representación
 
 ```{r}
 fviz_pca_var(vars_pca, col.var = "cos2",
@@ -104,15 +131,21 @@ fviz_pca_var(vars_pca, col.var = "cos2",
              repel = TRUE)
 ```
 
+<br>
+
 ```{r}
 fviz_pca_var(vars_pca, alpha.var = "cos2", repel = TRUE)
 ```
 
-### Contribución de las variables a los PC
+<br>
+
+#### Contribución de las variables a los PC
 
 ```{r}
 fviz_contrib(vars_pca, choice = "var", axes = 1:2, top = 11)
 ```
+
+<br>
 
 ```{r}
 fviz_pca_var(vars_pca, col.var = "contrib",
@@ -120,17 +153,23 @@ fviz_pca_var(vars_pca, col.var = "contrib",
              repel = TRUE)
 ```
 
-### Gráfico de los sitios de colecta
+<br>
+
+#### Gráfico de los sitios de colecta
 
 ```{r}
 fviz_pca_ind(vars_pca)
 ```
 
-### Calidad de representación de los sitios de colecta
+<br>
+
+#### Calidad de representación de los sitios de colecta
 
 ```{r}
 fviz_cos2(vars_pca, choice = "ind", axes = 1:2)
 ```
+
+<br>
 
 ```{r}
 fviz_pca_ind(vars_pca, col.ind = "cos2", pointsize = "cos2", 
@@ -138,11 +177,15 @@ fviz_pca_ind(vars_pca, col.ind = "cos2", pointsize = "cos2",
              repel = TRUE)
 ```
 
-### Contribución de los sitios de colecta
+<br>
+
+#### Contribución de los sitios de colecta
 
 ```{r}
 fviz_contrib(vars_pca, choice = "ind", axes = 1:2)
 ```
+
+<br>
 
 ```{r}
 fviz_pca_ind(vars_pca, col.ind = "contrib", pointsize = "contrib", 
@@ -150,8 +193,9 @@ fviz_pca_ind(vars_pca, col.ind = "contrib", pointsize = "contrib",
              repel = TRUE)
 ```
 
+<br>
 
-### Biplot
+#### Biplot
 
 Gráfico de correlación con variables y sitio
 
@@ -164,23 +208,9 @@ fviz_pca_biplot(vars_pca, repel = TRUE,
        subtitle = "Variables ambientales")
 ```
 
-```{r, include=FALSE}
-#fviz_pca_biplot(vars_pca, 
- #               axes = c(1,2),
-   #             ,
-  #              addEllipses = TRUE,
-    #            label = FALSE,
-     #           geom = FALSE,
-      #          palette = c("#00AFBB", "#E7B800", "#FC4E07"),
-       #         invisible = "var") +
-#  theme_bw() +
- # labs(title = "Análisis de Componentes Principales",
-  #     subtitle = "Comunidad de escarabajos",
-   #    color = "Hábitat",
-    #   fill = "Hábitat")
-```
+<br>
 
-### PCA con parameters
+#### PCA con parameters
 
 ```{r}
 pca.parameters <- principal_components(vars, n = 3)
@@ -197,6 +227,8 @@ export(pca.parameters, "pca.csv")
 ```{r}
 summary(pca.parameters)
 ```
+
+<br>
 
 ```{r}
 plot(pca.parameters, type = "line") + 
