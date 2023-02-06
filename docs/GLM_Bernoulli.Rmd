@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <br>
 
-### GLM con distribución de Binomial 
+### GLM con distribución Binomial 
 
 Los modelos lineales generalizados también pueden utilizarse cuando tenemos una variable dicotómica (con distribución de Bernoulli), esto quiere decir que nuestra variable respuesta solo puede tener dos posibles resultados (como los lados de una moneda). En este tipo de variables dicotómicas podemos encontrar datos de 1 o 0, vivo o muerto, presente o ausente, macho o hembra, entre otros.
 

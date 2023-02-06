@@ -19,3 +19,700 @@ knitr::opts_chunk$set(echo = TRUE)
 <br>
 
 PENDIENTE
+
+Un modelo lineal general está basado en una regresión lineal simple y nos sirve para determinar el efecto que tiene una variable predictora numérica sobre una variable respuesta numérica (Algo que no puede hacer un ANOVA), también nos sirve para evaluar si hay diferencias de una variable respuesta entre los niveles de una variable predictora categórica (similar al ANOVA).
+
+<br>
+
+#### Paquetes 
+
+```{r, warning=FALSE, message=FALSE}
+library(palmerpenguins)
+library(tidyverse)
+library(parameters)
+library(performance)
+library(FSA)
+library(AICcmodavg)
+library(bbmle)
+library(sjPlot)
+library(estimatr)
+library(modelbased)
+library(emmeans)
+library(ggeffects)
+```
+
+<br>
+
+#### Datos
+
+```{r}
+data("penguins")
+head(penguins)
+```
+
+<br>
+
+Primero eliminamos los NA de nuestra base de datos con la función `drop_na()` del paquete `tidyr`, y para este ejercicio, por conveniencia pasaremos la masa corporal de gramos a kilogramos (para facilitar la interpretación).
+
+```{r}
+p <- penguins |>
+  drop_na() |>
+  mutate(peso_kg = body_mass_g / 1000)
+
+head(p)
+```
+
+<br>
+
+#### Exploración de datos
+
+Exploramos la relación existente entre nuestras variables de interés con un gráfico de dispersión.
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(p, aes(peso_kg, flipper_length_mm)) +
+  geom_point() +
+  stat_smooth(method = lm) # con esto podemos ver si un modelo lineal (lm) se ajusta bien a nuestros datos
+```
+
+<br>
+
+### Contenido{.tabset .tabset-pills}
+
+<br>
+
+#### Modelo lineal general
+
+La fórmula de un modelo lineal general es la siguiente:
+
+$$
+y_i = \beta_0 + \beta_1x_i +\epsilon_i
+$$
+
+Donde:
+
+  y = variable respuesta
+  
+  x = variable predictora
+  
+  β = parámetros del modelo
+  
+  ϵ = error (variable aleatoria que explica la variabilidad en la variable respuesta que no puede ser explicada con la relación lineal entre esta y la variable predictora)
+  
+Creamos nuestro modelo con la función `lm()` del paquete base, colocamos nuestra variable respuesta y nuestra variable predictora separadas por una virgulilla (`~`).
+
+```{r}
+modelo1 <- lm(flipper_length_mm ~ peso_kg, data = p)
+```
+
+<br>
+
+#### Resultado del modelo
+
+Para ver el resultado de nuestro modelo hacemos un `summary()`.
+
+```{r}
+summary(modelo1)
+```
+
+- Los residuales son la diferencia entre los valores predichos por el modelo y los valores observados (nuestros datos):
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+library(ggxmean)
+```
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, size= 60%}
+ggplot(p, aes(peso_kg, flipper_length_mm)) +
+  geom_point() +
+  geom_lm() +
+  geom_lm_residuals(color = "red")
+```
+
+- El intercepto nos muestra el valor que tendría nuestra variable respuesta en el eje y cuando nuestra variable predictora es igual a 0 en el eje x:
+
+```{r, message=FALSE, warning=FALSE, echo=FALSE, size= 60%}
+ggplot(p, aes(peso_kg, flipper_length_mm)) +
+  geom_point() +
+  geom_lm() +
+  geom_lm_intercept(color = "red", size = 3)
+```
+
+- El estimado bajo el intercepto muestra el efecto de nuestra variable predictora sobre la variable respuesta. Puede ser positivo o negativo.
+
+- El error estándar es el error de la estimación de ese efecto.
+
+- El valor de p indica si el efecto de la variable predictora sobre la variable respuesta es estadísticamente significativo. Si p < 0.05 = estadísticamente significativo; si p >= 0.05 = No estadísticamete significativo.
+
+- El error estándar residual es el error del modelo y está en las unidades de la variable respuesta.
+
+- El R cuadrado y el R cuadrado ajustado indican cuánto explica la variable predictora la varianza de la variable respuesta (El R cuadrado ajustado está corregido para el número de parámetros del modelo).
+
+<br>
+
+#### Interpretación del modelo
+
+La interpretación de este modelo sería la siguiente: 
+
+Por cada kg de masa corporal que aumenten los pingüinos, la longitud de la aleta aumentará 15.195 mm (valor de p < 2e-16).
+El R cuadrado ajustado fue de 0.7614, indicando que la masa corporal de los pingüinos explica el 76.14% de la la varianza en la longitud de la aleta.
+
+<br>
+
+También podemos ver los parámetros del modelo de una forma diferente con la función `parameters()` del paquete `parameters`.
+
+```{r}
+parameters(modelo1)
+```
+
+Con esta función obtenemos el intervalo de confianza al 95% del efecto de nuestra variable predictora sobre nuestra variable respuesta. Esto también se puede agregar a la interpretación:
+
+Por cada kg de masa corporal que aumenten los pingüinos, la longitud de la aleta aumentará 15.20 mm (IC95% = 14.28, 16.11; valor de p < 0.001).
+
+El intervalo de confianza al 95% nos indica que podemos decir con un 95% de confianza que el verdadero valor del efecto de la masa corporal de los pingüinos sobre la longitud de la aleta está entre 14.28 y 16.11 mm.
+
+<br>
+
+También podemos evaluar el rendimiento o ajuste de nuestro modelo con la función `performance()` del paquete `performance`.
+
+```{r}
+performance(modelo1)
+```
+
+- Aquí podemos observar el valor del criterio de información de Akaike (AIC) y un AIC ajustado para un tamaño de muestra pequeño (AICc). Estos criterios de información se utilizarán para elegir entre varios modelos, el que mejor se ajuste a nuestros datos 
+
+- También observamos el criterio de información Bayesiano (BIC).
+
+- El R cuadrado y el R cuadrado ajustado ajustado indican cuánto explica la variable predictora la varianza de la variable respuesta. el R cuadrado ajustado tiene una corrección para la cantidad de parámetros del modelo. 
+
+- El RMSE es el error cuadrático medio (root-mean square error), este indica el error del modelo, la diferencia entre los valores predichos por el modelo y los valores observados. El RMSE está en las unidades de la variable respuesta.
+
+- El Sigma es el error residual estándar también indica un error del modelo en las unidades de la variable respuesta, la única diferencia es que en su fórmula está dividido entre los grados de libertad, y el RMSE está dividido entre el número de observaciones, por esa razón, el Sigma (error estándar residual) siempre será un poco mayor que el RMSE.
+
+La masa corporal de los pingüinos explica el 76.1% de la varianza de la longitud de la aleta. Y el error del modelo de la regresión de la masa corporal sobre la longitud de la aleta de los pingüinos es de 6.82 mm.
+
+*Lo más importante es interpretar el coeficiente y el intervalo de confianza*
+
+<br>
+
+#### Predicciones con nuestro modelo
+
+La fórmula del modelo para predecir un valor de la variable respuesta a partir de un valor conocido de la variable predictora sería:
+
+$$
+y = a + bx
+$$
+
+$$
+Longitud de la Aleta = 137.04 + 15.20  * MasaCorporal
+$$
+
+Por ejemplo, podemos predecir el valor que tendría la longitud de aleta si la masa corporal fuese de 10 kg:
+
+```{r}
+y = 137.04 + 15.20 * 10
+y
+```
+
+Podemos crear una función con la fórmula de regresión lineal de nuestro modelo para predecir varios valores sin tener que hacerlo uno por uno:
+
+```{r}
+PredLongAleta <- function(Peso){
+  137.04 + 15.20 * Peso
+}
+```
+
+```{r}
+PredLongAleta(Peso = c(3, 10, 15))
+```
+
+<br>
+
+#### Validacion del modelo
+
+El modelo lineal tiene algunos supuestos que deben cumplirse: 
+
+- Normalidad de los residuales
+
+- Homogeneidad de la varianza de los residuales, también conocido como supuesto de homocedasticidad (la varianza de los residuales debe mantenerse constante entre los grupos)
+
+- Independencia de los datos (se debe evaluar cuando hay submuestras)
+
+- Relación lineal entre las variables
+
+- Ausencia de multicolinealidad (cuando hay varias variables)
+
+- Ausencia de valores influyentes, también conocidos como "outliers" o "valores extremos" (pueden ser errores cometidos al transcribir nuestros datos)
+
+<br>
+
+Podemos evaluar algunos de los supuestos de forma gráfica con la función `plot()`.
+
+```{r, out.width= 60%}
+plot(modelo1, 
+     which = c(1:6)) # para indicar que muestre todos los gráficos (6), por defecto muestra solo los primeros 4
+
+# Los primeros dos gráficos muestran la normalidad de los residuales, el tercero muestra la homogeneidad de la varianza, y los últimos tres muestran los valores influyentes basados en la distancia de Cook.
+```
+
+<br>
+
+También podemos utilizar la función `check_model()` del paquete `performance`.
+
+```{r}
+check_model(modelo1)
+
+# El primer gráfico muestra las predicciones del modelo vs los valores observados, el segundo muestra la linealidad de los residuales, el tercero muestra la homogeneidad de la varianza, el cuarto muestra las observaciones influyentes, y el quinto muestra la normalidad de los residuales.
+```
+
+<br>
+
+Y podemos evaluarlo de manera individual con algunas funciones del paquete `performance`.
+
+Para evaluar la normalidad de los residuales utilizamos la función `check_normality()`:
+
+```{r}
+n <- check_normality(modelo1)
+n
+
+# Nos dice de forma textual si los residuales tienen una distribución normal
+```
+
+```{r}
+plot(n)
+
+# La línea verde es la distribución normal que deberían tener los residuales, y la sombra azul es la distribución que tienen los residuales del modelo.
+```
+
+Para evaluar la homogeneidad de la varianza de los residuales utilizamos la función `check_heteroscedasticity()` (cuando la variable predictora es numérica):
+
+```{r}
+h <- check_heteroscedasticity(modelo1)
+h
+
+# Nos dice de forma textual si la varianza de los residuales es homogenea
+```
+
+```{r}
+plot(h)
+
+# En el gráfico no debemos notar ningún patrón, los puntos deben estar completamente dispersos para que haya homogeneidad de varianza (cuando la variable predictora es numérica). Si se ve un patrón de embudo con un agrupamiento de datos a la izquierda o a la derecha en el gráfico, la varianza de los residuales presenta problemas de heterogeneidad (no se mantiene constante).
+```
+
+Para evaluar las observaciones influyentes utilizamos la función `check_outliers()`:
+
+```{r}
+o <- check_outliers(modelo1)
+o
+
+# Nos dice de forma textual si hay presencia de observaciones influyentes
+```
+
+```{r}
+plot(o)
+
+# Los valores deben mantenerse dentro las líneas punteadas de color verde, si hay valores influyentes se mostrarán fuera de las líneas punteadas. 
+```
+
+<br>
+
+#### Corrección del modelo
+
+Cuando alguno de los supuestos no se cumple, podemos corregirlo de varias maneras. 
+ 
+- Si las variables no tienen una relación lineal podríamos ajustar modelos con variables cuadráticas, cúbicas o logarítmicas para tratar de ajustar de línea de predicción del modelo a nuestros datos.
+
+- Si hay presencia de valores influyentes podemos ajustar un modelo eliminando esos valores de nuestra tabla de datos y verificar si hay una diferencia en los parámetros y el ajuste del modelo.
+
+- Cuando el modelo no cumple con el supuesto de normalidad y homogeneidad de la varianza podemos realizar una corrección o ajuste con la función `lm_robust()` del paquete `estimatr`.
+
+```{r}
+modelo1_r <- lm_robust(flipper_length_mm ~ peso_kg, data = p)
+```
+
+```{r}
+summary(modelo1_r)
+```
+
+Esto genera un modelo con errores estándar robustos para corregir la falta de homogeneidad de la varianza basado en los "heteroscedastic-consistent standard errors", por defecto aplica la corrección de tipo "HC2", pero podemos indicar un tipo específico con el argumento `se_type =`. Los coeficientes del modelo permanecen igual que en el modelo sin corrección, pero los errores estándar e intervalos de confianza al 95% se ajustan a la falta de homogeneidad de varianza.
+
+<br>
+
+#### Gráfico del modelo
+
+Con la función `plot_model()` del paquete `sjPlot`:
+
+```{r, message=FALSE, warning=FALSE}
+plot_model(modelo1, 
+           type = "pred", # indicamos que es de tipo predictico ("pred")
+           show.data = TRUE, # para que muestre los valores observados
+           title = "Longitud de aleta (mm) en relación a la masa corporal (kg)",
+           axis.title = c("Masa corporal (kg)", "Tamaño de aleta (mm)")) 
+```
+
+Con la función `ggplot()` del paquete `ggplot2`: 
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(p, aes(peso_kg, flipper_length_mm)) +
+  stat_smooth(color = "black",
+              method = lm) + # para graficar la línea del modelo lineal
+  geom_point(alpha = 0.4) +
+  labs(title = "Longitud de aleta (mm) en relación a la masa corporal (kg)",
+       subtitle = "Pingüinos del Archipielado de Palmer",
+       y = "Tamaño de aleta (mm)",
+       x= "Masa corporal (kg)") +
+  geom_text(aes(3.5,230), # para graficar la fórmula de la regresión lineal
+            label = "y = 137.04 + 15.20x", 
+            color = "gray30") +
+  theme_classic() 
+```
+
+<br>
+
+#### Modelo con variable predictora categórica
+
+Los modelos lineales también pueden aplicarse cuando tenemos una variable predictora de tipo categórica para evaluar si hay diferencias en la variable respuesta respecto a los niveles (grupos) de la variable categórica:
+
+```{r}
+modelo2 <- lm(flipper_length_mm ~ species, data = p)
+```
+
+```{r}
+summary(modelo2)
+```
+
+En este caso, la interpretación de los coeficientes es un poco diferente al modelo con la variable predictora numérica: 
+
+- El intercepto es la media de la variable respuesta (longitud de aleta en mm) para el primer nivel de la variable predictora (especie Adelie; ordenado de forma alfabética).
+
+- Los siguientes estimados son la diferencia que hay entre el resto de niveles de la variable predictora comparados contra el primer nivel, en este caso, el estimado para "speciesChinstrap" indica que la longitud de la aleta de la especie Chinstrap es 5.72 mm mayor que la longitud de la aleta de la especie Adelie (primer nivel de la variable predictora); el estimado para "speciesGentoo" indica que la longitud de la aleta de la especie Gentoo es 27.13 mm mayor que la longitud de la aleta de la especie Adelie. Si una de las especies tuviese una longitud de aleta inferior al de la especie del primer nivel, el valor del estimado sería negativo. 
+
+El resto de los elementos en el summary se interpreta de la misma forma que en el modelo anterior.
+
+<br>
+
+Para verificar si las diferencias entre niveles concuerdan con nuestros datos podemos calcular las medias:
+
+```{r}
+# intercepto (media de long de aleta de la especie Adelie) + la diferencia para la especie Chinstrap
+190.1027 + 5.7208 
+```
+
+```{r}
+# intercepto (media de long de aleta de la especie Adelie) + la diferencia para la especie Gentoo
+190.1027 + 27.1326 
+```
+
+```{r}
+medias <- p |>
+  group_by(species) |>
+  summarise(mean(flipper_length_mm))
+medias
+```
+
+Para validar los supuestos del modelo podemos utilizar las funciones que vimos anteriormente, pero para validar la homogeneidad de la varianza en lugar de utilizar la función `check_heteroscedasticity()`, utilizamos la función `check_homogeneity()` (cuando la variable predictora es categórica).
+
+```{r}
+h2 <- check_homogeneity(modelo2)
+h2
+```
+
+```{r}
+plot(h2)
+
+# deberíamos ver que las varianzas de los grupos están alineadas (constantes) al centro en el eje y. Si los grupos se ven desalineados es porque la varianza entre ellos presenta problemas de heterogeneidad. 
+```
+
+<br>
+
+Si uno de los supuestos del modelo con variable predictora categórica no se cumple, podemos aplicar las mismas correcciones vistas para el modelo con la variable predictora numérica.
+
+<br>
+
+##### Gráfico de modelo con variable predictora categórica
+
+Con `plot_model()`:
+
+```{r}
+plot_model(modelo2, type = "pred",
+           title = "Diferencias de longitud de aleta (mm) en relación a la Especie",
+           axis.title = c("Especie", "Longitud de aleta (mm)"))
+```
+
+Para hacerlo con `ggplot()` primero debemos preparar los datos:
+
+```{r}
+medias <- Summarize(flipper_length_mm ~ species, data = p) |>
+  mutate(SE = sd / sqrt(n),
+         IC95 = SE * 1.96, 
+         liIC95 = mean - SE * 1.96,
+         lsIC95 = mean + SE * 1.96)
+medias
+```
+
+```{r}
+ggplot(medias, aes(species, mean)) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = liIC95,
+                    ymax = lsIC95),
+                width = 0.05) +
+  labs(title = "Diferencias de longitud de aleta (mm) en relación a la Especie",
+       y = "Longitud de aleta (mm)",
+       x = "Especie") +
+  geom_text(aes(species, 
+                label = round(mean, digits = 2),
+                hjust = -0.3)) +
+  theme_bw()
+```
+
+<br>
+
+#### Selección de modelos
+
+Podemos generar varios modelos para determinar cuál de nuestras variables es la que mejor explica el comportamiento de nuestra variable respuesta.
+
+```{r}
+# modelo nulo (sin variable predictora)
+modelo0 <- lm(flipper_length_mm ~ 0, data = p)
+
+# modelos de regresión simple (una variable predictora)
+modelo1 <- lm(flipper_length_mm ~ peso_kg, data = p)
+modelo2 <- lm(flipper_length_mm ~ species, data = p)
+modelo3 <- lm(flipper_length_mm ~ island, data = p)
+
+# modelos de regresión múltiple (dos o más variables predictoras) aditivos
+modelo4 <- lm(flipper_length_mm ~ species + peso_kg, data = p)
+modelo5 <- lm(flipper_length_mm ~ island + peso_kg, data = p)
+modelo6 <- lm(flipper_length_mm ~ species + island + peso_kg, data = p)
+
+# modelos de regresión múltiple (dos o más variables predictoras) con interacción
+modelo7 <- lm(flipper_length_mm ~ species * peso_kg, data = p)
+modelo8 <- lm(flipper_length_mm ~ island * peso_kg, data = p)
+modelo9 <- lm(flipper_length_mm ~ species * island * peso_kg, data = p)
+```
+
+<br>
+
+Para comparar nuestros modelos y determinar cuál se ajusta mejor a nuestros datos utilizaremos el criterio de información de Akaike (AIC). 
+
+Podemos realizar la comparación con la función `aictab()` del paquete `AICcmodavg`.
+
+Para esta función debemos generar una lista con nuestros modelos y para facilitar la identificación también es recomendable generar un vector con los nombres de los modelos en el orden en que aparecen en la lista.
+
+```{r}
+modelos <- list(modelo0, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9)
+nombres <- c("modelo0", "modelo1", "modelo2", "modelo3", "modelo4", "modelo5", "modelo6", "modelo7", "modelo8", "modelo9")
+```
+
+Ahora ejecutamos la función `aictab()`: 
+
+```{r}
+aictab(modelos, nombres, 
+       second.ord = FALSE) # para que seleccione en base al AIC, si es TRUE selecciona en base al AICc (ajustado para muestras pequeñas)
+```
+
+El resultado nos muestra lo siguiente:
+
+- El nombre de los modelos ordenados de "mejor" a "peor".
+
+- K es el número de parámetros que tiene cada modelo.
+
+- El valor de AIC indica el ajuste del modelo. Entre menor sea el valor de AIC, mejor se ajusta el modelo a nuestros datos. Si el resultado no muestra los modelos en orden, podemos especificarlo con el argumento `sort = TRUE`. No hay un valor de AIC estándar para decir que un modelo es bueno o malo, el valor de AIC dependerá de nuestros datos, el tamaño de muestra, la cantidad de parámetros y otros factores que conforman el criterio de información.
+
+- Delta_AIC es la diferencia que hay entre los demás modelos respecto al primero. Modelos con un delta < 10 podrían considerarse como buenos modelos para explicar nuestros datos y deberíamos escoger entre ellos basándonos en nuestra experiencia sobre los datos.
+
+- AICWt son los pesos de Akaike de cada modelo, indica cuánto explica cada modelo sobre la variación de nuestros datos (se trasnforma a pocentaje).
+
+- Cum.Wt son los pesos acumulados
+
+- LL es el logarítmo de la verosimilitud (log-likelihood) de cada modelo, este es uno de los parámetros en los que se basa el criterio de información de Akaike para calificar los modelos.
+
+<br>
+
+También podemos realizar la comparación entre modelos con la función `compare_performance()` del paquete `performance`. Con esta función no es necesario crear una lista con nuestros modelos ni un vector con los nombres: 
+
+```{r}
+cp <- compare_performance(modelo0, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9, 
+                          rank = T)
+cp
+```
+
+Aquí los modelos están evaluados tomando en cuenta sus índices, como el ajuste a los datos con el R cuadrado y R cuadrado ajustado, su error con el RMSE y el Siga (Error estándar residual), los pesos de Akaike, pesos de Akaike ajustado para muestras pequeñas y los pesos del criterio de información Bayesiano. 
+
+Con el argumento `rank = T` se crea una columna con la puntuación del rendimiento de cada modelo generada a partir de la normalización de los índices de los modelos.
+
+Podemos graficar el rendimiento de los modelos aplicando la función `plot()` al objeto que contiene la comparación realizada con `compare_performance()`. Esto genera un gráfico de "tela de araña" con el rendimiento de cada modelo respecto a los índices de comparación.
+
+```{r}
+plot(cp)
+
+# Los mejores modelos se muestran como las redes más extendidas (cercanas al borde de la circunferencia) en referencia a los índices.
+```
+
+<br>
+
+Otra función para seleccionar modelos es `AICtab()` del paquete `bbmle`:
+
+```{r}
+AICtab(modelo0, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9, 
+       base = TRUE, # para que muestre el valor de AIC
+       delta = TRUE, # para que muestre la diferencia entre modelos
+       sort = TRUE, # para que ordene los modelos de "mejor" a "peor"
+       weights = TRUE, # para que muestre los pesos de Akaike
+       nobs = 333) # solo por si el tamaño de muestra es pequeño, colocamos el número de observaciones del conjunto de datos, si es un tamaño de muestra pequeño, con el argumento `base = TRUE` se mostrará el valor de AICc y no de AIC.
+```
+
+#### Revisión del mejor modelo
+
+Cuando seleccionamos el mejor modelo con los criterios antes mencionados debemos confirmar si cumple los supuestos de un modelo lineal y ver sus coeficientes para interpretarlo.
+
+<br>
+
+##### Revisión de supuestos del mejor modelo
+
+```{r}
+cn <- check_normality(modelo7)
+cn
+```
+
+```{r}
+plot(cn)
+```
+
+```{r}
+ch <- check_heteroscedasticity(m7)
+ch
+```
+
+```{r}
+plot(ch)
+```
+
+```{r}
+co <- check_outliers(modelo7)
+co
+```
+
+```{r}
+plot(co)
+```
+
+<br> 
+
+##### Coeficientes y ajuste del mejor modelo
+
+```{r}
+summary(modelo7)
+```
+
+```{r}
+parameters(modelo7)
+```
+
+```{r}
+performance(modelo7)
+```
+
+Interpretación: 
+
+- El modelo que mejor se ajustó a los datos seleccionado con base en el criterio de información de Akaike (AIC) a partir de una serie de modelos lineales, fue un modelo lineal con interacción entre las variables predictoras "masa corporal" y "especie" para explicar la varianza de la "longitud de la aleta".
+
+- El intercepto muestra la media de la longitud de la aleta (165.6 mm) para la especie Adelie (primer nivel de la variable) cuando el peso es de 0 kg (no hay interpretación biológica).
+
+- Los coeficientes indican:
+
+1. La longitud de aleta de la especie Chinstrap es 14.22 mm (IC95% = -28.66, 0.22; p = 0.053) menor que la de la especie Adelie cuando el peso es de 0 kg.
+
+2. La longitud de aleta de la especie Gentoo es 4.06 mm (IC95% = -8.12,  16.25; p = 0.512) mayor que la de la especie Adelie cuando el peso es de 0 kg.
+
+3. Por cada kg de peso que aumenten los pingüinos de la especie Adelie, la longitud de aleta aumentará 6.61 mm (IC95% = 4.70, 8.52 mm; p < 0.001). 
+
+4. Por cada kg de peso que aumenten los pingüinos de la especie Chinstrap,  la longitud de aleta será 5.29 mm (IC95% = 1.44, 9.15; p = 0.007) mayor que la de la especie Adelie.
+
+5. Por cada kg de peso que aumenten los pingüinos de la especie Gentoo,  la longitud de aleta será 2.73 mm (IC95% = 0.02, 5.45; p = 0.049) mayor que la de la especie Adelie.
+
+- El R cuadrado ajustado es de 0.854, lo que indica que la masa corporal determinada o influenciada por la especie de los pingüinos explica el 85.4% de la varianza de la longitud de la aleta.
+
+<br>
+
+#### Gráfico del mejor modelo
+
+Podemos graficar el modelo con la función `plot_model()` del paquete `sjPlot`:
+
+```{r}
+plot_model(modelo7, 
+           type = "int", # argumento para graficar la interacción entre las variables
+           title = "Longitud de la aleta en relación a la especie y la masa corporal de los pingüinos",
+           axis.title = c("Especie", "Longitud de la aleta (mm)"),
+           colors = "Set1")
+
+# Se puede apreciar la interacción entre las variables porque las líneas predichas por el modelo  para la longitud de aleta de cada especie no son paralelas e incluso llegan a cruzarse. Esto indica que una variable predictora está influenciada por la otra y esa interacción determina el efecto que tienen sobre la variable respuesta. 
+```
+
+<br>
+
+Y también podemos generar el gráfico utilizando el resultado de la función `ggpredict()` del paquete `ggeffects` como entrada para los argumentos de `ggplot2`:
+
+```{r}
+g <- ggpredict(modelo7, 
+               terms = c("species", "peso_kg"))
+g
+```
+
+```{r}
+ggplot(g, aes(x, predicted)) +
+    geom_point(aes(color = group),
+               size = 2) +
+    geom_errorbar(aes(ymin = conf.low,
+                      ymax = conf.high,
+                      color = group),
+                  width = 0.1) +
+    theme_bw() +
+  labs(title = "Longitud de la aleta en relación a la especie y masa corporal de los pingüinos",
+       x = "Especie", 
+       y = "Longitud de la aleta (mm)",
+       linetype = "Especie", 
+       color = "Especie", 
+       fill = "Especie")
+```
+
+<br>
+
+##### Contraste entre niveles
+
+En los parámetros del modelo todos los coeficientes están comparados contra el intercepto. La especie 2 y la especie 3 se comparan con la especie 1, pero no hay comparación entre la especie 2 y la especie 3. 
+
+Para generar la comparación podemos aplicar la función `estimate_contrast()` del paquete `modelbased`:
+
+```{r}
+estimate_contrasts(modelo7, "species")
+```
+
+También podemos hacerlo de la siguiente manera:
+
+Primero calculamos las medias de cada especie (en este caso serían las medias de la longitud de aleta) con la función `emmeans()` del paquete `emmeans` y se especifica la variable para la que se quiere ver las medias.
+
+```{r}
+medias <- emmeans(modelo7, "species")
+medias
+```
+
+Ahora se realiza la comparacion de pares (contrastes; diferencia entre medias) con la funcion `pairs()`.
+
+```{r}
+contraste <- pairs(medias)
+contraste
+```
+
+Se puede agregar el intervalo de confianza con la funcion `confint()`.
+
+```{r}
+confint(contraste)
+```
+
+Y se puede graficar el contraste con la función `plot()`.
+
+```{r}
+plot(contraste) +
+  geom_vline(xintercept = 0)
+```
+
+<br>
