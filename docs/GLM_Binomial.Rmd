@@ -1,0 +1,265 @@
+---
+output: html_document
+header-includes:
+  - \usepackage{float}
+  - \floatstyle{boxed}
+  - \restylefloat{figure}
+---
+
+<div style="display:flex; align-items:center;">
+  <h1 style="margin:0;">Modelo lineal generalizado (GLM)</h1>
+  <img src="Imagenes/HNBI_LOGO1.jpeg" alt="Texto alternativo de la imagen" style="width:100px; margin-left:20px;">
+</div>
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+
+### GLM con distribución Binomial 
+
+Los GLM con distribución binomial también pueden utilizarse para analizar variables que sean una proporción del total de una muestra, por ejemplo, semillas germinadas del total de semillas sembradas por unidad de muestreo, plantas infectadas del total de plantas muestreadas por unidad de muestreo, pacientes recuperados del total de pacientes tratados por unidad de muestreo, etc. Esto es útil cuando nuestras unidades de muestreo no son individuos, sino un grupo de individuos.
+
+<br>
+
+#### Paquetes
+
+```{r, message=FALSE, warning=FALSE}
+library(rio)
+library(tidyverse)
+library(parameters)
+library(performance)
+library(bbmle)
+library(sjPlot)
+library(modelbased)
+```
+
+<br>
+
+### Contenido{.tabset .tabset-pills}
+
+<br>
+
+#### Datos
+
+```{r}
+semillas <- import("data/germinacion.txt") |>
+  mutate_if(is.character, as.factor)
+head(semillas)
+```
+
+Esta base de datos es sobre conteos de semillas germinadas (variable "conteo") del total de las semillas sembradas (variable "muestra").
+
+La variable "orobanche" tiene dos niveles ("a75" y "a73"), que son las variedades genéticas de las semillas evaluadas.
+
+La variable "extracto" tiene dos niveles ("bean" y "cucumber"), que son dos extractos diferentes que se probaron para ver si tenían algún efecto en la germinación de las semillas.
+
+<br>
+
+##### Transformación de la variable respuesta
+
+Para poder analizar el conteo de semillas germinadas tomando en cuenta la muestra, debemos combinar las variables "conteo" y "muestra" restando el "conteo", para que quede como una proproción:
+
+```{r}
+y <- cbind(semillas$conteo, semillas$muestra - semillas$conteo)
+head(y)
+
+# así tenemos por un lado las semillas germinadas y por el otro las semillas que no germinaron respecto al total de la muestra.
+```
+
+<br>
+
+#### Modelo
+
+Podemos aplicar el modelo con la variable "y" que creamos (proporción de semillas germinadas y no germinadas):
+
+```{r}
+binomial1 <- glm(y ~ orobanche + extracto, data = semillas, family = binomial)
+```
+
+O podemos hacer la proporción directamente en el modelo:
+
+```{r}
+binomial1 <- glm(cbind(conteo, muestra-conteo) ~ orobanche + extracto, data = semillas, family = binomial)
+```
+
+<br>
+
+#### Interpretación del modelo
+
+```{r}
+summary(binomial1)
+```
+
+```{r}
+parameters(binomial1)
+```
+
+**Los coeficientes están en escala logit**
+
+- Intercepto
+
+```{r}
+plogis(-0.7005)
+```
+
+Indica que la probabilidad de que las semillas germinen si son de la variedad genética "a73" y si fueron tratadas con "extracto de frijol" es del 33.17%.
+
+- Coeficientes
+
+"orobanchea [75]"
+
+```{r}
+plogis(-0.7005 + 0.2705) 
+```
+
+Indica que la probabilidad de que las semillas germinen si son de la variedad genética "a75" y si fueron tratadas con "extracto de frijol" es del 39.41%.
+
+"extracto [cucumber]"
+
+```{r}
+plogis(-0.7005 + 1.0647) 
+```
+
+Indica que la probabilidad de que las semillas germinen si son de la variedad genética "a73" y si fueron tratadas con "extracto de pepino" es del 59%.
+
+Para reportar esas probabilidades también debemos reportar el intervalo de confianza al 95%, pero antes hay que validar el modelo.
+
+<br>
+
+#### Validación del modelo
+
+En un modelo binomial para proporciones también puede haber sobredispersión (como en el modelo con distribución de Poisson):
+
+```{r}
+check_overdispersion(binomial1)
+```
+
+<br>
+
+#### Corrección del modelo
+
+Un modelo binomial con sobredispersión puede corregirse cambiando la distribución a **quasibinomial** en el argumento `family =`:
+
+```{r}
+binomial1_q <- glm(cbind(conteo, muestra-conteo) ~ orobanche + extracto, data = semillas, family = quasibinomial)
+```
+
+Como sucedía con las correcciones en los modelos con distribución quasiPoisson y binomial negativa para los GLM Poisson que tenían sobredispersión, la corrección que realiza el modelo con distribución quasibinomial para un modelo binomial con sobredispersión está dirigida a corregir el error estándar y los intervalos de confianza.
+
+```{r}
+parameters(binomial1,
+           digits = 4,
+           ci_digits = 4)
+```
+
+```{r}
+parameters(binomial1_q,
+           digits = 4,
+           ci_digits = 4)
+```
+
+Ahora si podemos reportar las probabilidades con los intervalos de confianza corregidos.
+
+<br>
+
+#### Gráfico del modelo
+
+```{r}
+plot_model(binomial1_q, 
+           type = "pred")
+```
+
+<br>
+
+#### Selección de modelos
+
+```{r}
+binomial1 <- glm(cbind(conteo, muestra-conteo) ~ orobanche + extracto, data = semillas, family = binomial)
+binomial2 <- glm(cbind(conteo, muestra-conteo) ~ orobanche * extracto, data = semillas, family = binomial)
+binomial3 <- glm(cbind(conteo, muestra-conteo) ~ orobanche, data = semillas, family = binomial)
+binomial4 <- glm(cbind(conteo, muestra-conteo) ~ extracto, data = semillas, family = binomial)
+```
+
+Recordemos que la sobredispersión está ligada a la variable respuesta, como consecuencia es muy probable que todos los modelos presenten sobredispersión. Revisemos un par de modelos:
+
+```{r}
+check_overdispersion(binomial2)
+```
+
+```{r}
+check_overdispersion(binomial3)
+```
+
+Realizamos la corrección de los modelos para la selección:
+
+```{r}
+binomial1_q <- glm(cbind(conteo, muestra-conteo) ~ orobanche + extracto, data = semillas, family = quasibinomial)
+binomial2_q <- glm(cbind(conteo, muestra-conteo) ~ orobanche * extracto, data = semillas, family = quasibinomial)
+binomial3_q <- glm(cbind(conteo, muestra-conteo) ~ orobanche, data = semillas, family = quasibinomial)
+binomial4_q <- glm(cbind(conteo, muestra-conteo) ~ extracto, data = semillas, family = quasibinomial)
+```
+
+Con la función `compare_performance()` del paquete `performance`:
+
+```{r, message=FALSE}
+compare_performance(binomial1_q, binomial2_q, binomial3_q, binomial4_q, rank = TRUE)
+```
+
+Con la función `ICtab()` del paquete `bbmle` (similar a la función `AICtab()`:
+
+```{r}
+ICtab(binomial1, binomial2, binomial3, binomial4, 
+      base = TRUE, 
+      delta = TRUE, 
+      weights = TRUE, 
+      sort = TRUE, 
+      dispersion = 1.862, # colocamos el valor de sobredispersión de uno de los modelos
+      type = "qAIC") # indicamos que la selección sea basada en el qAIC corregido para modelos con distribución "quasi".
+```
+
+Recordemos que el valor de sobredispersión que coloquemos en la función puede afectar la selecció del modelo.
+
+<br>
+
+##### Interpretación del mejor modelo
+
+```{r}
+summary(binomial2_q)
+```
+
+```{r}
+parameters(binomial2_q)
+```
+
+Estimamos las probabilidades indicando los valores condicionales:
+
+```{r}
+condicionales_semillas <- (data.frame(orobanche = c("a73", "a73", "a75", "a75"), extracto = c("bean", "cucumber", "bean", "cucumber")))
+condicionales_semillas
+```
+
+```{r}
+estimate_expectation(binomial2_q, data = condicionales_semillas)
+```
+
+Podemos comprobar las probabilidades con el gráfico del modelo.
+
+<br>
+
+##### Gráfico del mejor modelo
+
+```{r}
+plot_model(binomial2_q, 
+           type = "int",
+           terms = c("orobanche", "extracto")) +
+  labs(title = "Germinación de semillas",
+       y = "Probabilidad de germinación (%)",
+       x = "Variedad genética",
+       color = "Extracto") +
+  theme_classic()
+```
+
+<br>
