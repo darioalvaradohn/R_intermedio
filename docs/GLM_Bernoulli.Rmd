@@ -16,27 +16,42 @@ header-includes:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+<br>
 
-## GLM con distribución de Bernoulli (Dicotómica) 
-### Regresión logística
+### GLM con distribución de Binomial 
 
-### Contenido{.tabset .tabset-pills}
+Los modelos lineales generalizados también pueden utilizarse cuando tenemos una variable dicotómica (con distribución de Bernoulli), esto quiere decir que nuestra variable respuesta solo puede tener dos posibles resultados (como los lados de una moneda). En este tipo de variables dicotómicas podemos encontrar datos de 1 o 0, vivo o muerto, presente o ausente, macho o hembra, entre otros.
 
-### Paquetes
+Los GLM con distribución binomial utilizan una regresión logística para ajustar el modelo a los datos de la variable dicotómica.
+
+<br>
+
+#### Paquetes
+
+```{r, echo=FALSE}
+library(knitr)
+```
 
 ```{r, message=FALSE, warning=FALSE}
-library(knitr)
 library(rio)
 library(tidyverse)
 library(parameters)
 library(performance)
+library(bbmle)
 library(sjPlot)
 library(modelbased)
 library(DAAG)
 library(modEvA)
+library(carData)
 ```
 
-### Datos
+<br>
+
+### Contenido{.tabset .tabset-pills}
+
+<br>
+
+#### Datos
 
 ```{r}
 pez <- import("data/pumpkinseed.txt")
@@ -45,105 +60,492 @@ pez <- pez |>
 head(pez)
 ```
 
-_Lepornis gibbosus_
+Esta base de datos contiene informacion sobre peces de la especie _Lepomis gibbosus_ (familia Centrarchidae). Estos peces pueden presentar o no un punto de color rojo sobre el opérculo.
 
-```{r}
+La variable "spot" es una variable dicotómica:
+
+- 0 = ausencia del punto rojo
+
+- 1 = presencia del punto rojo
+
+```{r, echo=FALSE}
 include_graphics("Pumpkinseed.jpg")
 ```
 
-```{r}
-ggplot(pez, aes(wt, spot)) +
-  geom_jitter(height = 0.2)
-```
+La variable "pop" es una variable categórica con 14 niveles:
 
-### Modelos
+- Tiene 14 poblaciones diferentes ("6T", "BF", "BP", "BROD", "BSR", "BSS", "CKAN", "CKL", "CS", "FL", "HN", "HS", "LC", "UC")
+
+La variable "sex" tiene dos niveles:
+
+- "M": machos
+
+- "F": hembras
+
+La variable "wt" es una variable numérica con el peso de los peces en gramos.
+
+La variable "sl" es una variable numérica con la longitud de los peces en milímetros.
+
+La variable "tactic" es una variable categórica de la táctica de reproducción con tres niveles:
+
+- "terr": machos territoriales
+
+- "sneak": machos "sneakers", llamados así por su comportamiento de ingreso rápido al nido de un macho territorial para liberar esperma en el momento del desove.
+
+- "fem": hembras
+
+<br>
+
+#### Modelos
 
 ```{r}
+# indicamos la distribución binomial con el argumento `family =`
+binom0 <- glm(spot ~ 1, family = binomial, data = pez)
 binom1 <- glm(spot ~ wt, family = binomial, data = pez)
 binom2 <- glm(spot ~ sl, family = binomial, data = pez)
 binom3 <- glm(spot ~ pop, family = binomial, data = pez)
 binom4 <- glm(spot ~ sex, family = binomial, data = pez)
 binom5 <- glm(spot ~ tactic, family = binomial, data = pez)
-binom6 <- glm(spot ~ tactic + sex + wt, family = binomial, data = pez)
+binom6 <- glm(spot ~ pop + sex, family = binomial, data = pez)
+binom7 <- glm(spot ~ pop + tactic, family = binomial, data = pez)
+binom8 <- glm(spot ~ tactic + sex, family = binomial, data = pez)
+binom9 <- glm(spot ~ pop + sex + tactic, family = binomial, data = pez)
 ```
 
-### Selección de modelos
+**En un GLM con distribución binomial también hay una transformación interna de los datos. La distribución binomial utiliza un enlace logit (link = logit)**
+
+<br>
+
+#### Selección de modelos
+
+```{r, message=FALSE, warning=FALSE}
+compare_performance(binom0, binom1, binom2, binom3, binom4, binom5, binom6, binom7, binom8, binom9, rank = TRUE)
+```
 
 ```{r}
-compare_performance(binom1, binom2, binom3, binom4, binom5, binom6, rank = TRUE, metrics = "all")
+AICtab(binom0, binom1, binom2, binom3, binom4, binom5, binom6, binom7, binom8, binom9, base = TRUE, delta = TRUE, sort = TRUE, weights = TRUE)
 ```
 
-### Interpretación del mejor modelo
+<br>
+
+#### Interpretación del mejor modelo
 
 Los coeficientes de un modelo con distribución binomial están en escala logit
 
 ```{r}
-summary(binom6)
+summary(binom7)
 ```
 
-```{r, warning=FALSE}
-parameters(binom6)
+```{r, message=FALSE, warning=FALSE}
+parameters(binom7)
+```
+
+Los coeficientes de un modelo con distribución binomial están en escala logit. La interpretación se reporta como la probabilidad de que la variable respuesta sea 1 (Si, presente, vivo...).
+
+- El intercepto del modelo 7 (pop + tactic) indica la probabilidad de que los peces de la población "6T" (primer nivel de la variable "pop") que sean hembras ("fem" = primer nivel de la variable "tactic") tenga el punto rojo sobre el opérculo.
+
+- Los coeficientes para cada población ("pop [BF]", "pop [BP]", "pop [BROD]", "pop [BSR]", ...) indican la probabilidad de que los peces tengan el punto rojo si son hembras ("fem").
+
+- Los coeficientes para cada táctica ("tactic [sneak]" y "tactic [terr]") indican la probabilidad de que los peces tengan el punto rojo si son de la población "6T".
+
+<br>
+
+Para hacer la transformación de los coeficientes de escala logit a probabilidad podemos utilizar la función `plogis()` del paquete base: 
+
+```{r}
+# transformando el intercepto (probabilidad de que los peces hembra ("fem") de la población "6T" tengan el punto rojo sobre el opérculo)
+plogis(-2.29)
+```
+
+La probabilidad de que los peces "hembra" de la población "6T" tengan el punto rojo es del 9.19%.
+
+<br>
+
+También podemos calcular la probabilidad de la siguiente manera:
+
+Primero generamos un dataframe con los valores condicionales de las variables del modelo:
+
+```{r}
+condicionales <- data.frame(pop = "6T", tactic = "fem")
+condicionales
+```
+
+Ahora utilizamos la función `estimate_response()` del paquete `modelbased` indicando el modelo y que los valores condicionales provienen de nuestro nuevo dataframe: 
+
+```{r, message=FALSE, warning=FALSE}
+estimate_response(binom7, data = condicionales)
+```
+
+- El resultado nos muestra los valores condiconales para las variables del modelo.
+
+- "Predicted" es la probabilidad de que los peces tengan el punto rojo (que la variable respuesta sea 1).
+
+- También se muestra el error estándar de esa estimación y el intervalo de confianza al 95% para poder reportar el resultado.
+
+<br>
+
+Podemos colocar más de un valor condicional para cada variable:
+
+```{r}
+condicionales2 <- data.frame(pop = c("6T", "6T", "6T"), tactic = c("fem", "terr", "sneak"))
+condicionales2
+
+# aquí indicamos que nos muestre las tres tácticas para la población "6T".
+# repetimos "6T" tres veces porque el número de observaciones para cada variable ("pop" y "tactic") debe ser el mismo para crear un dataframe. 
+```
+
+```{r, message=FALSE, warning=FALSE}
+estimate_response(binom7, data = condicionales2)
+```
+
+El resultado muestra las probabilidades de que los peces de la población "6T" tengan el punto rojo sobre el opérculo si son "hembras" (9%, IC95% = 5%, 15%), si son machos "territoriales" (50%, IC95% = 37%, 63%) o si son machos "sneakers" (26%, IC95% = 15%, 43%).
+
+También podemos generar el mismo resultado con la función `estimate_expectation()` del paquete `modelbased`:
+
+```{r}
+estimate_expectation(binom7, data = condicionales2)
+```
+
+Para ver la probabilidad de que los peces de otra población tengan el punto rojo si son hembras con la función `plogis()` tenemos que colocar el intercepto y luego sumar o restar el coeficiente de la población seleccionada:
+
+```{r}
+# transformando el coeficiente para la población "CKAN" (probabilidad de que los peces hembra ("fem") de la población "CKAN" tengan el punto rojo sobre el opérculo)
+plogis(-2.29 + 3.69)
+```
+
+La probabilidad de que los peces "hembra" de la población "CKAN" tengan el punto rojo es del 80.21%.
+
+<br>
+
+Con `estimate_response()`:
+
+```{r}
+condicionales3 <- data.frame(pop = c("CKAN", "CKAN", "CKAN"), tactic = c("fem", "sneak", "terr"))
+condicionales3
+```
+
+```{r, message=FALSE, warning=FALSE}
+estimate_response(binom7, data = condicionales3)
+```
+
+<br>
+
+```{r}
+performance(binom7)
+```
+
+La salida de la función `performance()` nos muestra:
+
+- Los valores de los criterios de información (AIC, AICc y BIC)
+
+- El pseudo R cuadrado de Tjur, que indica cuánto explican las variables predictoras la varianza de la variable respuesta. 
+
+- Los errores del modelo (RMSE y Sigma).
+
+- El PCP es una medida de rendimiento que indica qué porcentaje de las observaciones en el conjunto de datos fueron correctamente clasificadas por el modelo. Pero no siempre es una medida adecuada para evaluar la precisión del modelo.
+
+<br>
+
+#### Gráfico del modelo
+
+Con la función `plot_model()` del paquete `sjPlot`, al ser un modelo aditivo con dos variables predictoras, nos aparecerán dos gráficos diferentes. 
+El primero con la probabilidad de que los peces tengan el punto rojo sobre el opérculo para cada población si son "hembras".
+El segundo con la probabilidad de que los peces tengan el punto rojo sobre el opérculo para cada táctica si son de la población "6T".
+
+```{r, message=FALSE, warning=FALSE}
+plot_model(binom7, 
+           type = "pred")
+```
+
+<br>
+
+Pero podemos modificarlo un poco para tener un solo gráfico con la probabilidad de que los peces tengan el punto rojo sobre el opérculo para cada población y para cada táctica:
+
+```{r, message=FALSE, warning=FALSE}
+plot_model(binom7, 
+           type = "pred",
+           terms = c("pop", "tactic")) + # este es el argumento que generará un solo gráfico con las dos variables predictoras
+  aes(shape = group, # para cambiar la forma de los símbolos para cada táctica (segunda variable predictora)
+      color = group) + # para que los colores de los símbolos sean diferentes para cada táctica
+  scale_color_manual(values = c("gray", "gray40", "gray20")) + # para especificar los colores de forma manual
+  labs(title = "Presencia de punto rojo sobre el opérculo de los peces",
+       y = "Probabilidad (%) de la presencia del punto rojo",
+       x = "Población",
+       color = "Táctica",
+       shape = "Táctica") + # "color" y "shape" en `labs` es para que la simbología tenga el mismo título
+  theme_classic()
+```
+
+<br>
+
+#### Ajuste del modelo 
+
+<br>
+
+##### Prueba de bondad de ajuste de Hosmer-Lemeshow
+
+Para evaluar la bondad de ajuste de Hosmer-Lemeshowel del glm con distribución binomial podemos utilizar la función `performance_hosmer()` del paquete `performance`:
+
+```{r}
+performance_hosmer(binom7)
+```
+
+La salida de la prueba nos muestra lo siguiente:
+
+- Chi-squared (χ2): Es el estadístico de la prueba de Hosmer-Lemeshow, que mide la diferencia entre los valores observados y los valores esperados de la función de distribución de probabilidad de la respuesta binaria.
+
+- df (Grados de libertad): Es el número de grados de libertad de la distribución chi-squared.
+
+- p-value: Es el valor p asociado con la prueba de Hosmer-Lemeshow, que indica la probabilidad de obtener un estadístico χ2 tan grande o más grande que el observado, si el modelo es adecuado.
+
+Si el valor p es mayor que un nivel de significancia preestablecido (comúnmente 0.05), se concluye que no hay suficiente evidencia para rechazar la hipótesis nula de que el modelo es adecuado. 
+
+Si el valor p es menor que el nivel de significancia, se concluye que hay evidencia suficiente para rechazar la hipótesis nula y se afirma que el modelo NO es adecuado.
+
+En resumen, la prueba de Hosmer-Lemeshow se utiliza para evaluar si los valores esperados y observados de la función de distribución de probabilidad de la respuesta binaria son consistentes, lo que indica un ajuste adecuado del modelo.
+
+<br>
+
+##### Precisión del modelo
+
+Podemos evaluar la precisión del modelo (accuracy) de diferentes maneras:
+
+- Una de ellas es mediante la función `CVbinary()` del paquete `DAAG`, esta utiliza una validación cruzada para evaluar el rendimiento de un modelo en datos que no se utilizaron para su construcción:
+
+```{r}
+CVbinary(binom7)
+```
+
+La función `CVbinary()` divide los datos de entrada en un número específico de grupos ("folds") y entrena el modelo en cada uno de los folds, excluyendo uno de ellos a la vez. Luego, se evalúa el modelo en el fold excluido y se repite este proceso para cada uno de los folds. La validación cruzada permite estimar la capacidad del modelo para generalizar a nuevos datos, es decir, para predecir correctamente en datos no utilizados para su construcción.
+
+La salida incluye una estimación del error de predicción medio, que se puede interpretar como una medida de la precisión del modelo en la predicción de la respuesta binaria. Esta medida puede ser útil para evaluar la capacidad del modelo para generalizar a nuevos datos y para comparar el rendimiento de diferentes modelos.
+
+En este caso, la precisión de la predicción del modelo evaluada mediante la validación cruzada es del 77.2%.
+
+<br>
+
+- Otra forma es mediante la función `performance_accuracy()` del paquete `performance` que evalúa la precisión del modelo mediante el método de área bajo la curva:
+
+```{r}
+performance_accuracy(binom7)
+```
+
+La función hace una comparación entre las predicciones del modelo y las observaciones reales y calcula un porcentaje de acierto. Esto indica qué porcentaje de las observaciones se clasificaron correctamente por el modelo. La función es útil para comparar diferentes modelos y seleccionar el que tenga la mejor precisión.
+
+En este caso, la precisión de la predicción del modelo evaluada mediante el área bajo la curva es del 84.87%
+
+<br>
+
+Otra opción es mediante la función `performance_roc()` del paquete `performance`, esta también calcula la precisión del modelo mediante el área bajo la curva ROC (Receiver Operating Characteristic).
+
+```{r}
+pr <- performance_roc(binom7)
+pr
+```
+
+Y esta función también se puede graficar:
+
+```{r}
+plot(pr)
+```
+
+La curva representa la relación entre la tasa de verdaderos positivos y la tasa de falsos positivos, en lugar de simplemente calcular un porcentaje de acierto.
+
+La línea punteada diagonal indica una precisión del 50%. La línea negra sólida representa el AUC del modelo. Si la línea negra es igual a la línea punteada quiere decir que la precisión de la predicción de nuestro modelo es del 50%. Entre mayor sea el AUC (más cercano a 1 (100%)) mejor es la precisión en la predicción del modelo, en este caso, la precisión es del 86.0%.
+
+<br>
+
+Otra forma de hacerlo es con la función `AUC()` del paquete `modEVA`:
+
+```{r}
+AUC(binom7, 
+    simplif = TRUE) # para indicar que simplifique el resultado a una gráfica
+```
+
+El resultado es similar al del área bajo la curva ROC y se interpreta de la misma manera. En este caso, la precisión en la predicción del modelo es del 86.6%.
+
+<br>
+
+Si en un modelo hay dos o más variables predictoras se debe evaluar la colinealidad o multicolinealidad (que las variables no aporten datos de forma redundante). Esto se evalúa mediante la función `check_collinearity()` del paquete `performance`:
+
+```{r}
+check_collinearity(binom7)
+```
+
+El resultado muestra las variables con "baja correlación" y si hay variables con "media correlación" y con "alta correlación" con base al factor de inflación de la varianza (VIF).
+
+- VIF < 5: Baja correlación
+- VIF 5 - 10: Media correlación
+- VIF > 10: Alta correlación
+
+En el caso que hayan variables con media y alta correlación lo mejor es eliminarlas del modelo para que este sea más parsimonioso (que explique mejor la varianza de la variable respuesta con menos parámetros).
+
+```{r}
+plot(check_collinearity(binom7))
+```
+
+<br>
+
+#### Ejemplo con otra base de datos
+
+<br>
+
+##### Datos
+
+Analizaremos la base de datos "Wells" que está incorporada en el paquete `carData`
+
+```{r}
+data("Wells")
+pozos <- Wells
+head(pozos)
+```
+
+La base de datos tiene información sobre viviendas en Bangladesh que cambiaron o no los pozos de agua que estaban usando. Las variables son:
+
+- switch: si el hogar cambió o no su pozo inseguro por un pozo seguro.
+
+- arsenic: el nivel de contaminación por arsénico en el pozo original de la vivienda, en cientos de microgramos por litro; todos están por encima de 0,5, que era el nivel identificado como “seguro”.
+
+- distance: distancia (en metros) a la que estaría el pozo seguro si decidian cambiarse.
+
+- education: años de educación que tenían los jefes de hogar de cada vivienda.
+
+- association: si algún miembro del hogar participaba o no en alguna organización comunitaria.
+
+<br>
+
+##### Modelo
+
+Para evaluar la probabilidad de que los jefes de hogar decidan cambiarse de un pozo inseguro a un pozo seguro realizaremos el GLM con distribución binomial:
+
+```{r}
+binom_pozos <- glm(switch ~ arsenic + distance + education + association, data = pozos, family = binomial)
 ```
 
 ```{r}
-distinct(pez, tactic)
+summary(binom_pozos)
 ```
 
-
-```{r}
-binom6
+```{r, message=FALSE, warning=FALSE}
+parameters(binom_pozos)
 ```
 
-Calcular la probabilidad
+**Recordemos que los coeficientes están en escala logit**, pero el gráfico con la función `plot_model()` ya hace la transformación.
+
+<br>
+
+##### Gráfico del modelo
+
+Como son muchas variables las que podrían estar inflyendo para que el dueño de la vivienda decida cambiarse a un pozo seguro, es más conveniente interpretar los gráficos por separado.
+
+```{r, message=FALSE, warning=FALSE}
+plot_model(binom_pozos, 
+           type = "pred")
+```
+
+<br>
+
+Para calcular las probabilidades de que el dueño de la vivienda cambie de pozo especificando valores condicionales de forma manual:
+
+- Copiamos los coeficientes:
 
 ```{r}
-cuadro <- data.frame(tactic = "terr", sex = "M", wt = 9)
-cuadro
+binom_pozos
+```
+
+- Colocamos valores condicionales para la predicción:
+
+1. Concentración de arsénico = 9.0
+
+2. Distancia del nuevo pozo = 250 m
+
+3. Educación = 10 años
+
+4. Asociación = si
+
+- Aplicamos la función `plogis()`:
+
+```{r}
+plogis(-0.156712 +  # intercepto
+         0.467022*9 # coeficiente del arsénico por el valor condicional
+         - 0.008961*250 + # coeficiente de la distancia por el valor condicional 
+         0.042447*10  # coeficiente de la educación por el valor condicional
+       - 0.124300) # coeficiente de la asociación "si" (si fuese "no", se omite este coeficiente)
+```
+
+La probabilidad de que el dueño de la vivienda decida cambiarse al pozo seguro dado las condicionantes especificadas es del 89.15%.
+
+<br>
+
+Para calcular las probabilidades de la otra manera:
+
+```{r}
+condicionales_pozos <- data.frame(arsenic = 9, distance = 250, education = 10, association = "yes")
+condicionales_pozos
 ```
 
 ```{r}
-estimate_response(binom6, data = cuadro)
+estimate_expectation(binom_pozos, data = condicionales_pozos)
+```
+
+Y para calcular las probabilidades para diferentes valores condicionales:
+
+```{r}
+condicionales_pozos2 <- data.frame(arsenic = c(2, 5), distance = c(250, 100), education = c(10, 5), association = c("no", "yes"))
+condicionales_pozos2
 ```
 
 ```{r}
-estimate_expectation(binom6, data = cuadro)
+estimate_expectation(binom_pozos, data = condicionales_pozos2)
 ```
 
+<br>
+
+##### Ajuste del modelo
+
 ```{r}
-plot_model(binom6, type = "pred")
+performance_hosmer(binom_pozos)
 ```
 
-### Ajuste del modelo 
-
-(solo para modelos con variables predictoras numéricas)
+<br>
 
 ```{r}
-performance_hosmer(binom6)
+CVbinary(binom_pozos)
 ```
 
-#### Precisión del modelo
+<br>
 
 ```{r}
-CVbinary(binom6)
+performance_accuracy(binom_pozos)
 ```
 
-#### Área bajo la curva
+<br>
 
 ```{r}
-performance_accuracy(binom6)
+pr <- performance_roc(binom_pozos)
+pr
 ```
 
+<br>
+
 ```{r}
-performance_roc(binom6)
+plot(pr)
 ```
 
+<br>
+
 ```{r}
-AUC(binom6, simplif = TRUE)
+AUC(binom_pozos, 
+    simplif = TRUE)
 ```
 
-#### Revisión de colinealidad
+<br>
 
 ```{r}
-check_collinearity(binom6)
+check_collinearity(binom_pozos)
+```
+
+```{r, message=FALSE, warning=FALSE}
+plot(check_collinearity(binom_pozos))
 ```
 

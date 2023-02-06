@@ -114,7 +114,7 @@ Para realizar un modelo lineal generalizado (GLM) utilizamos la función `glm()`
 glm1 <- glm(y ~ spray, data = worms, family = poisson)
 ```
 
-**En un GLM con distribución de Poisson hay una transformación logarítmica interna en el modelo**
+**En un GLM con distribución de Poisson hay una transformación logarítmica interna en el modelo. La distribución de Poisson utiliza un enlace log (link = log)**
 
 <br>
 

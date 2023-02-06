@@ -454,7 +454,8 @@ distribución normal (gausiana), solamente tenemos que indicar la
 distribución de los datos con el argumento <code>family =</code></p>
 <pre class="r"><code>glm1 &lt;- glm(y ~ spray, data = worms, family = poisson)</code></pre>
 <p><strong>En un GLM con distribución de Poisson hay una transformación
-logarítmica interna en el modelo</strong></p>
+logarítmica interna en el modelo. La distribución de Poisson utiliza un
+enlace log (link = log)</strong></p>
 <p><br></p>
 <div id="coeficientes-del-modelo" class="section level5">
 <h5>Coeficientes del modelo</h5>
