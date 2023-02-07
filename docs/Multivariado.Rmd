@@ -7,7 +7,7 @@ header-includes:
 ---
 
 <div style="display:flex; align-items:center;">
-  <h1 style="margin:0;">Análisis Multivariado</h1>
+  <h1 style="margin:0;">Análisis de Componentes Principales (PCA)</h1>
   <img src="Imagenes/HNBI_LOGO1.jpeg" alt="Texto alternativo de la imagen" style="width:100px; margin-left:20px;">
 </div>
 
@@ -18,7 +18,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <br>
 
-El PCA se usa para reducir la dimensionalidad (variables) de los datos perdiendo la menor cantidad de informaciín (varianza) posible. El PCA crea un nuevo set de variables ortogonales (no correlacionadas) que contienen la misma información que los datos originales. Sí el conjunto de datos originales tiene 10 variables, el pca creará 10 componentes principales (nuevas variables) que no están correlacionadas. Se espera que los primeros componentes capturen la mayoría de la varianza de los datos y vaya decreciendo hacia los últimos componentes.
+El PCA es un método de estadística multivariada que se utiliza para reducir la dimensionalidad de los datos perdiendo la menor cantidad de información (varianza) posible (reduce el número de variables a X cantidad de componentes principales). 
+
+El PCA crea un nuevo set de variables ortogonales (no correlacionadas) que contienen la misma información que los datos originales. Sí el conjunto de datos originales tiene 10 variables, el PCA creará 10 componentes principales (nuevas variables) que no están correlacionadas. Se espera que los primeros componentes capturen la mayoría de la varianza de los datos y vaya decreciendo hacia los últimos componentes.
 
 <br>
 
@@ -41,33 +43,82 @@ library(ade4)
 
 #### Datos
 
+Utilizaremos la base de datos "doubs" del paquete `ade4`. "doubs" es un conjunto de cuatro tablas de datos:
+
+1. "env": es una tabla de datos con 11 variables ambientales y 30 observaciones (sitios).
+
+2. "fish": es una tabla de datos de 27 especies de peces y 30 observaciones (sitios).
+
+3. "xy": es una tabla de datos con las coordenadas espaciales para los 30 sitios.
+
+4. "species": es una tabla de datos con cuatro columnas (nombres) y 27 filas (especies).
+
+Para nuestro PCA trabajaremos con la tabla de datos "env":
+
 ```{r}
 data("doubs")
-vars <- doubs$env
+vars <- doubs$env # extraemos la tabla de datos de la base "doubs"
 head(vars)
 ```
+
+La tabla de datos de variables ambientales contiene las siguientes variables:
+
+- "dfs": distancia desde la fuente (km * 10)
+
+- "alt": altitud (m)
+
+- "slo": ln(x + 1) donde x es la pendiente (por mil * 100) 
+
+- "flo": flujo de corriente promedio mínimo (m^3^/s * 100)
+
+- "pH": pH * 10
+
+- "har": dureza total del agua (Calcio en mg/L)
+
+- "pho": fosfatos (mg/L * 100)
+
+- "nit": nitratos (mg/L * 100)
+
+- "amm": nitrógeno amoniacal (mg/L * 100)
+
+- "oxy": oxígeno disuelto (mg/L * 10)
+
+- "bdo": demanda biológica de oxígeno (mg/L * 10)
 
 <br>
 
 #### PCA
 
+Para realizar el análisis de componentes principales utilizamos la función `PCA()` del paquete `FactoMineR`:
+
 ```{r}
-vars_pca <- PCA(vars, graph = FALSE)
+vars_pca <- PCA(vars, 
+                graph = FALSE) # para indicar que no muestre los gráficos
 vars_pca
+
+# el resultado muestra qué información contiene nuestro PCA
 ```
 
 <br>
 
-Cuando las variables tienen unidades muy diferentes se puede hacer un escalado de esas variables con la función `scale()`:
+Cuando las variables tienen unidades muy diferentes se puede hacer un escalado de esas variables con la función `scale()` y después hacer el PCA:
 
 ```{r}
 vars_escalado <- scale(vars)
 head(vars_escalado)
 ```
 
+```{r}
+vars_pca_scale <- PCA(vars_escalado, 
+                graph = FALSE)
+vars_pca_scale
+```
+
 <br>
 
 #### Revisión del PCA
+
+Podemos hacer un `summary()` de todos los elementos que tiene nuestro PCA y el resutado nos mostrará los Eigenvalues, las 10 primeras observaciones (Individuals) que en este caso son los sitios, y las 10 primeras variables que en este caso son las variables ambientales:
 
 ```{r}
 summary(vars_pca)
@@ -75,7 +126,234 @@ summary(vars_pca)
 
 <br>
 
-#### Componentes Principales para los sitios
+Y podemos extraer cada elemento por separado.
+
+```{r}
+vars_pca$eig
+```
+
+<br>
+
+#### Eigenvalues
+
+**Eigenvalue** es la porción del total de la varianza que explica cada componente principal (dimensión). Como la tabla de datos tiene 11 variables ambientales, el PCA generó 11 componentes principales o dimensiones.
+
+Los eigenvalues nos indican el porcentaje de varianza que explica cada componente principal, y también nos muestran el porcentaje acumulado de varianza. **Deberíamos quedarnos con los componentes que juntos expliquen el 70% de la varianza de forma acumulada.**
+
+```{r}
+vars_pca$eig
+```
+
+<br>
+
+Si observamos los valores del PCA con las variables escaladas notaremos que los valores son los mismos, esto es porque las variables de la tabla de datos ya tienen una transformación en la escala de cada variable para no tener que hacer el escalado.
+
+```{r}
+vars_pca_scale$eig
+```
+
+<br>
+
+También podemos extraer los eigenvalues con la función `get_eigenvalue()` del paquete `factoextra`:
+
+```{r}
+get_eigenvalue(vars_pca)
+```
+
+<br>
+
+Podemos ver de forma gráfica el porcentaje de varianza que explica cada componente principal (CP) con la función `fviz_eig()` del paquete `factoextra`:
+
+```{r}
+fviz_eig(vars_pca, 
+         addlabels = TRUE)
+```
+
+El CP1 explica el 57.5% de la varianza, el CP2 explica el 20.3% de la varianza, juntos explican el 77.8% de la varianza acumulada.
+
+
+
+<br>
+
+#### Variables del PCA
+
+Si extraemos las variables del PCA, el resultado nos muestra los valores para las coordenadas ("coord"), la correlación ("cor"), la representación ("cos2") y la contribución ("contrib") de cada variable para cada componente principal, por defecto se muestran solo los primeros cinco CPs.
+
+```{r}
+vars_pca$var
+```
+
+<br>
+
+Los elementos de las variables que extraemos para utilizar nuestro PCA como nuestras nuevas variables en un modelo pueden ser las coordenadas o la correlación (tienen los mismos valores):
+
+```{r}
+variables <- data.frame(vars_pca$var$coord)
+variables
+```
+
+<br>
+
+Lo exportamos con la función `export()` del paquete `rio`:
+
+```{r}
+export(variables, "PCA_variables.csv")
+```
+
+<br>
+
+Luego solo deberíamos seleccionar los CPs que expliquen el 70% de la varianza acumulada y colocar cada uno en un objeto separado:
+
+```{r}
+CP1_vars <- select(variables, Dim.1)
+CP1_vars
+
+# Y así mismo con los demás CPs
+```
+
+Las coordenadas indican las coordenadas de cada variable en el espacio de componentes principales. Estas coordenadas representan la proyección de cada variable en el subespacio formado por los componentes principales y pueden utilizarse para visualizar la distribución de los datos y las relaciones entre las variables en el espacio reducido. En un gráfico de dispersión de coordenadas, las variables con coordenadas similares suelen ser similares en términos de su contribución a la varianza total explicada por los componentes principales.
+
+<br>
+
+##### Gráfico de correlación entre las variables de los CPs
+
+Podemos generar un gráfico de coordenadas o de correlación de las variables con la función `fviz_pca_var()` del paquete `factoextra`:
+
+```{r}
+fviz_pca_var(vars_pca,
+             repel = TRUE) # para que las etiquetas de las variables no se traslapen
+```
+
+El gráfico muestra por defecto los CPs (dimensiones) 1 y 2, pero podemos especificar los componentes que queremos que se grafiquen con el argumento `axes = c(1,3)` (para que grafique los CPs 1 y 3).
+
+- Las variables correlacionadas positivamente se agrupan juntas en el gráfico, por ejemplo "bdo", "amm" y "pho" están correlacionadas positivamente.
+
+- Las variables correlacionadas negativamente están en lados opuestos del gráfico, por ejemplo, las variables anteriores están correlacionadas negativamente con la variable "oxy".
+
+- Las flechas de mayor tamaño (desde el origen del gráfico hacia el borde de la circunferencia) indican una mejor representación de las variables en los CPs
+
+<br>
+
+##### Calidad de la representación de cada variable
+
+```{r}
+vars_pca$var$cos2
+```
+
+La calidad de la representación de cada variable para cada CP está basada en el "cos2" (coseno al cuadrado = coordenadas al cuadrado). Indica la proporción de la varianza total explicada por cada componente principal que está representada por cada variable y evalua la calidad de la representación de cada variable en el espacio de componentes principales. Un valor de "cos2" alto indica que una gran proporción de la varianza total está representada por una variable en particular, lo que puede indicar una alta importancia de esa variable para la estructura general del conjunto de datos.
+
+Podemos ver la calidad de la representación de las variables con la función `fviz_cos2()` del paquete `factoextra` de forma individual para cada dimensión:
+
+```{r, out.width = "70%"}
+fviz_cos2(vars_pca, 
+          choice = "var", # indicamos que es para las variables
+          axes = 1) # indicamos el componente principal (dimensión)
+```
+
+```{r, out.width = "70%"}
+fviz_cos2(vars_pca,
+          choice = "var",
+          axes = 2)
+```
+
+<br>
+
+Y podemos hacerlo para más de un componente principal a la vez:
+
+```{r}
+fviz_cos2(vars_pca,
+          choice = "var",
+          axes = 1:2) # indicamos que queremos los dos componentes principales
+```
+
+<br>
+
+También podemos hacer el gráfico de correlación en base a la calidad de representación de cada variable:
+
+```{r}
+fviz_pca_var(vars_pca, 
+             col.var = "cos2", # indicamos que el color de las variables esté basado en el "cos2"
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), # indicamos un gradiente de color
+             repel = TRUE)
+```
+
+<br>
+
+Y podemos hacerlo en una escala de grises:
+
+```{r}
+fviz_pca_var(vars_pca, 
+             alpha.var = "cos2", # para que reduzca la intensidad del color basado en el "cos2"
+             repel = TRUE)
+```
+
+<br>
+
+##### Contribución de las variables a cada CP
+
+```{r}
+vars_pca$var$contrib
+```
+a la varianza total explicada por los componentes principales. Esta medida puede utilizarse para identificar qué observaciones son más importantes para la estructura general del conjunto de datos.
+
+La contribución de cada variable para cada CP está basada en cuánta información aporta la variable a la varianza total explicada por los componentes principales. Esta medida puede utilizarse para identificar qué variables son más importantes para la estructura general del conjunto de datos. Variables que están correlacionadas positivamente contribuirán más a uno de los componentes (por ejemplo, más al CP1 que al CP2), en cambio, las variables que se correlacionen negativamente con las anteriores, contribuirán más al otro componente (más al CP2 que al CP1).
+
+Podemos ver la contribución de las variables con la función `fviz_contrib()` del paquete `factoextra` de forma individual para cada dimensión:
+
+```{r, out.width = "70%"}
+fviz_contrib(vars_pca,
+             choice = "var",
+             axes = 1)
+```
+
+```{r, out.width = "70%"}
+fviz_contrib(vars_pca, 
+             choice = "var", 
+             axes = 2)
+```
+
+<br>
+
+O para ambos CPs
+
+```{r}
+fviz_contrib(vars_pca, 
+             choice = "var", 
+             axes = 1:2)
+```
+
+<br>
+
+Y podemos realizar el gráfico de coordenadas basado en la contribución de las variables:
+
+```{r}
+fviz_pca_var(vars_pca, 
+             col.var = "contrib", # indicamos que el color de las variables sea basado en la contribución
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+             repel = TRUE)
+```
+
+```{r}
+fviz_pca_var(vars_pca, 
+             alpha.var = "contrib",
+             repel = TRUE)
+```
+
+<br>
+
+#### Individuals del PCA
+
+Los individuals del PCA representan los datos para cada fila de la tabla de datos, en este caso, están representando a los 30 sitios donde se tomaron las mediciones de variables ambientales.
+
+```{r}
+vars_pca$ind
+```
+
+Los elementos de los individuals (sitios) del PCA son las coordenadas ("coord"), la representación de los sitios ("cos2"), la contribución ("contrib") y la distancia ("dist") que indica la distancia euclidiana entre cada observación (individuo; sitio) y el centro de masa de todas las observaciones en el espacio de componentes principales. Esta distancia puede utilizarse para identificar outliers u observaciones atípicas en el conjunto de datos.
+
+<br>
+
+Los elementos de los sitios que extraemos para utilizar nuestro PCA como nuestras nuevas variables en un modelo son las coordenadas:
 
 ```{r}
 sitios <- data.frame(vars_pca$ind$coord)
@@ -84,153 +362,203 @@ sitios
 
 <br>
 
-#### Eigenvalues
-
-Eigen value es la porción del total de la varianza que explica cada componente principal (dimensión)
-
 ```{r}
-valores <- get_eigenvalue(vars_pca)
-valores
-```
-
-**Deberíamos quedarnos con los componentes que expliquen el 70% de la varianza de forma acumulada.**
-
-<br>
-
-Podemos verlo gráficamente:
-
-```{r}
-fviz_eig(vars_pca, addlabels = TRUE)
+export(sitios, "PCA_sitios.csv")
 ```
 
 <br>
 
-#### Gráfico de correlación entre las variables de los Componentes Principales
-
 ```{r}
-fviz_pca_var(vars_pca, repel = TRUE)
+CP1_sitios <- select(sitios, Dim.1)
+head(CP1_sitios)
 ```
 
 <br>
 
-#### Calidad de la represenutación de cada variable
+##### Gráfico de coordenadas de los sitios
 
-cos2 (coseno al cuadrado, coordenadas al cuadrado)
+Podemos generar el gráfico de corrdenadas para los sitios con la función `fviz_pca_ind()` del paquete `factoextra`:
 
-```{r}
-fviz_cos2(vars_pca, choice = "var", axes = 1:2)
-```
-
-<br>
-
-##### Gráfico de correlación en base a calidad de representación
-
-```{r}
-fviz_pca_var(vars_pca, col.var = "cos2",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
+```{r, warning=FALSE, message=FALSE}
+fviz_pca_ind(vars_pca,
              repel = TRUE)
 ```
 
 <br>
 
-```{r}
-fviz_pca_var(vars_pca, alpha.var = "cos2", repel = TRUE)
-```
-
-<br>
-
-#### Contribución de las variables a los PC
+##### Calidad de representación de los sitios
 
 ```{r}
-fviz_contrib(vars_pca, choice = "var", axes = 1:2, top = 11)
+vars_pca$ind$cos2
 ```
 
 <br>
 
 ```{r}
-fviz_pca_var(vars_pca, col.var = "contrib",
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), 
-             repel = TRUE)
+fviz_cos2(vars_pca, 
+          choice = "ind", # indicamos que muestre los individuos (sitios)
+          axes = 1:2)
+
+# por defecto muestra todos los individuos, pero podemos indicar que muestre un número máximo con el argumento `top =`.
 ```
 
 <br>
 
-#### Gráfico de los sitios de colecta
+Gráfico de coordenadas de los sitios basado en la calidad de representación:
 
-```{r}
-fviz_pca_ind(vars_pca)
-```
-
-<br>
-
-#### Calidad de representación de los sitios de colecta
-
-```{r}
-fviz_cos2(vars_pca, choice = "ind", axes = 1:2)
-```
-
-<br>
-
-```{r}
-fviz_pca_ind(vars_pca, col.ind = "cos2", pointsize = "cos2", 
+```{r, warning=FALSE, message=FALSE}
+fviz_pca_ind(vars_pca, 
+             col.ind = "cos2", 
+             pointsize = "cos2", # para cambiar el tamaño del punto basado en la calidad de representación de cada sitio
              gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
              repel = TRUE)
 ```
 
-<br>
-
-#### Contribución de los sitios de colecta
-
-```{r}
-fviz_contrib(vars_pca, choice = "ind", axes = 1:2)
-```
-
-<br>
-
-```{r}
-fviz_pca_ind(vars_pca, col.ind = "contrib", pointsize = "contrib", 
-             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+```{r, warning=FALSE, message=FALSE}
+fviz_pca_ind(vars_pca, 
+             alpha.ind = "cos2", 
+             pointsize = "cos2",
              repel = TRUE)
 ```
 
 <br>
 
-#### Biplot
-
-Gráfico de correlación con variables y sitio
+##### Contribución de los sitios
 
 ```{r}
-fviz_pca_biplot(vars_pca, repel = TRUE,
+vars_pca$ind$contrib
+```
+
+<br>
+
+```{r}
+fviz_contrib(vars_pca, 
+             choice = "ind", 
+             axes = 1:2)
+
+# por defecto muestra todos los individuos, pero podemos indicar que muestre un número máximo con el argumento `top =`.
+```
+
+<br>
+
+Gráfico de coordenadas de los sitios basado en la contribución de cada sitio:
+
+```{r, warning=FALSE, message=FALSE}
+fviz_pca_ind(vars_pca, 
+             col.ind = "contrib", 
+             pointsize = "contrib", 
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE}
+fviz_pca_ind(vars_pca, 
+             alpha.ind = "contrib", 
+             pointsize = "contrib", 
+             repel = TRUE)
+```
+
+<br>
+
+#### Gráfico de variables y sitios
+
+Podemos generar un gráfico de coordenadas combinado con las variables y los sitios con la función `fviz_pca_biplot()` del paquete `factoextra`:
+
+```{r, warning=FALSE, message=FALSE}
+fviz_pca_biplot(vars_pca, 
+                repel = TRUE,
+                col.var = "#2E9FDF", # para indicar el color de las variables
+                col.ind = "#696969") # para indicar el color de los sitios
+```
+
+Con este biplot podemos interpretar qué variables tienen influencia sobre los diferentes sitios, por ejemplo, los sitios 23 y 25 tienen mayor concentración de fosfatos y de nitrógeno amoniacal, y también tienen una mayor demanda biológica de oxígeno.
+
+<br>
+
+Los gráficos de las funciones `fviz_pca_ ... ()` son compatibles con `ggplot2` por lo que podemos modificarlos y exportarlos con la función `ggsave()`:
+
+```{r, warning=FALSE, message=FALSE}
+fviz_pca_biplot(vars_pca, 
+                repel = TRUE,
                 col.var = "#2E9FDF", 
-                col.ind = "#696969",) +
-  theme_bw() +
+                col.ind = "#696969") +
   labs(title = "Análisis de Componentes Principales",
-       subtitle = "Variables ambientales")
+       subtitle = "Variables ambientales por Sitio") +
+  theme_classic()
+```
+
+```{r, message=FALSE, warning=FALSE}
+ggsave("Imagenes/PCA.jpg")
+
+# Recordemos que por defecto se guarda el último gráfico que se desplegó. Pero podemos especificar un gráfico dentro de un objeto con el argumento `plot =`
 ```
 
 <br>
 
-#### PCA con parameters
+#### PCA con `parameters`
+
+El paquete `parameters` también cuenta con una función para realizar análisis de componentes principales = `principal_components()`:
 
 ```{r}
-pca.parameters <- principal_components(vars, n = 3)
+pca.parameters <- principal_components(vars, 
+                                       n = 3) # indicamos el número de CPs que queremos que nos muestre la salida de la función
 ```
 
-```{r}
-pca.parameters
-```
-
-```{r}
-export(pca.parameters, "pca.csv")
-```
+<br>
 
 ```{r}
 summary(pca.parameters)
 ```
 
+El `summary()` nos muestra un resumen de los eigenvalues, la varianza explicada y la varianza acumulada explicada por cada componente.
+
+<br>
+
+También podemos extraer los CP para las variables:
+
+```{r}
+pca.parameters
+```
+
+Y exportarlo:
+
+```{r}
+export(pca.parameters, "PCA_parameters_variables.csv")
+```
+
+<br>
+
+Para extraer los CPs para los sitios utilizamos la función `predict()`:
+
+```{r}
+PCA_par_sitios <- predict(pca.parameters)
+PCA_par_sitios
+```
+
 <br>
 
 ```{r}
-plot(pca.parameters, type = "line") + 
-  theme_bw()
+export(PCA_par_sitios, "PCA_parameters_sitios.csv")
 ```
+
+<br>
+
+Un factor importante para elegir cuántos CPs escoger, aparte de que juntos expliquen el 70% de la varianza acumulada, es si todas las variables están bien representadas en los CPs que escogimos.
+
+Con la función `closest_component()` podemos observar qué variables de los datos originales pertenecen a qué componente extraído:
+
+```{r}
+closest_component(pca.parameters)
+```
+
+<br>
+
+Podemos generar un grafico del PCA generado con la función `principal_components()`:
+
+```{r}
+plot(pca.parameters) +
+  theme_bw()
+
+# Este gráfico nos muestra las coordenadas de cada variable en cada componente y la calidad de la representación.
+```
+<br>
