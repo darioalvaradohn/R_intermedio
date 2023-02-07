@@ -18,9 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <br>
 
-PENDIENTE
-
-Un modelo lineal general está basado en una regresión lineal simple y nos sirve para determinar el efecto que tiene una variable predictora numérica sobre una variable respuesta numérica (Algo que no puede hacer un ANOVA), también nos sirve para evaluar si hay diferencias de una variable respuesta entre los niveles de una variable predictora categórica (similar al ANOVA).
+Un modelo lineal general está basado en una regresión lineal simple y sirve para determinar el efecto que tiene una variable predictora numérica sobre una variable respuesta numérica (Algo que no puede hacer un ANOVA), también sirve para evaluar si hay diferencias en una variable respuesta entre los niveles de una variable predictora categórica (similar al ANOVA).
 
 <br>
 
@@ -120,7 +118,7 @@ summary(modelo1)
 library(ggxmean)
 ```
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE, size= 60%}
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 ggplot(p, aes(peso_kg, flipper_length_mm)) +
   geom_point() +
   geom_lm() +
@@ -129,7 +127,7 @@ ggplot(p, aes(peso_kg, flipper_length_mm)) +
 
 - El intercepto nos muestra el valor que tendría nuestra variable respuesta en el eje y cuando nuestra variable predictora es igual a 0 en el eje x:
 
-```{r, message=FALSE, warning=FALSE, echo=FALSE, size= 60%}
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 ggplot(p, aes(peso_kg, flipper_length_mm)) +
   geom_point() +
   geom_lm() +
@@ -148,7 +146,7 @@ ggplot(p, aes(peso_kg, flipper_length_mm)) +
 
 <br>
 
-#### Interpretación del modelo
+##### Interpretación del modelo
 
 La interpretación de este modelo sería la siguiente: 
 
@@ -201,6 +199,16 @@ $$
 y = a + bx
 $$
 
+Donde:
+
+ y = variable respuesta
+ 
+ a = intercepto
+ 
+ b = pendiente (coeficiente de la variable predictora)
+ 
+ x = valor conocido de la variable predictora
+
 $$
 Longitud de la Aleta = 137.04 + 15.20  * MasaCorporal
 $$
@@ -246,7 +254,7 @@ El modelo lineal tiene algunos supuestos que deben cumplirse:
 
 Podemos evaluar algunos de los supuestos de forma gráfica con la función `plot()`.
 
-```{r, out.width= 60%}
+```{r, out.width= "60%"}
 plot(modelo1, 
      which = c(1:6)) # para indicar que muestre todos los gráficos (6), por defecto muestra solo los primeros 4
 
@@ -433,7 +441,7 @@ Con `plot_model()`:
 
 ```{r}
 plot_model(modelo2, type = "pred",
-           title = "Diferencias de longitud de aleta (mm) en relación a la Especie",
+           title = "Longitud de aleta (mm) en relación a la Especie",
            axis.title = c("Especie", "Longitud de aleta (mm)"))
 ```
 
@@ -454,7 +462,7 @@ ggplot(medias, aes(species, mean)) +
   geom_errorbar(aes(ymin = liIC95,
                     ymax = lsIC95),
                 width = 0.05) +
-  labs(title = "Diferencias de longitud de aleta (mm) en relación a la Especie",
+  labs(title = "Longitud de aleta (mm) en relación a la Especie",
        y = "Longitud de aleta (mm)",
        x = "Especie") +
   geom_text(aes(species, 
@@ -529,7 +537,7 @@ El resultado nos muestra lo siguiente:
 
 También podemos realizar la comparación entre modelos con la función `compare_performance()` del paquete `performance`. Con esta función no es necesario crear una lista con nuestros modelos ni un vector con los nombres: 
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 cp <- compare_performance(modelo0, modelo1, modelo2, modelo3, modelo4, modelo5, modelo6, modelo7, modelo8, modelo9, 
                           rank = T)
 cp
@@ -569,6 +577,7 @@ Cuando seleccionamos el mejor modelo con los criterios antes mencionados debemos
 ##### Revisión de supuestos del mejor modelo
 
 ```{r}
+# normalidad de los residuales
 cn <- check_normality(modelo7)
 cn
 ```
@@ -578,7 +587,8 @@ plot(cn)
 ```
 
 ```{r}
-ch <- check_heteroscedasticity(m7)
+# homogeneidad de la varianza de los residuales
+ch <- check_heteroscedasticity(modelo7)
 ch
 ```
 
@@ -587,6 +597,7 @@ plot(ch)
 ```
 
 ```{r}
+# ausencia de observaciones influyentes
 co <- check_outliers(modelo7)
 co
 ```
@@ -635,39 +646,93 @@ Interpretación:
 
 #### Gráfico del mejor modelo
 
-Podemos graficar el modelo con la función `plot_model()` del paquete `sjPlot`:
+Podemos graficar el modelo con la función `plot_model()` del paquete `sjPlot` y combinarlo con argumentos de `ggplot2` para modificarlo:
 
 ```{r}
 plot_model(modelo7, 
            type = "int", # argumento para graficar la interacción entre las variables
-           title = "Longitud de la aleta en relación a la especie y la masa corporal de los pingüinos",
-           axis.title = c("Especie", "Longitud de la aleta (mm)"),
-           colors = "Set1")
+           terms = c("species", "peso_kg")) + # argumento para poder combinar las funciones de `ggplot2`, se deben colocar las variables predictoras.
+  labs(title = "Longitud de la aleta en relación a la especie y la masa corporal de los pingüinos",
+       y = "Longitud de la aleta (mm)",
+       x = "Especie",
+       color = "Masa corporal (kg)") + # para el título de la leyenda (color de los símbolos)
+  theme_bw()
+```
 
-# Se puede apreciar la interacción entre las variables porque las líneas predichas por el modelo  para la longitud de aleta de cada especie no son paralelas e incluso llegan a cruzarse. Esto indica que una variable predictora está influenciada por la otra y esa interacción determina el efecto que tienen sobre la variable respuesta. 
+Podemos observar la interacción entre las variables "Especie" y "Masa corporal" que determina la "Longitud de la aleta", aquí el gráfico muestra el valor mínimo y el valor máximo de la masa corporal de los pingüinos de la tabla de datos. La interacción se observa porque la masa corporal está influyendo en la lingitud de la aleta para cada especie. Si la masa corporal no influyera, los valores de longitud de aleta serían muy similares aunque la masa corporal sea diferente (esto para cada especie).
+
+<br>
+
+Algo importante es que el orden en que coloquemos las variables predictoras en nuestro modelo afectará la salida del gráfico, especialmente si tenemos variables predictoras numéricas y categóricas.
+
+El gráfico anterior es para el modelo: _lm(flipper_length_mm ~ species * peso_kg, data = p)_, que tiene las variables predictoras "Especie" (categórica) y "Masa corporal (numérica) en ese orden.
+
+Si cambiamos el orden de las variables predictoras, los coeficientes del modelo serán los mismos (no afecta el resultado ni la interpretación del modelo), pero el gráfico será diferente:
+
+```{r}
+modelo7b <- lm(flipper_length_mm ~ peso_kg * species, data = p)
 ```
 
 <br>
 
-Y también podemos generar el gráfico utilizando el resultado de la función `ggpredict()` del paquete `ggeffects` como entrada para los argumentos de `ggplot2`:
+Comparemos los coeficientes:
 
 ```{r}
-g <- ggpredict(modelo7, 
-               terms = c("species", "peso_kg"))
+parameters(modelo7)
+```
+
+```{r}
+parameters(modelo7b)
+```
+
+Los coeficientes siguen siendo los mismos y lo único que cambia es el orden en que aparece el coeficiente la para variable "peso kg".
+
+<br>
+
+Ahora hagamos el gráfico:
+
+```{r}
+plot_model(modelo7b, 
+           type = "int",
+           terms = c("peso_kg", "species")) + 
+  aes(linetype = group, # para que el tipo de linea sea diferente para cada especie
+      color = group, # color de linea diferente para cada especie
+      fill = group) + # relleno de los intervalos de confianza diferente para cada especie
+  labs(title = "Longitud de la aleta en relación a la especie y la masa corporal de los pingüinos",
+       y = "Longitud de la aleta (mm)",
+       x = "Masa corporal (kg)",
+       color = "Especie",
+       linetype = "Especie",
+       fill = "Especie") + # para que color, linetype y fill estén en una sola leyenda y no en una cada uno. 
+  theme_bw()
+```
+
+Ahora tenemos un gráfico de líneas con intervalos de confianza (uno para cada especie). Este gráfico es más apropiado para interpretar el efecto en la variable respuesta cuando hay una variable predictora numérica.
+
+Se puede apreciar la interacción entre las variables porque las líneas predichas por el modelo para la longitud de aleta de cada especie no son paralelas e incluso llegan a cruzarse. Esto indica que una variable predictora está influenciada por la otra y esa interacción determina el efecto que tienen sobre la variable respuesta. 
+
+<br>
+
+También podemos generar el gráfico utilizando la salida de la función `ggpredict()` del paquete `ggeffects` como entrada para los argumentos de `ggplot2`:
+
+```{r}
+g <- ggpredict(modelo7b, 
+               terms = c("peso_kg", "species"))
 g
 ```
 
 ```{r}
 ggplot(g, aes(x, predicted)) +
-    geom_point(aes(color = group),
-               size = 2) +
-    geom_errorbar(aes(ymin = conf.low,
-                      ymax = conf.high,
-                      color = group),
-                  width = 0.1) +
-    theme_bw() +
-  labs(title = "Longitud de la aleta en relación a la especie y masa corporal de los pingüinos",
-       x = "Especie", 
+    geom_line(aes(linetype = group, 
+                  color = group)) +
+    geom_ribbon(aes(ymin = conf.low, # para graficar el intervalo de confianza
+                    ymax = conf.high, 
+                    fill = group), 
+                alpha = 0.15) +
+    scale_linetype_manual(values = c("solid", "dashed", "dotted")) + # para especificar un tipo de línea diferente para cada especie
+  theme_bw() +
+  labs(title = "Longitud de la aleta en relación a la masa corporal y la especie de los pingüinos",
+       x = "Masa corporal (kg)", 
        y = "Longitud de la aleta (mm)",
        linetype = "Especie", 
        color = "Especie", 
@@ -676,43 +741,93 @@ ggplot(g, aes(x, predicted)) +
 
 <br>
 
-##### Contraste entre niveles
+#### Contraste entre niveles
 
 En los parámetros del modelo todos los coeficientes están comparados contra el intercepto. La especie 2 y la especie 3 se comparan con la especie 1, pero no hay comparación entre la especie 2 y la especie 3. 
 
 Para generar la comparación podemos aplicar la función `estimate_contrast()` del paquete `modelbased`:
 
 ```{r}
-estimate_contrasts(modelo7, "species")
+estimate_contrasts(modelo7b, 
+                   "species") # indicamos la variable que contiene los grupos
 ```
 
-También podemos hacerlo de la siguiente manera:
+Como este es un modelo con interacción, el contraste está tomando en cuenta una masa corporal constante para todas las especies, pero sí considera su influencia en la longitud de la aleta.
 
-Primero calculamos las medias de cada especie (en este caso serían las medias de la longitud de aleta) con la función `emmeans()` del paquete `emmeans` y se especifica la variable para la que se quiere ver las medias.
+El resultado no es el mismo que tendría un modelo simple con la especie como variable predictora nada más, como el modelo 2: _lm(flipper_length_mm ~ species, data = p)_:
 
 ```{r}
-medias <- emmeans(modelo7, "species")
+estimate_contrasts(modelo2, 
+                   "species")
+```
+
+En este sentido, realizar los contrastes entre medias es más útil cuando tenemos modelos sencillos con variables predictoras categóricas, ya que podemos interpretar los contrastes más fácilmente.
+
+<br>
+
+También podemos hacer los contrastes de la siguiente manera:
+
+Primero calculamos las medias de cada especie (en este caso serían las medias de la longitud de aleta) con la función `emmeans()` del paquete `emmeans` indicando la variable para la que se quiere ver las medias.
+
+```{r}
+medias <- emmeans(modelo2, 
+                  "species")
 medias
 ```
 
-Ahora se realiza la comparacion de pares (contrastes; diferencia entre medias) con la funcion `pairs()`.
+<br>
+
+Ahora realizamos la comparacion por pares (contrastes; diferencia entre medias) con la funcion `pairs()` del paquete base:
 
 ```{r}
 contraste <- pairs(medias)
 contraste
 ```
 
-Se puede agregar el intervalo de confianza con la funcion `confint()`.
+<br>
+
+Podemos ver los intervalos de confianza aplicamos la funcion `confint()` del paquete base:
 
 ```{r}
 confint(contraste)
 ```
 
-Y se puede graficar el contraste con la función `plot()`.
+<br>
+
+Y podemos graficar el contraste con la función `plot()`.
 
 ```{r}
 plot(contraste) +
+  geom_vline(xintercept = 0) # para agregar una línea vertical en el 0 del eje x
+```
+
+Como ninguno de los intervalos de confianza de los contrastes traslapa con la línea del cero, todas las diferencias entre las medias son estadísticamente significativas.
+
+<br>
+
+Para observar el caso de un contraste entre medias que no es estadísticamente significativo haremos lo mismo para el modelo 3: _lm(flipper_length_mm ~ island, data = p)_:
+
+```{r}
+medias_modelo3 <- emmeans(modelo3,
+                          "island")
+medias_modelo3
+```
+
+```{r}
+contraste_modelo3 <- pairs(medias_modelo3)
+contraste_modelo3
+```
+
+```{r}
+confint(contraste_modelo3)
+```
+
+```{r}
+plot(contraste_modelo3) +
   geom_vline(xintercept = 0)
 ```
 
+Aquí podemos observar que la diferencia entre las medias de la longitud de aleta de los pingüinos de las islas "Dream" y "Torgersen" traslapa la línea del cero (no es estadísticamente significativa).
+
 <br>
+
