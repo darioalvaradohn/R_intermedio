@@ -493,6 +493,27 @@ ggsave("Imagenes/PCA.jpg")
 # Recordemos que por defecto se guarda el último gráfico que se desplegó. Pero podemos especificar un gráfico dentro de un objeto con el argumento `plot =`
 ```
 
+```{r}
+vars$zona <- factor(c(rep("Alta", 9), rep("Media", 6), rep("Baja", 15)), levels = c("Alta", "Media", "Baja"))
+head(vars)
+```
+
+```{r}
+PCA2 <- PCA(vars[ ,1:11], graph = FALSE)
+```
+
+```{r}
+fviz_pca_biplot(PCA2, 
+                repel = TRUE, 
+                col.ind = "gray30", 
+                col.var = "gray3", 
+                habillage = vars$zona, 
+                addEllipses = TRUE, 
+                legend.title = "Zona del río", 
+                geom.ind = "point", 
+                geom.var = "text")
+```
+
 <br>
 
 #### PCA con `parameters`
