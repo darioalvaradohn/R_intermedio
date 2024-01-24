@@ -40,6 +40,7 @@ library(sjPlot)
 library(performance)
 library(parameters)
 library(bbmle)
+library(modelbased)
 library(agridat)
 library(MASS)
 library(rio)
@@ -213,7 +214,8 @@ El RMSE y el Sigma se interpretan de la misma forma que en los modelos lineales.
 
 ```{r, message=FALSE, warning=FALSE}
 plot_model(glm1, 
-           type = "pred")
+           type = "pred",
+           terms = "spray")
 ```
 
 Observando el gráfico nos damos cuenta que el intercepto del modelo indicaba la media de la cantidad de larvas cuando no se aplicaba insecticida, pero si vemos el punto de la media para la cantidad de larvas cuando si se aplica insecticida no es el valor del coeficiente que nos aparece para "sprayY". 
@@ -427,6 +429,14 @@ performance(glm2_q)
 ```
 
 El pseudo R cuadrado de Nagelkerke es de 0.213, lo que indica que el tratamiento explica el 21.3% de la varianza de la cantidad de larvas por unidad muestral, y el error del modelo (RMSE) es de 1.067 larvas.
+
+
+Para ver las comparaciones entre los tratamientos podemos utilizar la función `estimate_contrasts` del paquete `modelbased`, indicando la variable o variables que contiene los tratamientos o grupos:
+
+```{r}
+estimate_contrasts(glm2_q, "trt")
+```
+
 
 <br>
 
