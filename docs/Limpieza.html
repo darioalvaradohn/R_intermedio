@@ -643,6 +643,7 @@ varias variables para facilitar el análisis o la visualización.</p></li>
 <pre class="r"><code>library(rio)
 library(palmerpenguins)
 library(tidyverse)
+library(janitor)
 library(kableExtra)</code></pre>
 <p><br></p>
 </div>
@@ -1070,6 +1071,33 @@ head(medidas)</code></pre>
 ## 4    M       181      97   23 29.61  Superior       Alta-Muy Alto
 ## 5    M       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
 ## 6    M       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<ul>
+<li>También podemos renombrar las variables de forma automática con la
+función <code>clean_names()</code> del paquete
+<code>janitor</code>:</li>
+</ul>
+<pre class="r"><code>nombresnuevos &lt;- clean_names(medidas, case = &quot;snake&quot;) # El argumento `case` hace referencia al formato de los caracteres y a la unión/separación de dos o más palabras. Puede ser: &quot;snake&quot;, &quot;small_camel&quot;, &quot;big_camel&quot;, &quot;screaming_snake&quot;, &quot;parsed&quot;, &quot;mixed&quot;, &quot;lower_upper&quot;, &quot;upper_lower&quot;, &quot;swap&quot;, &quot;all_caps&quot;, &quot;lower_camel&quot;, &quot;upper_camel&quot;, &quot;internal_parsing&quot;, &quot;none&quot;, &quot;flip&quot;, &quot;sentence&quot;, &quot;random&quot;, &quot;title&quot;.
+head(nombresnuevos)</code></pre>
+<pre><code>##   sexo altura_cm peso_kg edad   imc comp_corp         altura_peso
+## 1    M       170      71   47 24.57    Normal          Media-Alto
+## 2    M       162      79   36 30.10  Obesidad          Media-Alto
+## 3    M       149      86   43 38.74  Obesidad       Baja-Muy Alto
+## 4    M       181      97   23 29.61  Superior       Alta-Muy Alto
+## 5    M       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
+## 6    M       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<p><br></p>
+</div>
+<div id="renombrar-observaciones-de-una-variable" class="section level4">
+<h4>Renombrar observaciones de una variable</h4>
+<ul>
+<li><code>recode()</code> del paquete <code>dplyr</code> para cambiar el
+nombre de una o más observaciones en la tabla de datos:</li>
+</ul>
+<pre class="r"><code>medidas$Sexo &lt;- recode(medidas$Sexo, &quot;M&quot; = &quot;Masculino&quot;, &quot;F&quot; = &quot;Femenino&quot;)
+distinct(medidas, Sexo)</code></pre>
+<pre><code>##        Sexo
+## 1 Masculino
+## 2  Femenino</code></pre>
 <p><br></p>
 </div>
 <div id="resumir-información" class="section level4">
@@ -1131,10 +1159,10 @@ muy útil si se combina con la función <code>summarise()</code>:</li>
             IMC = mean(IMC))
 medias</code></pre>
 <pre><code>## # A tibble: 2 × 5
-##   Sexo  Altura  Peso  Edad   IMC
-##   &lt;chr&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
-## 1 F       152.  65.9  32.4  29.1
-## 2 M       169.  84.1  37.4  29.7</code></pre>
+##   Sexo      Altura  Peso  Edad   IMC
+##   &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1 Femenino    152.  65.9  32.4  29.1
+## 2 Masculino   169.  84.1  37.4  29.7</code></pre>
 <p><br></p>
 </div>
 <div id="cambiar-separador-de-decimales" class="section level4">
@@ -1150,13 +1178,13 @@ decimales de “.” a “,”:</li>
                                         nsmall = 2, 
                                         decimal.mark = &quot;,&quot;)))
 head(decimales)</code></pre>
-<pre><code>##   Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
-## 1    M       170      71   47 24,57    Normal          Media-Alto
-## 2    M       162      79   36 30,10  Obesidad          Media-Alto
-## 3    M       149      86   43 38,74  Obesidad       Baja-Muy Alto
-## 4    M       181      97   23 29,61  Superior       Alta-Muy Alto
-## 5    M       156      98   29 40,27  Obesidad Medio Baja-Muy Alto
-## 6    M       165     107   49 39,30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
+## 1 Masculino       170      71   47 24,57    Normal          Media-Alto
+## 2 Masculino       162      79   36 30,10  Obesidad          Media-Alto
+## 3 Masculino       149      86   43 38,74  Obesidad       Baja-Muy Alto
+## 4 Masculino       181      97   23 29,61  Superior       Alta-Muy Alto
+## 5 Masculino       156      98   29 40,27  Obesidad Medio Baja-Muy Alto
+## 6 Masculino       165     107   49 39,30  Obesidad      Media-Muy Alto</code></pre>
 <pre class="r"><code># con `vars()` especificamos la o las variables a las que queremos cambiar el separador de decimales. El punto &quot;.&quot; en funs(format()) es una forma de referirse a cada una de las observaciones de la variable, y la función format() es aplicada a cada una de ellas para cambiar el separador de decimal de punto a coma. `nsmall =` es para indicar el número de decimales deseado.</code></pre>
 <p>R trabaja con bases de datos con variables numéricas continuas que
 sus decimales estén separados con “.”, si están separados con “,” no lo
@@ -1168,24 +1196,24 @@ cambiar el separador de decimales de “,” a “.”:</p>
                              &quot;,&quot;, 
                              &quot;.&quot;)
 head(decimales)</code></pre>
-<pre><code>##   Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
-## 1    M       170      71   47 24.57    Normal          Media-Alto
-## 2    M       162      79   36 30.10  Obesidad          Media-Alto
-## 3    M       149      86   43 38.74  Obesidad       Baja-Muy Alto
-## 4    M       181      97   23 29.61  Superior       Alta-Muy Alto
-## 5    M       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6    M       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
+## 1 Masculino       170      71   47 24.57    Normal          Media-Alto
+## 2 Masculino       162      79   36 30.10  Obesidad          Media-Alto
+## 3 Masculino       149      86   43 38.74  Obesidad       Baja-Muy Alto
+## 4 Masculino       181      97   23 29.61  Superior       Alta-Muy Alto
+## 5 Masculino       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
+## 6 Masculino       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
 <p>Después de realizar el cambio se debe modificar la clase o tipo de la
 variable de caracter a numérica:</p>
 <pre class="r"><code>decimales$IMC &lt;- as.numeric(decimales$IMC)
 head(decimales)</code></pre>
-<pre><code>##   Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
-## 1    M       170      71   47 24.57    Normal          Media-Alto
-## 2    M       162      79   36 30.10  Obesidad          Media-Alto
-## 3    M       149      86   43 38.74  Obesidad       Baja-Muy Alto
-## 4    M       181      97   23 29.61  Superior       Alta-Muy Alto
-## 5    M       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6    M       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
+## 1 Masculino       170      71   47 24.57    Normal          Media-Alto
+## 2 Masculino       162      79   36 30.10  Obesidad          Media-Alto
+## 3 Masculino       149      86   43 38.74  Obesidad       Baja-Muy Alto
+## 4 Masculino       181      97   23 29.61  Superior       Alta-Muy Alto
+## 5 Masculino       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
+## 6 Masculino       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
 <p><br></p>
 </div>
 <div id="eliminar-valores-na" class="section level4">
@@ -1295,13 +1323,13 @@ head(separar)</code></pre>
 columnas que pertenecen a una sola variable) y en formato largo o “tidy”
 (cuando cada columna es una variable y cada fila es una observación)</p>
 <pre class="r"><code>head(medidas)</code></pre>
-<pre><code>##   Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
-## 1    M       170      71   47 24.57    Normal          Media-Alto
-## 2    M       162      79   36 30.10  Obesidad          Media-Alto
-## 3    M       149      86   43 38.74  Obesidad       Baja-Muy Alto
-## 4    M       181      97   23 29.61  Superior       Alta-Muy Alto
-## 5    M       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6    M       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
+## 1 Masculino       170      71   47 24.57    Normal          Media-Alto
+## 2 Masculino       162      79   36 30.10  Obesidad          Media-Alto
+## 3 Masculino       149      86   43 38.74  Obesidad       Baja-Muy Alto
+## 4 Masculino       181      97   23 29.61  Superior       Alta-Muy Alto
+## 5 Masculino       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
+## 6 Masculino       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
 <pre class="r"><code># Esta tabla de datos está en formato largo (tidy)</code></pre>
 <ul>
 <li><code>pivot_wider()</code> del paquete <code>tidyr</code> para
@@ -1313,14 +1341,14 @@ modificar una tabla de formato largo a formato ancho</li>
 
 head(formatoancho)</code></pre>
 <pre><code>## # A tibble: 6 × 9
-##   Sexo  Altura_cm Peso_kg  Edad Altura_Peso    Normal Obesidad Superior Inferior
-##   &lt;chr&gt;     &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt;           &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-## 1 M           170      71    47 Media-Alto       24.6     NA       NA         NA
-## 2 M           162      79    36 Media-Alto       NA       30.1     NA         NA
-## 3 M           149      86    43 Baja-Muy Alto    NA       38.7     NA         NA
-## 4 M           181      97    23 Alta-Muy Alto    NA       NA       29.6       NA
-## 5 M           156      98    29 Medio Baja-Mu…   NA       40.3     NA         NA
-## 6 M           165     107    49 Media-Muy Alto   NA       39.3     NA         NA</code></pre>
+##   Sexo     Altura_cm Peso_kg  Edad Altura_Peso Normal Obesidad Superior Inferior
+##   &lt;chr&gt;        &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt;        &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1 Masculi…       170      71    47 Media-Alto    24.6     NA       NA         NA
+## 2 Masculi…       162      79    36 Media-Alto    NA       30.1     NA         NA
+## 3 Masculi…       149      86    43 Baja-Muy A…   NA       38.7     NA         NA
+## 4 Masculi…       181      97    23 Alta-Muy A…   NA       NA       29.6       NA
+## 5 Masculi…       156      98    29 Medio Baja…   NA       40.3     NA         NA
+## 6 Masculi…       165     107    49 Media-Muy …   NA       39.3     NA         NA</code></pre>
 <p>Ahora los niveles de la variable “Comp_copr” pasaron a ser columnas y
 los valores de la variable “IMC” pasaron a ser las observaciones de su
 columna correspondiente. Si para una columna no hay una observación
@@ -1339,18 +1367,18 @@ a formato largo (tidy).</li>
 
 formatotidy</code></pre>
 <pre><code>## # A tibble: 100 × 7
-##    Sexo  Altura_cm Peso_kg  Edad Altura_Peso         Comp_corp   IMC
-##    &lt;chr&gt;     &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt;               &lt;chr&gt;     &lt;dbl&gt;
-##  1 M           170      71    47 Media-Alto          Normal     24.6
-##  2 M           162      79    36 Media-Alto          Obesidad   30.1
-##  3 M           149      86    43 Baja-Muy Alto       Obesidad   38.7
-##  4 M           181      97    23 Alta-Muy Alto       Superior   29.6
-##  5 M           156      98    29 Medio Baja-Muy Alto Obesidad   40.3
-##  6 M           165     107    49 Media-Muy Alto      Obesidad   39.3
-##  7 M           172      74    50 Medio Alta-Alto     Superior   25.0
-##  8 M           160      89    19 Medio Baja-Muy Alto Obesidad   34.8
-##  9 M           190     109    28 Alta-Muy Alto       Obesidad   30.2
-## 10 M           180      89    18 Medio Alta-Muy Alto Superior   27.5
+##    Sexo      Altura_cm Peso_kg  Edad Altura_Peso         Comp_corp   IMC
+##    &lt;chr&gt;         &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt;               &lt;chr&gt;     &lt;dbl&gt;
+##  1 Masculino       170      71    47 Media-Alto          Normal     24.6
+##  2 Masculino       162      79    36 Media-Alto          Obesidad   30.1
+##  3 Masculino       149      86    43 Baja-Muy Alto       Obesidad   38.7
+##  4 Masculino       181      97    23 Alta-Muy Alto       Superior   29.6
+##  5 Masculino       156      98    29 Medio Baja-Muy Alto Obesidad   40.3
+##  6 Masculino       165     107    49 Media-Muy Alto      Obesidad   39.3
+##  7 Masculino       172      74    50 Medio Alta-Alto     Superior   25.0
+##  8 Masculino       160      89    19 Medio Baja-Muy Alto Obesidad   34.8
+##  9 Masculino       190     109    28 Alta-Muy Alto       Obesidad   30.2
+## 10 Masculino       180      89    18 Medio Alta-Muy Alto Superior   27.5
 ## # ℹ 90 more rows</code></pre>
 <p><br></p>
 </div>

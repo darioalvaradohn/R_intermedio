@@ -65,6 +65,7 @@ El **manejo de datos** se refiere a cómo organizamos, transformamos y preparamo
 library(rio)
 library(palmerpenguins)
 library(tidyverse)
+library(janitor)
 library(kableExtra)
 ```
 
@@ -316,6 +317,25 @@ medidas <- rename(medidas,
                   Altura_Peso = alturaXpeso)
 head(medidas)
 ```
+
+- También podemos renombrar las variables de forma automática con la función `clean_names()` del paquete `janitor`:
+
+```{r}
+nombresnuevos <- clean_names(medidas, case = "snake") # El argumento `case` hace referencia al formato de los caracteres y a la unión/separación de dos o más palabras. Puede ser: "snake", "small_camel", "big_camel", "screaming_snake", "parsed", "mixed", "lower_upper", "upper_lower", "swap", "all_caps", "lower_camel", "upper_camel", "internal_parsing", "none", "flip", "sentence", "random", "title".
+head(nombresnuevos)
+```
+
+<br>
+
+#### Renombrar observaciones de una variable 
+
+- `recode()` del paquete `dplyr` para cambiar el nombre de una o más observaciones en la tabla de datos:
+
+```{r}
+medidas$Sexo <- recode(medidas$Sexo, "M" = "Masculino", "F" = "Femenino")
+distinct(medidas, Sexo)
+```
+
 
 <br>
 
