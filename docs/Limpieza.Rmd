@@ -14,6 +14,12 @@ header-includes:
   <img src="Imagenes/HNBI_LOGO1.jpeg" alt="Texto alternativo de la imagen" style="width:100px; margin-left:20px;">
 </div>
 
+```{css, echo=FALSE}
+pre code {
+  word-wrap: normal !important;
+  white-space: pre !important;
+}
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -21,9 +27,35 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <br>
 
-*Atajo de teclado para crear un chunk de código en R Markdown:*
+La limpieza y manejo de datos son procesos fundamentales en el análisis de datos. A menudo, los datos en su forma original están desordenados, incompletos o mal estructurados, lo que dificulta su análisis. Por eso, antes de realizar cualquier análisis, es crucial limpiarlos y organizarlos correctamente.
 
-**ctrl + alt + I**
+La **limpieza de datos** implica identificar y corregir o eliminar errores y problemas en los datos para asegurar que estén en un formato adecuado para su análisis. Esto incluye:
+
+- Eliminar o manejar valores faltantes (NA): Los datos pueden tener valores ausentes o nulos que deben ser tratados, ya sea eliminándolos, reemplazándolos por un valor de referencia (como la media) o interpolándolos.
+
+- Corregir errores tipográficos o inconsistencias: Pueden ocurrir errores en la entrada de datos, como nombres escritos de manera diferente, valores numéricos erróneos o fechas mal formateadas.
+
+- Eliminar duplicados: En muchos casos, los datos pueden contener registros duplicados que necesitan ser eliminados para evitar sesgos o distorsiones en los análisis.
+
+- Conversión de tipos de datos: Es posible que se necesite convertir variables a su tipo correcto (por ejemplo, de texto a número o de fecha a formato correcto).
+
+- Manejo de valores atípicos (outliers): Los valores atípicos pueden ser errores o valores válidos que deben ser manejados de manera especial para evitar que afecten el análisis.
+
+El **manejo de datos** se refiere a cómo organizamos, transformamos y preparamos los datos para el análisis. Algunas actividades comunes son:
+
+- Transformación de datos:
+
+  - Reformatear datos: Cambiar el formato de los datos, como pivotar una tabla o dividir una columna en varias.
+
+  - Escalar y normalizar: Ajustar los datos para que estén en una escala similar, especialmente en análisis estadísticos o modelos de machine learning.
+
+  - Creación de nuevas variables: Derivar nuevas variables a partir de las existentes.
+
+  - Filtrar y seleccionar datos: Elegir un subconjunto de datos que cumplan con ciertos criterios. 
+
+- Agrupar y resumir: Agrupar los datos por ciertas categorías y calcular estadísticas agregadas, como la media, la mediana o la suma.
+
+- Ordenar los datos: Organizar los datos de acuerdo con una o varias variables para facilitar el análisis o la visualización.
 
 <br>
 
@@ -101,17 +133,17 @@ summary(masamayor4500)
 ```
 
 ```{r}
-unavariable <- filter(penguins, 
+masacondicional <- filter(penguins, 
                       body_mass_g >= 3500 & 
                         body_mass_g <= 4500) # El símbolo `&` indica que se deben cumplir ambos argumentos condicionales en el filtrado.
-summary(unavariable)
+summary(masacondicional)
 ```
 
 ```{r}
-unavariable <- filter(penguins, 
+masacondicional2 <- filter(penguins, 
                       body_mass_g >= 3500 | 
                         body_mass_g <= 4500) # El símbolo `|` indica que se puede cumplir un argumento o el otro.
-summary(unavariable)
+summary(masacondicional2)
 ```
 
 Para filtrar según valores específicos de más de una variable:
