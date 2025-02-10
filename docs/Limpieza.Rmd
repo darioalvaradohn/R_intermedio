@@ -112,6 +112,7 @@ numericas <- select(penguins,
 head(numericas)
 ```
 
+
 <br>
 
 #### Filtrar observaciones
@@ -158,7 +159,7 @@ summary(combinado)
 
 <br>
 
-#### Reordenar observaciones
+#### Reordenar observaciones 
 
 - `arrange()` del paquete `dplyr` para reordenar observaciones (filas):
 
