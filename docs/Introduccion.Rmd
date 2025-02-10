@@ -7,7 +7,34 @@ header-includes:
 - \restylefloat{figure}
 ---
 
-Este es un curso de análisis estadístico en R utilizando R Studio. Utilizaremos el formato R Markdown para crear nuestros códigos y presentar nuestros resultados de una forma ordenada. Analizaremos nuestros datos mediante modelos lineales generales, modelos lineales generalizados (glm) para datos con distribución de Poisson, de Bernoulli y Binomial, y análisis multivariado con el análisis de componentes principales (PCA).
+Este es un curso de análisis estadístico en R. Utilizaremos el formato **R Markdown** para crear nuestros códigos y presentar nuestros resultados de una forma ordenada. Analizaremos nuestros datos mediante modelos lineales generales, modelos lineales generalizados (glm) para datos con distribución de Poisson, Bernoulli y Binomial, y análisis multivariado con el análisis de componentes principales (PCA).
+
+#### Introducción a R Markdown
+
+**R Markdown** es un formato de archivo que combina texto con código R, permitiendo crear documentos dinámicos y reproducibles. Usa la extensión `.Rmd` y permite generar reportes en diferentes formatos como HTML, PDF y Word.
+
+Para <ins>crear</ins> un archivo Markdown en RStudio ir a **File → New File → R Markdown**.
+
+Se  abrirá una nueva ventana para ingresar información como el Título del archivo, el autor y la fecha, así como el formato de salida para generar un reporte, HTML, PDF o Word. Estos datos aparecerán en las primeras líneas del archivo Markdown, en lo que se conoce como **YAML**, que es un encabezado de configuración:
+
+El YAML se escribe entre tres guiones (`---`) y por defecto lleva lo siguiente:
+
+- `title`: Título del documento.
+- `author`: Autor del documento.
+- `date`: Fecha de creación.
+- `output`: Formato de salida (`html_document`, `pdf_document`, `word_document`)
+
+En el archivo Markdown puedes escribir explicaciones en texto normal e incluir fragmentos de código R dentro de bloques especiales (chunks), que se pueden ejecutar dentro del documento, generando gráficos, tablas y resultados automáticamente.
+
+Para <ins>crear</ins> un chunk de código puedes dar clic sobre el botón `+🅲` en la parte superior de la ventana o puedes presionar las teclas `Ctrl + Alt + I`.
+
+Para <ins>ejecutar</ins> líneas de código o una selección dentro de un chunk puedes presionar `Ctrl + Enter` así como en un script normal, o puedes dar clic en el botón `▶` para ejecutar todo el chunk.
+
+Para ejecutar todos los chunks del archivo Markdown podemos dar clic en el botón`▢→ Run`  o utilizar el atajo de teclado `Ctrl + Alt + R`.
+
+Para <ins>guardar</ins> el archivo `.Rmd` podemos hacer clic en el ícono de disquete 💾 de la parte superior de la ventana o presionamos `Ctrl + S`.
+
+Para generar un reporte en formato HTML, PDF o Word, damos clicen el botón `🧶Knit`.
 
 <br>
 
