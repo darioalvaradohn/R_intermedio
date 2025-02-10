@@ -7,7 +7,7 @@ header-includes:
 - \restylefloat{figure}
 ---
 
-Este es un curso de análisis estadístico en R. Utilizaremos el formato **R Markdown** para crear nuestros códigos y presentar nuestros resultados de una forma ordenada. Analizaremos nuestros datos mediante modelos lineales generales, modelos lineales generalizados (glm) para datos con distribución de Poisson, Bernoulli y Binomial, y análisis multivariado con el análisis de componentes principales (PCA).
+<br>
 
 #### Introducción a R Markdown
 
@@ -37,6 +37,8 @@ Para <ins>guardar</ins> el archivo `.Rmd` podemos hacer clic en el ícono de dis
 Para generar un reporte en formato HTML, PDF o Word, damos clicen el botón `🧶Knit`.
 
 <br>
+
+[Inicio](index.html)
 
 Puedes visitar nuestra página principal y conocer un poco más de nosotros.
 
