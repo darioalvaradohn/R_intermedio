@@ -1,5 +1,6 @@
 ---
 title: "Curso de Análisis Estadístico en R Nivel Intermedio"
+author: "MSc. Darío Alvarado"
 output:
   html_document: default
   pdf_document: default

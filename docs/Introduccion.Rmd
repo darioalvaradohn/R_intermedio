@@ -1,5 +1,6 @@
 ---
 title: "Introducción al curso"
+author: "MSc. Darío Alvarado"
 output: html_document
 header-includes:
 - \usepackage{float}
@@ -40,9 +41,11 @@ Para generar un reporte en formato HTML, PDF o Word, damos clicen el botón `�
 
 [Inicio](index.html)
 
+<br>
+
 Puedes visitar nuestra página principal y conocer un poco más de nosotros.
 
-Sitio web: [Página principal](https://www.hnbiology.org/)
+Sitio web: [HN Biology Investigation](https://www.hnbiology.org/)
 
 <br>
 

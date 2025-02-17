@@ -1,4 +1,6 @@
 ---
+title: "Análisis de Componentes Principales (PCA)"
+author: "MSc. Darío Alvarado"
 output: html_document
 header-includes:
   - \usepackage{float}
@@ -7,7 +9,6 @@ header-includes:
 ---
 
 <div style="display:flex; align-items:center;">
-  <h1 style="margin:0;">Análisis de Componentes Principales (PCA)</h1>
   <img src="Imagenes/HNBI_LOGO1.jpeg" alt="Texto alternativo de la imagen" style="width:100px; margin-left:20px;">
 </div>
 
@@ -583,3 +584,5 @@ plot(pca.parameters) +
 # Este gráfico nos muestra las coordenadas de cada variable en cada componente y la calidad de la representación.
 ```
 <br>
+
+[Inicio](index.html)
