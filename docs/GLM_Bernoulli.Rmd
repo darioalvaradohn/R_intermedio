@@ -1,4 +1,6 @@
 ---
+title: "Modelo lineal generalizado (GLM)"
+author: "MSc. Darío Alvarado"
 output: html_document
 header-includes:
   - \usepackage{float}
@@ -7,10 +9,15 @@ header-includes:
 ---
 
 <div style="display:flex; align-items:center;">
-  <h1 style="margin:0;">Modelo lineal generalizado (GLM)</h1>
   <img src="Imagenes/HNBI_LOGO1.jpeg" alt="Texto alternativo de la imagen" style="width:100px; margin-left:20px;">
 </div>
 
+```{css, echo=FALSE}
+pre code {
+  word-wrap: normal !important;
+  white-space: pre !important;
+}
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -28,7 +35,7 @@ Los GLM con distribución binomial utilizan una regresión logística para ajust
 
 #### Paquetes
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE}
 library(knitr)
 ```
 
@@ -170,10 +177,10 @@ condicionales <- data.frame(pop = "6T", tactic = "fem")
 condicionales
 ```
 
-Ahora utilizamos la función `estimate_response()` del paquete `modelbased` indicando el modelo y que los valores condicionales provienen de nuestro nuevo dataframe: 
+Ahora utilizamos la función `estimate_expectation()` del paquete `modelbased` indicando el modelo y que los valores condicionales provienen de nuestro nuevo dataframe: 
 
 ```{r, message=FALSE, warning=FALSE}
-estimate_response(binom7, data = condicionales)
+estimate_expectation(binom7, data = condicionales)
 ```
 
 - El resultado nos muestra los valores condiconales para las variables del modelo.
@@ -195,16 +202,12 @@ condicionales2
 ```
 
 ```{r, message=FALSE, warning=FALSE}
-estimate_response(binom7, data = condicionales2)
+estimate_expectation(binom7, data = condicionales2)
 ```
 
 El resultado muestra las probabilidades de que los peces de la población "6T" tengan el punto rojo sobre el opérculo si son "hembras" (9%, IC95% = 5%, 15%), si son machos "territoriales" (50%, IC95% = 37%, 63%) o si son machos "sneakers" (26%, IC95% = 15%, 43%).
 
-También podemos generar el mismo resultado con la función `estimate_expectation()` del paquete `modelbased`:
-
-```{r}
-estimate_expectation(binom7, data = condicionales2)
-```
+<br>
 
 Para ver la probabilidad de que los peces de otra población tengan el punto rojo si son hembras con la función `plogis()` tenemos que colocar el intercepto y luego sumar o restar el coeficiente de la población seleccionada:
 
@@ -217,7 +220,7 @@ La probabilidad de que los peces "hembra" de la población "CKAN" tengan el punt
 
 <br>
 
-Con `estimate_response()`:
+Con `estimate_expectation()`:
 
 ```{r}
 condicionales3 <- data.frame(pop = c("CKAN", "CKAN", "CKAN"), tactic = c("fem", "sneak", "terr"))
@@ -225,7 +228,7 @@ condicionales3
 ```
 
 ```{r, message=FALSE, warning=FALSE}
-estimate_response(binom7, data = condicionales3)
+estimate_expectation(binom7, data = condicionales3)
 ```
 
 <br>
@@ -549,3 +552,4 @@ check_collinearity(binom_pozos)
 plot(check_collinearity(binom_pozos))
 ```
 
+[Inicio](index.html)
