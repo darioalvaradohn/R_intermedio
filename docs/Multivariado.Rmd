@@ -34,6 +34,7 @@ library(FactoMineR)
 library(factoextra)
 library(parameters)
 library(ade4)
+library(sjPlot)
 ```
 
 <br>
@@ -147,7 +148,7 @@ vars_pca$eig
 
 <br>
 
-Si observamos los valores del PCA con las variables escaladas notaremos que los valores son los mismos, esto es porque las variables de la tabla de datos ya tienen una transformación en la escala de cada variable para no tener que hacer el escalado.
+Si observamos los valores del PCA con las variables escaladas notaremos que los valores son los mismos, ya que la variabilidad no se pierde al escalar los datos.
 
 ```{r}
 vars_pca_scale$eig
@@ -206,10 +207,8 @@ export(variables, "PCA_variables.csv")
 Luego solo deberíamos seleccionar los CPs que expliquen el 70% de la varianza acumulada y colocar cada uno en un objeto separado:
 
 ```{r}
-CP1_vars <- select(variables, Dim.1)
-CP1_vars
-
-# Y así mismo con los demás CPs
+CP_vars <- select(variables, Dim.1, Dim.2)
+CP_vars
 ```
 
 Las coordenadas indican las coordenadas de cada variable en el espacio de componentes principales. Estas coordenadas representan la proyección de cada variable en el subespacio formado por los componentes principales y pueden utilizarse para visualizar la distribución de los datos y las relaciones entre las variables en el espacio reducido. En un gráfico de dispersión de coordenadas, las variables con coordenadas similares suelen ser similares en términos de su contribución a la varianza total explicada por los componentes principales.
@@ -295,7 +294,6 @@ fviz_pca_var(vars_pca,
 ```{r}
 vars_pca$var$contrib
 ```
-a la varianza total explicada por los componentes principales. Esta medida puede utilizarse para identificar qué observaciones son más importantes para la estructura general del conjunto de datos.
 
 La contribución de cada variable para cada CP está basada en cuánta información aporta la variable a la varianza total explicada por los componentes principales. Esta medida puede utilizarse para identificar qué variables son más importantes para la estructura general del conjunto de datos. Variables que están correlacionadas positivamente contribuirán más a uno de los componentes (por ejemplo, más al CP1 que al CP2), en cambio, las variables que se correlacionen negativamente con las anteriores, contribuirán más al otro componente (más al CP2 que al CP1).
 
@@ -370,8 +368,8 @@ export(sitios, "PCA_sitios.csv")
 <br>
 
 ```{r}
-CP1_sitios <- select(sitios, Dim.1)
-head(CP1_sitios)
+CP_sitios <- select(sitios, Dim.1, Dim.2)
+head(CP_sitios)
 ```
 
 <br>
@@ -494,28 +492,78 @@ ggsave("Imagenes/PCA.jpg")
 # Recordemos que por defecto se guarda el último gráfico que se desplegó. Pero podemos especificar un gráfico dentro de un objeto con el argumento `plot =`
 ```
 
+<br>
+
+También podemos agregar geometrías para identificar la variabilidad o similitud entre los sitios de acuerdo con una variable categórica.
+
+Por ejemplo, podemos crear una variable de "zona" con base en la altitud de cada sitio de muestreo. Podemos agrupar los sitios ubicados a > 700 msnm en "Zona alta", los sitios de 400-700 msnm en "Zona media", y los sitios ubicados a < 400 msnm en "Zona baja":
+
 ```{r}
-vars$zona <- factor(c(rep("Alta", 9), rep("Media", 6), rep("Baja", 15)), levels = c("Alta", "Media", "Baja"))
+vars <- mutate(vars, 
+               zona = cut(vars$alt,
+                          breaks = c(-Inf, 
+                                     400, 
+                                     700, 
+                                     Inf),
+                          labels = c("Baja", 
+                                     "Media", 
+                                     "Alta")))
 head(vars)
 ```
+
+Realizamos un PCA con las variables numéricas de la tabla de datos:
 
 ```{r}
 PCA2 <- PCA(vars[ ,1:11], graph = FALSE)
 ```
+
+Generamos el gráfico biplot y agregamos las geometrías:
 
 ```{r}
 fviz_pca_biplot(PCA2, 
                 repel = TRUE, 
                 col.ind = "gray30", 
                 col.var = "gray3", 
-                habillage = vars$zona, 
-                addEllipses = TRUE, 
+                habillage = vars$zona, # indicamos la variable categórica
+                addEllipses = TRUE, # agregamos la geometría
                 legend.title = "Zona del río", 
-                geom.ind = "point", 
+                geom.ind = "text", 
                 geom.var = "text")
 ```
 
 <br>
+
+#### Modelo con PCA
+
+`fish` es otra tabla de datos dentro de `doubs` y contiene la abundancia de 27 especies de peces en cada sitio de muestreo:
+
+```{r}
+abund <- doubs$fish
+head(abund)
+```
+
+Podemos agregar los componentes principales que explicaron más del 70% de la variabilidad de los datos a la tabla de abundancia:
+
+```{r}
+abund_CP <- mutate(abund,
+                   CP1 = PCA2$ind$coord$Dim.1,
+                   CP2 = sitios$Dim.2)
+```
+
+Como los datos de abundancia son conteos, realizamos un glm con distribución de Poisson y colocamos como variables predictoras los componentes principales. En este caso evaluaremos la abundancia de la especie "Satr":
+
+```{r}
+modelo <- glm(Abbr ~ CP1 + CP2, data = abund_CP, family = poisson)
+```
+
+```{r}
+parameters(modelo, exponentiate = TRUE)
+```
+
+
+```{r}
+plot_model(modelo, "pred")
+```
 
 #### PCA con `parameters`
 
