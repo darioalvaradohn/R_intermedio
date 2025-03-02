@@ -42,6 +42,8 @@ Este es un curso de análisis estadístico en R utilizando R Studio. Utilizaremo
 
 [Análisis de Componentes Principales (PCA)](Multivariado.html)
 
+[GLMM (Modelos Mixtos)](GLMM.html)
+
 <br>
 
 ### Contacto

@@ -12,6 +12,12 @@ header-includes:
   <img src="Imagenes/HNBI_LOGO1.jpeg" alt="Texto alternativo de la imagen" style="width:100px; margin-left:20px;">
 </div>
 
+```{css, echo=FALSE}
+pre code {
+  word-wrap: normal !important;
+  white-space: pre !important;
+}
+```
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -533,7 +539,7 @@ fviz_pca_biplot(PCA2,
 
 <br>
 
-#### Modelo con PCA
+#### Modelo a partir de un PCA
 
 `fish` es otra tabla de datos dentro de `doubs` y contiene la abundancia de 27 especies de peces en cada sitio de muestreo:
 
@@ -546,7 +552,7 @@ Podemos agregar los componentes principales que explicaron más del 70% de la va
 
 ```{r}
 abund_CP <- mutate(abund,
-                   CP1 = PCA2$ind$coord$Dim.1,
+                   CP1 = sitios$Dim.1,
                    CP2 = sitios$Dim.2)
 ```
 
@@ -560,10 +566,17 @@ modelo <- glm(Abbr ~ CP1 + CP2, data = abund_CP, family = poisson)
 parameters(modelo, exponentiate = TRUE)
 ```
 
+```{r}
+fviz_contrib(PCA2, 
+             choice = "var",
+             axes = 2)
+```
 
 ```{r}
 plot_model(modelo, "pred")
 ```
+
+<br>
 
 #### PCA con `parameters`
 
