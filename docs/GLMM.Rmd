@@ -1,0 +1,432 @@
+---
+title: "LMM y GLMM"
+author: "MSc. Dario Alvarado"
+output: html_document
+header-includes:
+  - \usepackage{float}
+  - \floatstyle{boxed}
+  - \restylefloat{figure}
+---
+
+<div style="display:flex; align-items:center;">
+  <img src="Imagenes/HNBI_LOGO1.jpeg" alt="Texto alternativo de la imagen" style="width:100px; margin-left:20px;">
+</div>
+
+```{css, echo=FALSE}
+pre code {
+  word-wrap: normal !important;
+  white-space: pre !important;
+}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+
+Los **Modelos mixtos** también son conocidos como **Modelos jerárquicos** o **Modelos multinivel**.
+
+Uno de los supuestos de los modelos lineales generales es la independencia de los datos.
+
+Muchas veces los datos tienen un agrupamiento jerárquico y no son independientes (alumnos < grado < escuela < distrito escolar < cantón < provincia)
+
+<br>
+
+En un modelo lineal general teníamos:
+
+$$
+y = efecto fijo + error
+$$
+
+- El **efecto fijo** se refiere a las variables predictoras que influyen sobre la media, es cuando tenemos todos los niveles de un factor.
+
+- El **error** se refiere a lo que el modelo no puede explicar.
+
+<br>
+
+En un modelo mixto tenemos:
+
+$$
+y = efecto fijo + efecto aleatorio + error 
+$$
+
+- El **efecto aleatorio** se refiere a las variables que influyen sobre la varianza del modelo, es cuando no contamos con todos los niveles de un factor, cuando seleccionamos aleatoriamente los niveles dentro de muchos posibles.
+
+Si lo que se quiere es hacer una inferencia entre solo algunos niveles especificos de todos los posibles y se descartan los demás intensionalemente, entonces se convierte en un efecto fijo.
+
+<br>
+
+#### Paquetes
+
+```{r, message=FALSE, warning=FALSE}
+library(rio)
+library(tidyverse)
+library(lme4)
+library(parameters)
+library(ggeffects)
+library(performance)
+library(bbmle)
+library(sjPlot)
+```
+
+
+<br>
+
+### Contenido{.tabset .tabset-pills}
+
+<br>
+
+#### Datos
+
+```{r}
+playas <- import("data/playas.csv") |>
+  mutate_if(is.character, as.factor)
+head(playas)
+```
+
+"Richness" es la riqueza de especies (número de especies diferentes en cada sitio).
+
+"NAP" se refiere a la altura de una estación de muestreo en comparación con el nivel medio de la marea.
+
+Cada playa ("Beach") tiene parcelas ("Site") que no son independientes entre sí.
+
+**Un efecto aleatorio siempre debe ser un factor**
+
+```{r}
+playas$Beach <- factor(playas$Beach)
+```
+
+```{r}
+ggplot(playas, aes(NAP, Richness)) +
+  geom_point() +
+  stat_smooth(method = "lm")
+```
+
+<br>
+
+Con un modelo tradicional sin tomar en cuenta la jerarquía tendríamos:
+
+```{r}
+modelo <- lm(Richness ~ NAP, data = playas)
+```
+
+```{r}
+summary(modelo)
+```
+
+<br>
+
+Podemos ver la no independencia de los datos generando gráficos de la riqueza de especies para cada playa:
+
+```{r}
+ggplot(playas, aes(NAP, Richness)) +
+  geom_point() +
+  stat_smooth(method = "lm") +
+  facet_wrap(~ Beach)
+```
+
+La línea de regresión se comporta de manera diferente entre las playas.
+
+<br>
+
+#### Modelo con Intercepto aleatorio
+
+<br>
+
+Ajuste de modelo mixto:
+
+```{r}
+modelo_mixto_01 <- lmer(Richness ~ NAP + (1|Beach), # (1|Beach) intercepto aleatorio
+                        data = playas,
+                        REML = FALSE) # REML = restricted maximum likelihood, elige las estimaciones para optimizar el ciretirio REML en lugar del logaritomo de verosimilitud
+```
+
+```{r}
+summary(modelo_mixto_01)
+```
+
+
+```{r}
+parameters(modelo_mixto_01)
+```
+
+
+En el Random efect aparece la varianza que aporta la variable aleatoria (Beach).
+
+- Si la varianza del efecto aleatorio es similar o mayor que la varianza residual, indica que la variabilidad entre niveles del efecto aleatorio es importante.
+
+Se puede calcular un coeficiente de correlación intraclase (CCI):
+
+$$
+CCI = \frac{varianzade interés}{varianza total}
+$$
+
+Podemos calcular qué porcentaje de la variabilidad en la riqueza de especies representa la varianza aportada por el efecto aleatoria respecto al total de la varianza de forma manual:
+
+```{r}
+7.5 / (7.5 + 9.1)
+```
+
+O con la función `icc()` del paquete `performance`:
+
+```{r}
+icc(modelo_mixto_01)
+```
+
+- Si el CCI es > 0.3, el efecto aleatorio es relevante en la variabilidad total.
+
+- Si la desviación estándar del efecto aleatorio es comparable con la magnitud de los efectos fijos, indica que la variabilidad entre los niveles del efecto aleatorio es considerable.
+
+```{r}
+intercepto_aleatorio <- ggpredict(modelo_mixto_01, 
+                                  terms = c("NAP", "Beach"), 
+                                  type = "random") # random = random effect
+```
+
+<br>
+
+```{r}
+plot(intercepto_aleatorio, 
+     show_data = TRUE,
+     show_ci = FALSE) # ci = intervalo de confianza
+```
+
+<br>
+
+```{r}
+efecto_fijo_modelo_mixto_01 <- ggpredict(modelo_mixto_01, 
+                                         terms = "NAP",
+                                         type = "fixed") # fixed = efecto fijo
+```
+
+<br>
+
+```{r}
+plot(efecto_fijo_modelo_mixto_01)
+```
+
+El resultado del efecto fijo ya está corregido. En un reporte se debe colocar la variabilidad que aportó la variable aleatoria, que en este caso fue el 45% del total de la varianza.
+
+<br>
+
+##### Interpretación
+
+El modelo mixto mostró que la riqueza de especies (Richness) disminuye significativamente con el nivel de la marea (NAP). Por cada unidad de incremento en NAP, la riqueza de especies disminuye en 2.58 especies en promedio (IC95% = -3.56, -1.59; p < 0.001).
+
+La varianza del intercepto aleatorio de las playas fue 7.51 (sd = 2.74), indicando diferencias importantes en la riqueza de especies entre playas.
+
+El coeficiente de correlación intraclase (CCI) fue 0.45, lo que sugiere que el 45% de la variabilidad en la riqueza de especies se debe a diferencias entre las playas.
+
+<br>
+
+#### Modelo con Intercepto y Pendiente aleatorios
+
+<br>
+
+```{r}
+modelo_mixto_02 <- lmer(Richness ~ NAP + (1 + NAP||Beach), # intercepto y pendiente aleatorios independientes 
+                        data = playas,
+                        REML = FALSE)
+```
+
+Se utiliza `||` para forzar que la correlacion entre el intercepto y la pendiente sea cero. Esto es útil para evitar la colinealidad que deriva en un problema de **singularidad** en el modelo, que es cuando la varianza de la variable aleatoria es muy cercana a cero. 
+
+Si se utiliza `|` y se obtiene un mensaje de `boundary (singular) fit: see help('isSingular')` puede deberse a que:
+
+- La varianza del efecto aleatorio es cercana a cero y no contribuye significativamente.
+
+- Datos insuficientes para estimar la varianza. La variable del efecto aleatorio debería tener entre 6-10 niveles para poder estimar la varianza adecuadamente.
+
+- Correlación alta entre el intercepto y la pendiente aleatoria.
+
+- Multicolinealidad entre predictores fijos.
+
+```{r}
+summary(modelo_mixto_02)
+```
+
+```{r}
+parameters(modelo_mixto_02)
+```
+
+
+En el Random effect, NAP es la pendiente, hay poca variabilidad en la pendiente comparado con la variabilidad en el intercepto
+
+```{r}
+icc(modelo_mixto_02)
+```
+
+
+```{r}
+intercepto_y_pendiente_aleatorios <- ggpredict(modelo_mixto_02,
+                                               terms = c("NAP", "Beach"),
+                                               type = "random")
+```
+
+<br>
+
+```{r}
+plot(intercepto_y_pendiente_aleatorios, 
+     show_data = TRUE,
+     show_ci = FALSE)
+```
+
+<br>
+
+```{r}
+efecto_fijo_modelo_mixto_02 <- ggpredict(modelo_mixto_02, 
+                                         terms = "NAP",
+                                         type = "fixed")
+```
+
+<br>
+
+```{r}
+plot(efecto_fijo_modelo_mixto_02)
+```
+
+<br>
+
+##### Interpretación
+
+El modelo mixto mostró que la riqueza de especies (Richness) disminuye significativamente con el nivel de la marea (NAP). Por cada unidad de incremento en NAP, la riqueza de especies disminuye en 2.67 especies en promedio (IC95% = -3.94, -1.40; p < 0.001).
+
+La varianza del intercepto aleatorio de las playas fue 9.99  (sd = 3.16), indicando diferencias importantes en la riqueza de especies entre playas. La varianza de la pendiente aleatoria fue de 1.76 (sd = 1.33), indicando que la relación entre la riqueza de especies y NAP varía ligeramente entre playas, ya que en algunas playas el efecto de NAP puede ser más fuerte o más débil que el valor promedio. 
+
+El coeficiente de correlación intraclase (CCI) fue 0.58, lo que sugiere que el 58% de la variabilidad en la riqueza de especies se debe a diferencias entre las playas y a la relación entre la riqueza de especies y NAP de cada una de ellas.
+
+<br>
+
+#### Selección de modelos
+
+¿Cómo decidimos si utilizar un modelo con un intercepto aleatorio o un modelo con intercepto y pendiente aleatorios?
+
+- Podemos seleccionar el tipo de modelo de acuerdo al efecto esperado para cada nivel de la variable aleatoria. Por ejemplo, si en todos los niveles se ve un efecto de disminución, no es necesario utilizar una pendiente aleatoria. En cambio, si en algunos niveles el efecto es de disminución y en otros es de aumento, se debería utilizar la pendiente aleatoria.
+
+- Si una vez realizado el modelo con la pendiente aleatoria observamos que la varianza aportada por la pendiente es baja comparada con la del intercepto y los residuales, significa que las pendientes no presentan mucha variación entre los niveles y no es necesario incluirlas como aleatorias.
+
+- Seleccionar los modelos comparando sus ajustes con base en criterios de información:
+
+```{r}
+compare_performance(modelo, modelo_mixto_01, modelo_mixto_02, 
+                    rank = TRUE)
+```
+
+<br>
+
+```{r}
+AICctab(modelo, modelo_mixto_01, modelo_mixto_02,
+        base = TRUE, 
+        weights = TRUE)
+```
+
+Si la diferencia entre los modelos es pequeña (delta < 2) es preferible utilizar el modelo más simple (solo intercepto aleatorio).
+
+<br>
+
+#### GLM Mixto
+
+```{r}
+modelo_mixto_03 <- glmer(Richness ~ NAP + (1|Beach),
+                         data = playas,
+                         family = poisson)
+```
+
+```{r}
+summary(modelo_mixto_03)
+```
+
+
+```{r}
+parameters(modelo_mixto_03, exponentiate = TRUE)
+```
+
+```{r}
+icc(modelo_mixto_03)
+```
+
+
+```{r}
+intercepto_aleatorio_glm <- ggpredict(modelo_mixto_03, 
+                                  terms = c("NAP", "Beach"), 
+                                  type = "random")
+```
+
+<br>
+
+```{r}
+plot(intercepto_aleatorio_glm, 
+     show_data = TRUE,
+     show_ci = FALSE)
+```
+
+<br>
+
+```{r}
+efecto_fijo_modelo_mixto_03 <- ggpredict(modelo_mixto_03, 
+                                         terms = "NAP",
+                                         type = "fixed") 
+```
+
+```{r}
+plot(efecto_fijo_modelo_mixto_03)
+```
+
+```{r}
+plot_model(modelo_mixto_03, type = "pred")
+```
+
+```{r}
+modelo_mixto_04 <- glmer(Richness ~ NAP + (1 + NAP|Beach),
+                         data = playas,
+                         family = poisson)
+```
+
+```{r}
+summary(modelo_mixto_04)
+```
+
+```{r}
+parameters(modelo_mixto_04, exponentiate = TRUE)
+```
+
+```{r}
+icc(modelo_mixto_04)
+```
+
+```{r}
+intercepto_aleatorio_glm2 <- ggpredict(modelo_mixto_04, 
+                                  terms = c("NAP", "Beach"), 
+                                  type = "random")
+```
+
+<br>
+
+```{r}
+plot(intercepto_aleatorio_glm2, 
+     show_data = TRUE,
+     show_ci = FALSE)
+```
+
+<br>
+
+```{r}
+efecto_fijo_modelo_mixto_04 <- ggpredict(modelo_mixto_04, 
+                                         terms = "NAP",
+                                         type = "fixed") 
+```
+
+```{r}
+plot(efecto_fijo_modelo_mixto_04)
+```
+
+<br>
+
+```{r}
+AICctab(modelo, modelo_mixto_01, modelo_mixto_02, modelo_mixto_03, modelo_mixto_04,
+        base = TRUE, 
+        weights = TRUE)
+```
+
+[Inicio](index.html)
