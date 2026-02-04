@@ -28,13 +28,32 @@ knitr::opts_chunk$set(echo = TRUE)
 
 <br>
 
+#### Paquetes
+
+```{r, warning=FALSE, message=FALSE}
+library(rio)
+library(palmerpenguins)
+library(tidyverse)
+library(janitor)
+library(kableExtra)
+```
+
+
+<br>
+
+### Contenido{.tabset .tabset-pills}
+
+<br>
+
+#### Introducción
+
 La limpieza y manejo de datos son procesos fundamentales en el análisis de datos. A menudo, los datos en su forma original están desordenados, incompletos o mal estructurados, lo que dificulta su análisis. Por eso, antes de realizar cualquier análisis, es crucial limpiarlos y organizarlos correctamente.
 
 La **limpieza de datos** implica identificar y corregir o eliminar errores y problemas en los datos para asegurar que estén en un formato adecuado para su análisis. Esto incluye:
 
 - Eliminar o manejar valores faltantes (NA): Los datos pueden tener valores ausentes o nulos que deben ser tratados, ya sea eliminándolos, reemplazándolos por un valor de referencia (como la media) o interpolándolos.
 
-- Corregir errores tipográficos o inconsistencias: Pueden ocurrir errores en la entrada de datos, como nombres escritos de manera diferente, valores numéricos erróneos o fechas mal formateadas.
+- Corregir errores tipográficos o inconsistencias: Pueden ocurrir errores en la entrada de datos, como nombres escritos incorrectamente, valores numéricos erróneos o fechas mal formateadas.
 
 - Eliminar duplicados: En muchos casos, los datos pueden contener registros duplicados que necesitan ser eliminados para evitar sesgos o distorsiones en los análisis.
 
@@ -60,32 +79,19 @@ El **manejo de datos** se refiere a cómo organizamos, transformamos y preparamo
 
 <br>
 
-#### Paquetes
+[Volver arriba](Limpieza.html)
 
-```{r, warning=FALSE, message=FALSE}
-library(rio)
-library(palmerpenguins)
-library(tidyverse)
-library(janitor)
-library(kableExtra)
-```
+[Inicio](index.html)
 
 <br>
 
-#### Datos
+#### Seleccionar columnas
 
 ```{r}
 data("penguins")
 head(penguins)
 ```
 
-<br>
-
-### Contenido{.tabset .tabset-pills}
-
-<br>
-
-#### Seleccionar columnas
 
 - `select()` del paquete `dplyr` para seleccionar una o varias columnas (variables):
 
@@ -113,6 +119,11 @@ numericas <- select(penguins,
 head(numericas)
 ```
 
+<br>
+
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
 
 <br>
 
@@ -160,6 +171,12 @@ summary(combinado)
 
 <br>
 
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Reordenar observaciones 
 
 - `arrange()` del paquete `dplyr` para reordenar observaciones (filas):
@@ -201,6 +218,12 @@ head(ordenvarias2)
 
 <br>
 
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Crear nuevas variables
 
 - `mutate()` del paquete `dplyr` para crear nuevas variables (columnas) en una tabla de datos existente:
@@ -218,6 +241,8 @@ pesos <- mutate(penguins,
                 body_mass_lbs = body_mass_kg * 2.20462)
 head(pesos)
 ```
+
+<br>
 
 ```{r}
 medidas <- import("data/medidas_personas.csv")
@@ -261,42 +286,105 @@ distinct(medidas,
          Comp_corp)
 ```
 
-También podemos crear una variable categórica según los valores específicos de más de una variable en nuestra tabla de datos:
+<br>
+
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
+#### Transformar variables caracter a factor
+
+- `factor()` o `as.factor()` pueden utilizarse para sobreescribir una tabla y cambiar las variables de tipo caracter a tipo factor
 
 ```{r}
-medidas <- medidas |>
-  mutate(Grupos = cut(medidas$altura, 
-                      breaks = c(-Inf, 
-                                 150, 
-                                 160, 
-                                 170, 
-                                 180, 
-                                 190, 
-                                 Inf), 
-                      labels = c("Baja", 
-                                 "Medio Baja", 
-                                 "Media", 
-                                 "Medio Alta", 
-                                 "Alta", 
-                                 "Muy Alta"))) |>
-  mutate(Grupos = paste0(Grupos, 
-                         "-", 
-                         cut(medidas$peso, 
-                             breaks = c(-Inf, 
-                                        50, 
-                                        70, 
-                                        80, 
-                                        Inf),
-                             labels = c("Bajo", 
-                                        "Normal", 
-                                        "Alto", 
-                                        "Muy Alto"))))
+medidas$sexo <- factor(medidas$sexo)
 head(medidas)
-
-# La primera parte del código es igual que el anterior. 
-# Para añadir los argumentos de la segunda variable colocamos un pipe (`|>` o `%>%`) para encadenar la siguiente función. 
-# En `mutate()` indicamos que la variable es la que ya creamos en la primera parte del código (en este caso, "Grupos =") y `paste0()` será la función que combine las etiquetas de los sitios de corte de la primera variable con las de la segunda variable especificando que se unirán en la variable "Grupos" y el separador de las etiquetas dentro de comillas (" "). El resto de la función es igual que el código anterior especificando los sitios de corte de la segunda variable y las etiquetas que deseamos.
 ```
+
+```{r}
+medidas$sexo <- as.factor(medidas$sexo)
+head(medidas)
+```
+
+Si queremos transformar todas las variables de tipo caracter a tipo factor en nuestra tabla, podemos utilizar la función `mutate_if()` del paquete `dplyr` y asignarle las condiciones:
+
+```{r}
+medidas <- mutate_if(medidas, is.character, as.factor)
+head(medidas)
+```
+
+<br>
+
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
+#### Examinar duplicados
+
+En nuestros datos podemos tener duplicados por diferentes razones y dependiendo de ese contexto será necesario eliminarlos o simplemente verificarlos:
+
+- Error de digitación = eliminar duplicados
+
+- Réplicas experimentales = verificar, no eliminar
+
+- Datos de campo = revisar columnas clave (id, sitio, fecha)
+
+```{r}
+# Duplicado simulado
+medidas <- add_row(medidas, sexo = "M", altura = 156, peso = 98, edad = 29, IMC = 40.27, Comp_corp = "Obesidad")
+```
+
+Podemos ver si existen duplicados:
+
+```{r}
+duplicated(medidas)
+```
+
+Devuelve`TRUE` para las filas repetidas (excepto la primera vez que aparece).
+
+Podemos contar cuántos duplicados tenemos:
+
+```{r}
+sum(duplicated(medidas))
+```
+
+Podemos ver todas las filas duplicadas:
+
+```{r}
+medidas[duplicated(medidas), ]
+```
+
+```{r}
+filter(medidas, duplicated(medidas))
+```
+
+Podemos ver todas las copias (incluida la primera):
+
+```{r}
+medidas[duplicated(medidas) | duplicated(medidas, fromLast = TRUE), ]
+```
+
+Eliminar duplicados:
+
+```{r}
+medidas_sin_dup <- unique(medidas)
+```
+
+o
+
+```{r}
+medidas_sin_dup <- medidas[!duplicated(medidas), ]
+```
+
+<br>
+
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
 
 <br>
 
@@ -306,7 +394,7 @@ head(medidas)
 
 ```{r}
 medidas <- rename(medidas, 
-                  alturaXpeso = Grupos) # colocamos el nuevo nombre de la variable y con el "=" indicamos la variable a la que le cambieremos el nombre
+                  condicion_corporal = Comp_corp) # colocamos el nuevo nombre de la variable y con el "=" indicamos la variable a la que le cambieremos el nombre
 head(medidas)
 ```
 
@@ -316,7 +404,7 @@ medidas <- rename(medidas,
                   Altura_cm = altura,
                   Peso_kg = peso,
                   Edad = edad,
-                  Altura_Peso = alturaXpeso)
+                  Condicion_Corporal = condicion_corporal)
 head(medidas)
 ```
 
@@ -329,6 +417,12 @@ head(nombresnuevos)
 
 <br>
 
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Renombrar observaciones de una variable 
 
 - `recode()` del paquete `dplyr` para cambiar el nombre de una o más observaciones en la tabla de datos:
@@ -338,6 +432,12 @@ medidas$Sexo <- recode(medidas$Sexo, "M" = "Masculino", "F" = "Femenino")
 distinct(medidas, Sexo)
 ```
 
+
+<br>
+
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
 
 <br>
 
@@ -401,6 +501,12 @@ medias
 
 <br>
 
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Cambiar separador de decimales
 
 - `mutate_at()` del paquete `dplyr` combinado con la función `format()` para cambiar el separador de decimales de "." a ",":
@@ -436,6 +542,12 @@ head(decimales)
 
 <br>
 
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Eliminar valores NA
 
 - `drop_na()` del paquete `tidyr` para eliminar los NA de una o varias variables, o incluso de toda la tabla de datos:
@@ -455,6 +567,12 @@ head(pin)
 
 <br>
 
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Encadenamiento de funciones
 
 Para el encadenamiento de funciones como ya vimos en algunos ejemplos anteriores, se utilizan las "pipes". Podemos utilizar `%>%` del paquete `magrittr` o `|>` del paquete base, ambas pipes nos permiten encadenar funciones hacia un objeto.
@@ -468,6 +586,12 @@ medias
 
 # todas las funciones están aplicadas al objeto "pin" que contiene nuestra tabla de datos y se ejecutan en el orden en el que están colocadas: primero se eliminan los NA (si hubiesen), luego los datos se agrupan por especies y por último se calculan las medias de las variables indicadas.
 ```
+
+<br>
+
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
 
 <br>
 
@@ -497,6 +621,12 @@ head(separar)
 
 <br>
 
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Formatos de tablas de datos
 
 Una tabla de datos puede estar en formato ancho (cuando hay varias columnas que pertenecen a una sola variable) y en formato largo o "tidy" (cuando cada columna es una variable y cada fila es una observación)
@@ -511,7 +641,7 @@ head(medidas)
 
 ```{r}
 formatoancho <- pivot_wider(medidas, 
-                     names_from = Comp_corp, # indicamos la variable que contiene los niveles que pasarán a ser columnas
+                     names_from = Condicion_Corporal, # indicamos la variable que contiene los niveles que pasarán a ser columnas
                      values_from = IMC) # indicamos la variable que contiene los valores que pasarán a ser las observaciones de cada columna.
 
 head(formatoancho)
@@ -534,6 +664,12 @@ formatotidy
 
 <br>
 
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Creación y modificación de tablas
 
 Las funciones `kable()` y `kable_styling()` del paquete `kableExtra` nos permiten crear y modificar el estilo de tablas de datos (útil para presentarlo en formato html):
@@ -551,6 +687,12 @@ cuadro <- kable(medias,
                 font_size = 16)
 cuadro
 ```
+
+<br>
+
+[Volver arriba](Limpieza.html)
+
+[Inicio](index.html)
 
 <br>
 
@@ -691,4 +833,8 @@ union6
 
 <br>
 
+[Volver arriba](Limpieza.html)
+
 [Inicio](index.html)
+
+<br>

@@ -589,6 +589,20 @@ white-space: pre !important;
 }
 </style>
 <p><br></p>
+<div id="paquetes" class="section level4">
+<h4>Paquetes</h4>
+<pre class="r"><code>library(rio)
+library(palmerpenguins)
+library(tidyverse)
+library(janitor)
+library(kableExtra)</code></pre>
+<p><br></p>
+</div>
+<div id="contenido" class="section level3 tabset tabset-pills">
+<h3 class="tabset tabset-pills">Contenido</h3>
+<p><br></p>
+<div id="introducción" class="section level4">
+<h4>Introducción</h4>
 <p>La limpieza y manejo de datos son procesos fundamentales en el
 análisis de datos. A menudo, los datos en su forma original están
 desordenados, incompletos o mal estructurados, lo que dificulta su
@@ -603,8 +617,8 @@ valores ausentes o nulos que deben ser tratados, ya sea eliminándolos,
 reemplazándolos por un valor de referencia (como la media) o
 interpolándolos.</p></li>
 <li><p>Corregir errores tipográficos o inconsistencias: Pueden ocurrir
-errores en la entrada de datos, como nombres escritos de manera
-diferente, valores numéricos erróneos o fechas mal formateadas.</p></li>
+errores en la entrada de datos, como nombres escritos incorrectamente,
+valores numéricos erróneos o fechas mal formateadas.</p></li>
 <li><p>Eliminar duplicados: En muchos casos, los datos pueden contener
 registros duplicados que necesitan ser eliminados para evitar sesgos o
 distorsiones en los análisis.</p></li>
@@ -638,17 +652,12 @@ suma.</p></li>
 varias variables para facilitar el análisis o la visualización.</p></li>
 </ul>
 <p><br></p>
-<div id="paquetes" class="section level4">
-<h4>Paquetes</h4>
-<pre class="r"><code>library(rio)
-library(palmerpenguins)
-library(tidyverse)
-library(janitor)
-library(kableExtra)</code></pre>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
-<div id="datos" class="section level4">
-<h4>Datos</h4>
+<div id="seleccionar-columnas" class="section level4">
+<h4>Seleccionar columnas</h4>
 <pre class="r"><code>data(&quot;penguins&quot;)
 head(penguins)</code></pre>
 <pre><code>## # A tibble: 6 × 8
@@ -661,13 +670,6 @@ head(penguins)</code></pre>
 ## 5 Adelie  Torgersen           36.7          19.3               193        3450
 ## 6 Adelie  Torgersen           39.3          20.6               190        3650
 ## # ℹ 2 more variables: sex &lt;fct&gt;, year &lt;int&gt;</code></pre>
-<p><br></p>
-</div>
-<div id="contenido" class="section level3 tabset tabset-pills">
-<h3 class="tabset tabset-pills">Contenido</h3>
-<p><br></p>
-<div id="seleccionar-columnas" class="section level4">
-<h4>Seleccionar columnas</h4>
 <ul>
 <li><code>select()</code> del paquete <code>dplyr</code> para
 seleccionar una o varias columnas (variables):</li>
@@ -714,6 +716,9 @@ head(numericas)</code></pre>
 ## 4 Adelie            NA            NA                  NA          NA
 ## 5 Adelie            36.7          19.3               193        3450
 ## 6 Adelie            39.3          20.6               190        3650</code></pre>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
 <div id="filtrar-observaciones" class="section level4">
@@ -826,6 +831,9 @@ summary(combinado)</code></pre>
 ##  3rd Qu.:212.8     3rd Qu.:4869               3rd Qu.:2009  
 ##  Max.   :214.0     Max.   :5850               Max.   :2009</code></pre>
 <p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
+<p><br></p>
 </div>
 <div id="reordenar-observaciones" class="section level4">
 <h4>Reordenar observaciones</h4>
@@ -903,6 +911,9 @@ head(ordenvarias2)</code></pre>
 ## 5           3          4      1      0
 ## 6           3          4      2      0</code></pre>
 <p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
+<p><br></p>
 </div>
 <div id="crear-nuevas-variables" class="section level4">
 <h4>Crear nuevas variables</h4>
@@ -939,6 +950,7 @@ head(pesos)</code></pre>
 ## 6 Adelie  Torgersen           39.3          20.6               190        3650
 ## # ℹ 5 more variables: sex &lt;fct&gt;, year &lt;int&gt;, body_mass_kg &lt;dbl&gt;,
 ## #   body_mass_mg &lt;dbl&gt;, body_mass_lbs &lt;dbl&gt;</code></pre>
+<p><br></p>
 <pre class="r"><code>medidas &lt;- import(&quot;data/medidas_personas.csv&quot;)
 head(medidas)</code></pre>
 <pre><code>##   sexo altura peso edad
@@ -999,46 +1011,102 @@ los valores únicos que hay en la variable):</p>
 ## 2  Obesidad
 ## 3  Superior
 ## 4  Inferior</code></pre>
-<p>También podemos crear una variable categórica según los valores
-específicos de más de una variable en nuestra tabla de datos:</p>
-<pre class="r"><code>medidas &lt;- medidas |&gt;
-  mutate(Grupos = cut(medidas$altura, 
-                      breaks = c(-Inf, 
-                                 150, 
-                                 160, 
-                                 170, 
-                                 180, 
-                                 190, 
-                                 Inf), 
-                      labels = c(&quot;Baja&quot;, 
-                                 &quot;Medio Baja&quot;, 
-                                 &quot;Media&quot;, 
-                                 &quot;Medio Alta&quot;, 
-                                 &quot;Alta&quot;, 
-                                 &quot;Muy Alta&quot;))) |&gt;
-  mutate(Grupos = paste0(Grupos, 
-                         &quot;-&quot;, 
-                         cut(medidas$peso, 
-                             breaks = c(-Inf, 
-                                        50, 
-                                        70, 
-                                        80, 
-                                        Inf),
-                             labels = c(&quot;Bajo&quot;, 
-                                        &quot;Normal&quot;, 
-                                        &quot;Alto&quot;, 
-                                        &quot;Muy Alto&quot;))))
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
+<p><br></p>
+</div>
+<div id="transformar-variables-caracter-a-factor" class="section level4">
+<h4>Transformar variables caracter a factor</h4>
+<ul>
+<li><code>factor()</code> o <code>as.factor()</code> pueden utilizarse
+para sobreescribir una tabla y cambiar las variables de tipo caracter a
+tipo factor</li>
+</ul>
+<pre class="r"><code>medidas$sexo &lt;- factor(medidas$sexo)
 head(medidas)</code></pre>
-<pre><code>##   sexo altura peso edad   IMC Comp_corp              Grupos
-## 1    M    170   71   47 24.57    Normal          Media-Alto
-## 2    M    162   79   36 30.10  Obesidad          Media-Alto
-## 3    M    149   86   43 38.74  Obesidad       Baja-Muy Alto
-## 4    M    181   97   23 29.61  Superior       Alta-Muy Alto
-## 5    M    156   98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6    M    165  107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
-<pre class="r"><code># La primera parte del código es igual que el anterior. 
-# Para añadir los argumentos de la segunda variable colocamos un pipe (`|&gt;` o `%&gt;%`) para encadenar la siguiente función. 
-# En `mutate()` indicamos que la variable es la que ya creamos en la primera parte del código (en este caso, &quot;Grupos =&quot;) y `paste0()` será la función que combine las etiquetas de los sitios de corte de la primera variable con las de la segunda variable especificando que se unirán en la variable &quot;Grupos&quot; y el separador de las etiquetas dentro de comillas (&quot; &quot;). El resto de la función es igual que el código anterior especificando los sitios de corte de la segunda variable y las etiquetas que deseamos.</code></pre>
+<pre><code>##   sexo altura peso edad   IMC Comp_corp
+## 1    M    170   71   47 24.57    Normal
+## 2    M    162   79   36 30.10  Obesidad
+## 3    M    149   86   43 38.74  Obesidad
+## 4    M    181   97   23 29.61  Superior
+## 5    M    156   98   29 40.27  Obesidad
+## 6    M    165  107   49 39.30  Obesidad</code></pre>
+<pre class="r"><code>medidas$sexo &lt;- as.factor(medidas$sexo)
+head(medidas)</code></pre>
+<pre><code>##   sexo altura peso edad   IMC Comp_corp
+## 1    M    170   71   47 24.57    Normal
+## 2    M    162   79   36 30.10  Obesidad
+## 3    M    149   86   43 38.74  Obesidad
+## 4    M    181   97   23 29.61  Superior
+## 5    M    156   98   29 40.27  Obesidad
+## 6    M    165  107   49 39.30  Obesidad</code></pre>
+<p>Si queremos transformar todas las variables de tipo caracter a tipo
+factor en nuestra tabla, podemos utilizar la función
+<code>mutate_if()</code> del paquete <code>dplyr</code> y asignarle las
+condiciones:</p>
+<pre class="r"><code>medidas &lt;- mutate_if(medidas, is.character, as.factor)
+head(medidas)</code></pre>
+<pre><code>##   sexo altura peso edad   IMC Comp_corp
+## 1    M    170   71   47 24.57    Normal
+## 2    M    162   79   36 30.10  Obesidad
+## 3    M    149   86   43 38.74  Obesidad
+## 4    M    181   97   23 29.61  Superior
+## 5    M    156   98   29 40.27  Obesidad
+## 6    M    165  107   49 39.30  Obesidad</code></pre>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
+<p><br></p>
+</div>
+<div id="examinar-duplicados" class="section level4">
+<h4>Examinar duplicados</h4>
+<p>En nuestros datos podemos tener duplicados por diferentes razones y
+dependiendo de ese contexto será necesario eliminarlos o simplemente
+verificarlos:</p>
+<ul>
+<li><p>Error de digitación = eliminar duplicados</p></li>
+<li><p>Réplicas experimentales = verificar, no eliminar</p></li>
+<li><p>Datos de campo = revisar columnas clave (id, sitio,
+fecha)</p></li>
+</ul>
+<pre class="r"><code># Duplicado simulado
+medidas &lt;- add_row(medidas, sexo = &quot;M&quot;, altura = 156, peso = 98, edad = 29, IMC = 40.27, Comp_corp = &quot;Obesidad&quot;)</code></pre>
+<p>Podemos ver si existen duplicados:</p>
+<pre class="r"><code>duplicated(medidas)</code></pre>
+<pre><code>##   [1] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [13] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [25] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [37] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [49] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [61] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [73] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [85] FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE FALSE
+##  [97] FALSE FALSE FALSE FALSE  TRUE</code></pre>
+<p>Devuelve<code>TRUE</code> para las filas repetidas (excepto la
+primera vez que aparece).</p>
+<p>Podemos contar cuántos duplicados tenemos:</p>
+<pre class="r"><code>sum(duplicated(medidas))</code></pre>
+<pre><code>## [1] 1</code></pre>
+<p>Podemos ver todas las filas duplicadas:</p>
+<pre class="r"><code>medidas[duplicated(medidas), ]</code></pre>
+<pre><code>##     sexo altura peso edad   IMC Comp_corp
+## 101    M    156   98   29 40.27  Obesidad</code></pre>
+<pre class="r"><code>filter(medidas, duplicated(medidas))</code></pre>
+<pre><code>##   sexo altura peso edad   IMC Comp_corp
+## 1    M    156   98   29 40.27  Obesidad</code></pre>
+<p>Podemos ver todas las copias (incluida la primera):</p>
+<pre class="r"><code>medidas[duplicated(medidas) | duplicated(medidas, fromLast = TRUE), ]</code></pre>
+<pre><code>##     sexo altura peso edad   IMC Comp_corp
+## 5      M    156   98   29 40.27  Obesidad
+## 101    M    156   98   29 40.27  Obesidad</code></pre>
+<p>Eliminar duplicados:</p>
+<pre class="r"><code>medidas_sin_dup &lt;- unique(medidas)</code></pre>
+<p>o</p>
+<pre class="r"><code>medidas_sin_dup &lt;- medidas[!duplicated(medidas), ]</code></pre>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
 <div id="renombrar-variables" class="section level4">
@@ -1048,29 +1116,29 @@ head(medidas)</code></pre>
 nombre de una o más variables en la tabla de datos:</li>
 </ul>
 <pre class="r"><code>medidas &lt;- rename(medidas, 
-                  alturaXpeso = Grupos) # colocamos el nuevo nombre de la variable y con el &quot;=&quot; indicamos la variable a la que le cambieremos el nombre
+                  condicion_corporal = Comp_corp) # colocamos el nuevo nombre de la variable y con el &quot;=&quot; indicamos la variable a la que le cambieremos el nombre
 head(medidas)</code></pre>
-<pre><code>##   sexo altura peso edad   IMC Comp_corp         alturaXpeso
-## 1    M    170   71   47 24.57    Normal          Media-Alto
-## 2    M    162   79   36 30.10  Obesidad          Media-Alto
-## 3    M    149   86   43 38.74  Obesidad       Baja-Muy Alto
-## 4    M    181   97   23 29.61  Superior       Alta-Muy Alto
-## 5    M    156   98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6    M    165  107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##   sexo altura peso edad   IMC condicion_corporal
+## 1    M    170   71   47 24.57             Normal
+## 2    M    162   79   36 30.10           Obesidad
+## 3    M    149   86   43 38.74           Obesidad
+## 4    M    181   97   23 29.61           Superior
+## 5    M    156   98   29 40.27           Obesidad
+## 6    M    165  107   49 39.30           Obesidad</code></pre>
 <pre class="r"><code>medidas &lt;- rename(medidas,
                   Sexo = sexo,
                   Altura_cm = altura,
                   Peso_kg = peso,
                   Edad = edad,
-                  Altura_Peso = alturaXpeso)
+                  Condicion_Corporal = condicion_corporal)
 head(medidas)</code></pre>
-<pre><code>##   Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
-## 1    M       170      71   47 24.57    Normal          Media-Alto
-## 2    M       162      79   36 30.10  Obesidad          Media-Alto
-## 3    M       149      86   43 38.74  Obesidad       Baja-Muy Alto
-## 4    M       181      97   23 29.61  Superior       Alta-Muy Alto
-## 5    M       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6    M       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##   Sexo Altura_cm Peso_kg Edad   IMC Condicion_Corporal
+## 1    M       170      71   47 24.57             Normal
+## 2    M       162      79   36 30.10           Obesidad
+## 3    M       149      86   43 38.74           Obesidad
+## 4    M       181      97   23 29.61           Superior
+## 5    M       156      98   29 40.27           Obesidad
+## 6    M       165     107   49 39.30           Obesidad</code></pre>
 <ul>
 <li>También podemos renombrar las variables de forma automática con la
 función <code>clean_names()</code> del paquete
@@ -1078,13 +1146,16 @@ función <code>clean_names()</code> del paquete
 </ul>
 <pre class="r"><code>nombresnuevos &lt;- clean_names(medidas, case = &quot;snake&quot;) # El argumento `case` hace referencia al formato de los caracteres y a la unión/separación de dos o más palabras. Puede ser: &quot;snake&quot;, &quot;small_camel&quot;, &quot;big_camel&quot;, &quot;screaming_snake&quot;, &quot;parsed&quot;, &quot;mixed&quot;, &quot;lower_upper&quot;, &quot;upper_lower&quot;, &quot;swap&quot;, &quot;all_caps&quot;, &quot;lower_camel&quot;, &quot;upper_camel&quot;, &quot;internal_parsing&quot;, &quot;none&quot;, &quot;flip&quot;, &quot;sentence&quot;, &quot;random&quot;, &quot;title&quot;.
 head(nombresnuevos)</code></pre>
-<pre><code>##   sexo altura_cm peso_kg edad   imc comp_corp         altura_peso
-## 1    M       170      71   47 24.57    Normal          Media-Alto
-## 2    M       162      79   36 30.10  Obesidad          Media-Alto
-## 3    M       149      86   43 38.74  Obesidad       Baja-Muy Alto
-## 4    M       181      97   23 29.61  Superior       Alta-Muy Alto
-## 5    M       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6    M       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##   sexo altura_cm peso_kg edad   imc condicion_corporal
+## 1    M       170      71   47 24.57             Normal
+## 2    M       162      79   36 30.10           Obesidad
+## 3    M       149      86   43 38.74           Obesidad
+## 4    M       181      97   23 29.61           Superior
+## 5    M       156      98   29 40.27           Obesidad
+## 6    M       165     107   49 39.30           Obesidad</code></pre>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
 <div id="renombrar-observaciones-de-una-variable" class="section level4">
@@ -1098,6 +1169,9 @@ distinct(medidas, Sexo)</code></pre>
 <pre><code>##        Sexo
 ## 1 Masculino
 ## 2  Femenino</code></pre>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
 <div id="resumir-información" class="section level4">
@@ -1118,14 +1192,14 @@ rango_edad</code></pre>
                         mean(Edad))
 media_edad</code></pre>
 <pre><code>##   mean(Edad)
-## 1      34.71</code></pre>
+## 1   34.65347</code></pre>
 <pre class="r"><code>medias &lt;- summarise(medidas, 
                     Altura = mean(Altura_cm), 
                     Peso = mean(Peso_kg), 
                     Edad = mean(Edad))
 medias</code></pre>
-<pre><code>##   Altura  Peso  Edad
-## 1 160.04 74.44 34.71</code></pre>
+<pre><code>##   Altura     Peso     Edad
+## 1    160 74.67327 34.65347</code></pre>
 <p>También podemos hacerlo con la función <code>reframe()</code> del
 paquete <code>dplyr</code>:</p>
 <pre class="r"><code>rango_edad2 &lt;- reframe(medidas, 
@@ -1138,14 +1212,14 @@ rango_edad2</code></pre>
                        mean(Edad))
 media_edad2</code></pre>
 <pre><code>##   mean(Edad)
-## 1      34.71</code></pre>
+## 1   34.65347</code></pre>
 <pre class="r"><code>medias2 &lt;- reframe(medidas, 
                    Altura = mean(Altura_cm), 
                    Peso = mean(Peso_kg), 
                    Edad = mean(Edad))
 medias2</code></pre>
-<pre><code>##   Altura  Peso  Edad
-## 1 160.04 74.44 34.71</code></pre>
+<pre><code>##   Altura     Peso     Edad
+## 1    160 74.67327 34.65347</code></pre>
 <ul>
 <li><code>group_by()</code> del paquete <code>dplyr</code> para agrupar
 las observaciones de la tabla de datos según una variable categórica. Es
@@ -1162,7 +1236,10 @@ medias</code></pre>
 ##   Sexo      Altura  Peso  Edad   IMC
 ##   &lt;chr&gt;      &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
 ## 1 Femenino    152.  65.9  32.4  29.1
-## 2 Masculino   169.  84.1  37.4  29.7</code></pre>
+## 2 Masculino   169.  84.4  37.2  29.9</code></pre>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
 <div id="cambiar-separador-de-decimales" class="section level4">
@@ -1178,13 +1255,13 @@ decimales de “.” a “,”:</li>
                                         nsmall = 2, 
                                         decimal.mark = &quot;,&quot;)))
 head(decimales)</code></pre>
-<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
-## 1 Masculino       170      71   47 24,57    Normal          Media-Alto
-## 2 Masculino       162      79   36 30,10  Obesidad          Media-Alto
-## 3 Masculino       149      86   43 38,74  Obesidad       Baja-Muy Alto
-## 4 Masculino       181      97   23 29,61  Superior       Alta-Muy Alto
-## 5 Masculino       156      98   29 40,27  Obesidad Medio Baja-Muy Alto
-## 6 Masculino       165     107   49 39,30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Condicion_Corporal
+## 1 Masculino       170      71   47 24,57             Normal
+## 2 Masculino       162      79   36 30,10           Obesidad
+## 3 Masculino       149      86   43 38,74           Obesidad
+## 4 Masculino       181      97   23 29,61           Superior
+## 5 Masculino       156      98   29 40,27           Obesidad
+## 6 Masculino       165     107   49 39,30           Obesidad</code></pre>
 <pre class="r"><code># con `vars()` especificamos la o las variables a las que queremos cambiar el separador de decimales. El punto &quot;.&quot; en funs(format()) es una forma de referirse a cada una de las observaciones de la variable, y la función format() es aplicada a cada una de ellas para cambiar el separador de decimal de punto a coma. `nsmall =` es para indicar el número de decimales deseado.</code></pre>
 <p>R trabaja con bases de datos con variables numéricas continuas que
 sus decimales estén separados con “.”, si están separados con “,” no lo
@@ -1196,24 +1273,27 @@ cambiar el separador de decimales de “,” a “.”:</p>
                              &quot;,&quot;, 
                              &quot;.&quot;)
 head(decimales)</code></pre>
-<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
-## 1 Masculino       170      71   47 24.57    Normal          Media-Alto
-## 2 Masculino       162      79   36 30.10  Obesidad          Media-Alto
-## 3 Masculino       149      86   43 38.74  Obesidad       Baja-Muy Alto
-## 4 Masculino       181      97   23 29.61  Superior       Alta-Muy Alto
-## 5 Masculino       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6 Masculino       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Condicion_Corporal
+## 1 Masculino       170      71   47 24.57             Normal
+## 2 Masculino       162      79   36 30.10           Obesidad
+## 3 Masculino       149      86   43 38.74           Obesidad
+## 4 Masculino       181      97   23 29.61           Superior
+## 5 Masculino       156      98   29 40.27           Obesidad
+## 6 Masculino       165     107   49 39.30           Obesidad</code></pre>
 <p>Después de realizar el cambio se debe modificar la clase o tipo de la
 variable de caracter a numérica:</p>
 <pre class="r"><code>decimales$IMC &lt;- as.numeric(decimales$IMC)
 head(decimales)</code></pre>
-<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
-## 1 Masculino       170      71   47 24.57    Normal          Media-Alto
-## 2 Masculino       162      79   36 30.10  Obesidad          Media-Alto
-## 3 Masculino       149      86   43 38.74  Obesidad       Baja-Muy Alto
-## 4 Masculino       181      97   23 29.61  Superior       Alta-Muy Alto
-## 5 Masculino       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6 Masculino       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Condicion_Corporal
+## 1 Masculino       170      71   47 24.57             Normal
+## 2 Masculino       162      79   36 30.10           Obesidad
+## 3 Masculino       149      86   43 38.74           Obesidad
+## 4 Masculino       181      97   23 29.61           Superior
+## 5 Masculino       156      98   29 40.27           Obesidad
+## 6 Masculino       165     107   49 39.30           Obesidad</code></pre>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
 <div id="eliminar-valores-na" class="section level4">
@@ -1250,6 +1330,9 @@ head(pin)</code></pre>
 ## 6 Adelie  Torgersen           38.9          17.8               181        3625
 ## # ℹ 2 more variables: sex &lt;fct&gt;, year &lt;int&gt;</code></pre>
 <p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
+<p><br></p>
 </div>
 <div id="encadenamiento-de-funciones" class="section level4">
 <h4>Encadenamiento de funciones</h4>
@@ -1270,6 +1353,9 @@ medias</code></pre>
 ## 2 Chinstrap         3733.       48.8      18.4        196.
 ## 3 Gentoo            5092.       47.6      15.0        217.</code></pre>
 <pre class="r"><code># todas las funciones están aplicadas al objeto &quot;pin&quot; que contiene nuestra tabla de datos y se ejecutan en el orden en el que están colocadas: primero se eliminan los NA (si hubiesen), luego los datos se agrupan por especies y por último se calculan las medias de las variables indicadas.</code></pre>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
 <div id="unir-y-separar-columnas" class="section level4">
@@ -1316,6 +1402,9 @@ head(separar)</code></pre>
 ## 6 Adelie  Torg…           38.9          17.8               181        3625 fema…
 ## # ℹ 1 more variable: year &lt;int&gt;</code></pre>
 <p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
+<p><br></p>
 </div>
 <div id="formatos-de-tablas-de-datos" class="section level4">
 <h4>Formatos de tablas de datos</h4>
@@ -1323,32 +1412,39 @@ head(separar)</code></pre>
 columnas que pertenecen a una sola variable) y en formato largo o “tidy”
 (cuando cada columna es una variable y cada fila es una observación)</p>
 <pre class="r"><code>head(medidas)</code></pre>
-<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Comp_corp         Altura_Peso
-## 1 Masculino       170      71   47 24.57    Normal          Media-Alto
-## 2 Masculino       162      79   36 30.10  Obesidad          Media-Alto
-## 3 Masculino       149      86   43 38.74  Obesidad       Baja-Muy Alto
-## 4 Masculino       181      97   23 29.61  Superior       Alta-Muy Alto
-## 5 Masculino       156      98   29 40.27  Obesidad Medio Baja-Muy Alto
-## 6 Masculino       165     107   49 39.30  Obesidad      Media-Muy Alto</code></pre>
+<pre><code>##        Sexo Altura_cm Peso_kg Edad   IMC Condicion_Corporal
+## 1 Masculino       170      71   47 24.57             Normal
+## 2 Masculino       162      79   36 30.10           Obesidad
+## 3 Masculino       149      86   43 38.74           Obesidad
+## 4 Masculino       181      97   23 29.61           Superior
+## 5 Masculino       156      98   29 40.27           Obesidad
+## 6 Masculino       165     107   49 39.30           Obesidad</code></pre>
 <pre class="r"><code># Esta tabla de datos está en formato largo (tidy)</code></pre>
 <ul>
 <li><code>pivot_wider()</code> del paquete <code>tidyr</code> para
 modificar una tabla de formato largo a formato ancho</li>
 </ul>
 <pre class="r"><code>formatoancho &lt;- pivot_wider(medidas, 
-                     names_from = Comp_corp, # indicamos la variable que contiene los niveles que pasarán a ser columnas
-                     values_from = IMC) # indicamos la variable que contiene los valores que pasarán a ser las observaciones de cada columna.
-
-head(formatoancho)</code></pre>
-<pre><code>## # A tibble: 6 × 9
-##   Sexo     Altura_cm Peso_kg  Edad Altura_Peso Normal Obesidad Superior Inferior
-##   &lt;chr&gt;        &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt;        &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-## 1 Masculi…       170      71    47 Media-Alto    24.6     NA       NA         NA
-## 2 Masculi…       162      79    36 Media-Alto    NA       30.1     NA         NA
-## 3 Masculi…       149      86    43 Baja-Muy A…   NA       38.7     NA         NA
-## 4 Masculi…       181      97    23 Alta-Muy A…   NA       NA       29.6       NA
-## 5 Masculi…       156      98    29 Medio Baja…   NA       40.3     NA         NA
-## 6 Masculi…       165     107    49 Media-Muy …   NA       39.3     NA         NA</code></pre>
+                     names_from = Condicion_Corporal, # indicamos la variable que contiene los niveles que pasarán a ser columnas
+                     values_from = IMC) # indicamos la variable que contiene los valores que pasarán a ser las observaciones de cada columna.</code></pre>
+<pre><code>## Warning: Values from `IMC` are not uniquely identified; output will contain list-cols.
+## • Use `values_fn = list` to suppress this warning.
+## • Use `values_fn = {summary_fun}` to summarise duplicates.
+## • Use the following dplyr code to identify duplicates.
+##   {data} |&gt;
+##   dplyr::summarise(n = dplyr::n(), .by = c(Sexo, Altura_cm, Peso_kg, Edad,
+##   Condicion_Corporal)) |&gt;
+##   dplyr::filter(n &gt; 1L)</code></pre>
+<pre class="r"><code>head(formatoancho)</code></pre>
+<pre><code>## # A tibble: 6 × 8
+##   Sexo      Altura_cm Peso_kg  Edad Normal    Obesidad  Superior  Inferior
+##   &lt;chr&gt;         &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;list&gt;    &lt;list&gt;    &lt;list&gt;    &lt;list&gt;  
+## 1 Masculino       170      71    47 &lt;dbl [1]&gt; &lt;NULL&gt;    &lt;NULL&gt;    &lt;NULL&gt;  
+## 2 Masculino       162      79    36 &lt;NULL&gt;    &lt;dbl [1]&gt; &lt;NULL&gt;    &lt;NULL&gt;  
+## 3 Masculino       149      86    43 &lt;NULL&gt;    &lt;dbl [1]&gt; &lt;NULL&gt;    &lt;NULL&gt;  
+## 4 Masculino       181      97    23 &lt;NULL&gt;    &lt;NULL&gt;    &lt;dbl [1]&gt; &lt;NULL&gt;  
+## 5 Masculino       156      98    29 &lt;NULL&gt;    &lt;dbl [2]&gt; &lt;NULL&gt;    &lt;NULL&gt;  
+## 6 Masculino       165     107    49 &lt;NULL&gt;    &lt;dbl [1]&gt; &lt;NULL&gt;    &lt;NULL&gt;</code></pre>
 <p>Ahora los niveles de la variable “Comp_copr” pasaron a ser columnas y
 los valores de la variable “IMC” pasaron a ser las observaciones de su
 columna correspondiente. Si para una columna no hay una observación
@@ -1366,20 +1462,23 @@ a formato largo (tidy).</li>
                             values_drop_na = TRUE) # indicamos que todos los valores NA se eliminen de las observaciones.
 
 formatotidy</code></pre>
-<pre><code>## # A tibble: 100 × 7
-##    Sexo      Altura_cm Peso_kg  Edad Altura_Peso         Comp_corp   IMC
-##    &lt;chr&gt;         &lt;int&gt;   &lt;int&gt; &lt;int&gt; &lt;chr&gt;               &lt;chr&gt;     &lt;dbl&gt;
-##  1 Masculino       170      71    47 Media-Alto          Normal     24.6
-##  2 Masculino       162      79    36 Media-Alto          Obesidad   30.1
-##  3 Masculino       149      86    43 Baja-Muy Alto       Obesidad   38.7
-##  4 Masculino       181      97    23 Alta-Muy Alto       Superior   29.6
-##  5 Masculino       156      98    29 Medio Baja-Muy Alto Obesidad   40.3
-##  6 Masculino       165     107    49 Media-Muy Alto      Obesidad   39.3
-##  7 Masculino       172      74    50 Medio Alta-Alto     Superior   25.0
-##  8 Masculino       160      89    19 Medio Baja-Muy Alto Obesidad   34.8
-##  9 Masculino       190     109    28 Alta-Muy Alto       Obesidad   30.2
-## 10 Masculino       180      89    18 Medio Alta-Muy Alto Superior   27.5
+<pre><code>## # A tibble: 100 × 6
+##    Sexo      Altura_cm Peso_kg  Edad Comp_corp IMC      
+##    &lt;chr&gt;         &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;     &lt;list&gt;   
+##  1 Masculino       170      71    47 Normal    &lt;dbl [1]&gt;
+##  2 Masculino       162      79    36 Obesidad  &lt;dbl [1]&gt;
+##  3 Masculino       149      86    43 Obesidad  &lt;dbl [1]&gt;
+##  4 Masculino       181      97    23 Superior  &lt;dbl [1]&gt;
+##  5 Masculino       156      98    29 Obesidad  &lt;dbl [2]&gt;
+##  6 Masculino       165     107    49 Obesidad  &lt;dbl [1]&gt;
+##  7 Masculino       172      74    50 Superior  &lt;dbl [1]&gt;
+##  8 Masculino       160      89    19 Obesidad  &lt;dbl [1]&gt;
+##  9 Masculino       190     109    28 Obesidad  &lt;dbl [1]&gt;
+## 10 Masculino       180      89    18 Superior  &lt;dbl [1]&gt;
 ## # ℹ 90 more rows</code></pre>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
 <div id="creación-y-modificación-de-tablas" class="section level4">
@@ -1475,6 +1574,9 @@ Gentoo
 </tr>
 </tbody>
 </table>
+<p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
+<p><a href="index.html">Inicio</a></p>
 <p><br></p>
 </div>
 <div id="unificación-de-tablas" class="section level4">
@@ -1931,7 +2033,9 @@ union6</code></pre>
 ## 44          29      88
 ## 45          22      35</code></pre>
 <p><br></p>
+<p><a href="Limpieza.html">Volver arriba</a></p>
 <p><a href="index.html">Inicio</a></p>
+<p><br></p>
 </div>
 </div>
 </div>
