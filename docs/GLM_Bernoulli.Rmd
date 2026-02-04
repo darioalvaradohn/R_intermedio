@@ -439,11 +439,11 @@ parameters(binom_pozos)
 
 ##### Gráfico del modelo
 
-Como son muchas variables las que podrían estar inflyendo para que el dueño de la vivienda decida cambiarse a un pozo seguro, es más conveniente interpretar los gráficos por separado.
+Como son muchas variables las que podrían estar influyendo para que el dueño de la vivienda decida cambiarse a un pozo seguro, es más conveniente interpretar los gráficos por separado.
 
 ```{r, message=FALSE, warning=FALSE}
 plot_model(binom_pozos, 
-           type = "pred")
+           type = "pred") 
 ```
 
 <br>
