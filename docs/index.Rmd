@@ -34,6 +34,8 @@ Este es un curso de análisis estadístico en R utilizando R Studio. Utilizaremo
 
 [Modelo lineal general](Modelo_lineal.html)
 
+[Transformación de variables](Transformaciones_Relacion_No_Lineal.html)
+
 [GLM con distribución de Poisson](GLM_Poisson.html)
 
 [GLM con distribución de Bernoulli (Binomial)](GLM_Bernoulli.html)
