@@ -1,0 +1,356 @@
+---
+title: "Transformaciones dentro de los modelo para capturar la relación no lineal entre variables"
+author: "M.Sc. Darío Alvarado"
+output: html_document
+header-includes:
+  - \usepackage{float}
+  - \floatstyle{boxed}
+  - \restylefloat{figure}
+---
+
+<div style="display:flex; align-items:center;">
+  <img src="Imagenes/HNBI_LOGO1.jpeg" alt="Texto alternativo de la imagen" style="width:100px; margin-left:20px;">
+</div>
+
+```{css, echo=FALSE}
+pre code {
+  word-wrap: normal !important;
+  white-space: pre !important;
+}
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+
+#### Paquetes
+
+```{r, message=FALSE, warning=FALSE}
+library(gstat)
+library(tidyverse)
+library(sjPlot)
+library(mgcv)
+library(modelbased)
+library(ggeffects)
+```
+
+<br>
+
+### Contenido{.tabset .tabset-pills}
+
+<br>
+
+#### Datos
+
+```{r}
+data("meuse.all")
+head(meuse.all)
+```
+
+La base de datos "meuse.all" del paquete `gstat` contiene coordenadas de sitios, concentraciones de metales pesados (ppm) y variables de suelo y de paisaje recolectadas en una llanura de inundación del río Meuse.
+
+Para ejemplificar una relación no lineal entre variables tomaremos la variable "dist.m" (distancia en metros del punto de colecta hasta el río) como la variable predictora, y "cadmium" (concentración del cadmio en ppm en el suelo superficial) como la variable respuesta:
+
+<br>
+
+```{r}
+ggplot(meuse.all, aes(dist.m, cadmium)) +
+  geom_point(alpha = 0.5) +
+  theme_classic()
+```
+
+En el gráfico de dispersión se puede apreciar que la relación no parece tan lineal, sino más bien toma una forma de L, con concentraciones altas en las distancias más cercanas al río y concentraciones bajas a medida que se aleja del río.
+
+<br>
+
+[Volver arriba](Transformaciones_Relacion_No_Lineal.html)
+
+[Inicio](index.html)
+
+<br>
+
+#### Modelo lineal simple:
+
+```{r}
+modelo <- lm(cadmium ~ dist.m, data = meuse.all)
+```
+
+```{r}
+summary(modelo)
+```
+
+Tenemos un coeficiente de variacion de la variable respuesta respecto a la variable predictora.
+
+Hay una relacion negativa, por cada metro que se aleja del río, la concentración del cadmio disminuye en un promedio de 0.0096 ppm
+
+
+```{r}
+plot_model(modelo, type = "pred", show.data = TRUE)
+```
+
+```{r}
+ggplot(meuse.all, aes(dist.m, cadmium)) +
+  geom_point(alpha = 0.5) +
+  stat_smooth(method = lm, color = "darkblue") +
+  theme_classic()
+```
+
+<br>
+
+Para que la línea de regresión se ajsute mejor a los datos podemos ajustar un modelo con una regresión polinómica. En este contexto, se realiza una transformación de la variable(s) predictora (independiente) elevándola a diferentes potencias para tratar de capturar la relación no lineal entre la variable predictora y la variable respuesta.
+
+<br>
+
+[Volver arriba](Transformaciones_Relacion_No_Lineal.html)
+
+[Inicio](index.html)
+
+<br>
+
+#### Transformación cuadrática (^2)
+
+Se utiliza para capturar una relación curvilínea o parabólica entre la variable respuesta y la variable predictora.
+
+```{r}
+modelo_2 <- lm(cadmium ~ dist.m + I(dist.m^2), data = meuse.all)
+```
+
+```{r}
+summary(modelo_2)
+```
+
+Ahora tenemos: 
+
+- El **intercepto** que indica la concetración del cadmio cuando dist..m es igual a 0.
+
+- **dist.m** es el coeficiente de regresión de la variable predictora (\(\beta_1\)), que indica que la concentración de cadmio disminuye -0.0261 ppm por cada metro que se aleje del río, cuando el término cuadrático es despreciable (cuando no influye).
+
+- **I(dist.m^2)** indica si la relación entre el cadmio y dist.m es curvilinea.
+
+  - Si \(\beta_2\) > 0, la curva es convexa (forma de "U").
+  - Si \(\beta_2\) < 0, la curva es cóncava (forma de "∩").
+
+<br>
+
+Para encontrar el punto donde el efecto de dist.m cambia de dirección (máximo o mínimo), calculamos:
+
+$$
+X_{\text{óptimo}} = -\frac{\beta_1}{2\beta_2}
+$$
+
+```{r}
+-(-2.610e-02)/(2*2.284e-05)
+```
+
+Este es el punto donde cadmium alcanza la concentración mínima en función de dist.m.
+
+<br>
+
+Podemos observar la relación curvilinea en el gráfico del modelo:
+
+```{r, message=FALSE}
+plot_model(modelo_2, type = "pred", show.data = TRUE)
+```
+
+```{r}
+ggplot(meuse.all, aes(x = dist.m, y = cadmium)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = "darkblue") +
+  theme_classic()
+```
+
+<br>
+
+[Volver arriba](Transformaciones_Relacion_No_Lineal.html)
+
+[Inicio](index.html)
+
+<br>
+
+#### Transformación cúbica (^3)
+
+Se utiliza para capturar una relación más compleja entre la variable respuesta y la variable predictora, cuando la dirección cambia dos veces formando una S con un punto de inflexión.
+
+```{r}
+modelo_3 <- lm(cadmium ~ dist.m + I(dist.m^2) + I(dist.m^3), data = meuse.all)
+```
+
+```{r}
+summary(modelo_3)
+```
+
+Ahora tenemos: 
+
+- El **intercepto** que indica la concetración del cadmio cuando dist..m es igual a 0.
+
+- **dist.m** es el coeficiente de regresión de la variable predictora (\(\beta_1\)), que indica que la concentración de cadmio disminuye -0.049 ppm por cada metro que se aleje del río, cuando los términinos cuadráticos y cúbicos son despreciables.
+
+- **I(dist.m^2)** indica si la relación entre el cadmio y dist.m es curvilinea.
+
+  - Si \(\beta_2\) > 0, la curva es convexa (forma de "U").
+  - Si \(\beta_2\) < 0, la curva es cóncava (forma de "∩").
+  
+- **I(dist.m^3)** representa el efecto de dist.m^3, permitiendo un cambio más complejo en la pendiente (captura asimetrías y puntos de inflexión en la curva).
+
+  - Si \(\beta_3\) > 0, la pendiente se vuelve más positiva a medida que aumenta dist.m, y esto indica un cambio de dirección en forma de S (S hacia arriba).
+  - Si \(\beta_3\) < 0, la la pendiente se vuelve más negativa a medida que aumenta dist.m, y esto indica una curva en S invertida (curva con caída más pronunciada).
+
+<br>
+
+```{r, message=FALSE}
+plot_model(modelo_3, type = "pred", show.data = TRUE)
+```
+
+```{r}
+ggplot(meuse.all, aes(x = dist.m, y = cadmium)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 3), color = "darkblue") +
+  theme_classic()
+```
+
+El efecto de dist.m sobre el cadmio no es constante, sino que depende de un valor de dist.m.
+
+En un modelo cúbico, no podemos decir simplemente "un aumento de una unidad en dist.m aumenta/disminuye cadmium en X unidades" porque el efecto cambia en diferentes valores de dist.m.
+
+Por eso, es mejor interpretar el patrón general de la relación (curvatura y puntos de inflexión) en lugar de fijarse solo en los coeficientes individuales.
+
+<br>
+
+[Volver arriba](Transformaciones_Relacion_No_Lineal.html)
+
+[Inicio](index.html)
+
+<br>
+
+#### Transformación logarítmica (log)
+
+Si el cadmio disminuye rápidamente cuando dist.m es pequeño, pero luego la disminución se desacelera, la transformación logarítmica puede ser útil.
+Se usa cuando la relación es aproximadamente exponencial decreciente o concava.
+
+```{r}
+modelo_4 <- lm(cadmium ~ log(dist.m), data = meuse.all)
+```
+
+```{r}
+summary(modelo_4)
+```
+
+La transformación implica que la variable dist.m se transforma aplicando el logaritmo natural (log) y que la relación pasó de ser lineal a logarítmica.
+
+Ahora tenemos: 
+
+- El **intercepto** que indica la concetración del cadmio cuando log(dist..m) es igual a 0, es decir cuando dist.m = 1.
+
+- **log(dist.m)** es el coeficiente de regresión de la variable predictora (\(\beta_1\)), que indica el efecto en el cadmio cuando hay un cambio proporcional en dist.m. La concentración de cadmio disminuye -2.1883/100 ppm por cada aumento del 1% en dist.m, es decir disminuye 0.022 ppm.
+
+Como el logaritmo comprime valores grandes y expande valores pequeños, esta transformación reduce la dispersión de los valores grandes y hace que la relación sea más lineal.
+
+<br>
+
+```{r, message=FALSE}
+plot_model(modelo_4, type = "pred", show.data = TRUE)
+```
+
+
+```{r}
+ggplot(meuse.all, aes(x = dist.m, y = cadmium)) +
+  geom_point(alpha = 0.4) +
+  geom_smooth(method = "lm", formula = y ~ log(x), color = "darkblue") +
+  theme_classic()
+```
+
+<br>
+
+[Volver arriba](Transformaciones_Relacion_No_Lineal.html)
+
+[Inicio](index.html)
+
+<br>
+
+#### Modelo aditivo generalizado (GAM)
+
+El GAM permite modelar relaciones suaves y flexibles utilizando funciones no paramétricas, como splines suaves, para capturar patrones complejos en los datos. 
+
+El paquete `mgcv` en R proporciona la función `gam()` para ajustar modelos aditivos generalizados:
+
+```{r}
+gam <- gam(cadmium ~ s(dist.m), data = meuse.all)
+#la "s" es para ajustar la variable con "smoothing parameter", se coloca una k = XX (s(dist.m, k = 5)), para definir que tan tortuosa sea la curva
+```
+
+```{r}
+summary(gam)
+```
+
+La salida No genera el coeficiente que se genera en un lm.
+
+Ahora tenemos:
+
+- El **intercepto** en los coeficientes paramétricos que indica el valor esperado de cadmio cuando dist.m está en su valor medio (no en 0, como en una regresión lineal).
+
+- El **edf** (estimate degrees of freedom) en los términos suavizados (smooth terms) que indica la complejidad de la curva de regresión.
+
+  - edf = 1: La relación entre la variable respuesta y la predictora es lineal. No hay flexibilidad adicional, es equivalente a un modelo lineal.
+  - edf > 1: La relación es no lineal, y la flexibilidad aumenta con valores más altos de edf. Cuanto mayor sea el edf, más compleja es la curva ajustada. Si el edf es muy alto (cercano al n), puede indicar sobreajuste (overfitting).
+
+<br>
+
+```{r, message=FALSE}
+plot_model(gam, type = "pred", show.data = TRUE)
+```
+
+```{r}
+prediccion <- ggpredict(gam, terms = "dist.m")
+```
+
+```{r}
+ggplot(prediccion, aes(x, predicted)) +
+  geom_point(data = meuse.all, aes(dist.m, cadmium), alpha = 0.4) +
+  geom_line(color = "darkblue", linewidth = 1) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha = 0.3) +
+  theme_classic() +
+  labs(x = "dist.m",
+       y = "cadmium")
+```
+
+<br>
+
+Podemos calcular las pendientes en la curva del modelo con `estimate_slopes()` del paquete `modelbased`:
+
+```{r}
+pendiente <- estimate_slopes(gam, trend = "dist.m", by = "dist.m")
+```
+
+```{r}
+summary(pendiente)
+```
+
+```{r}
+plot(pendiente)
+```
+
+La salida de `estimate_slopes()` descompone la curva del modelo en una parte estadisticamente significativa y otra no significativa.
+
+De la distancia 10 hasta 120 m, el cadmio disminuye significativamente en promedio -0.05 ppm (IC95% = -0.07, -0.04), y a partir de la distancia 230 hasta 1000 m, el cambio en el cadmio no es significativo con un promedio de disminución de -0.00305 ppm (IC 95% = -0.02,  0.01).
+
+<br>
+
+Para predecir la concentración del cadmio a distancias específicas del río podemos utilizar `estimate_expectation()` del paquete `modelbased`:
+
+```{r}
+datos <- data.frame(dist.m = c(10, 50, 100, 150, 300, 500))
+```
+
+```{r}
+estimate_expectation(gam, data = datos)
+```
+
+<br>
+
+[Volver arriba](Transformaciones_Relacion_No_Lineal.html)
+
+[Inicio](index.html)
+
+<br>
