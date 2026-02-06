@@ -27,8 +27,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Los modelos lineales generalizados utilizan una regresión lineal ordinaria que permite analizar variables respuesta que tienen una distribución de errores distintos a una distribución normal (gausiana).
 
-<br>
-
 ### GLM con distribución de Poisson
 
 Los modelos con distribución de Poisson son utilizados para analizar datos cuando la variable respuesta tiene una alta cantidad de ceros (modelo influenciado por ceros), son especialmente útiles para analizar datos de conteos (0, 1, 2, 3, 4...).
@@ -57,8 +55,6 @@ library(rio)
 
 ### Contenido{.tabset .tabset-pills}
 
-<br>
-
 #### Datos
 
 Trabajaremos con los datos de "beall.webworms" del paquete `agridat`
@@ -73,10 +69,6 @@ Esta base de dados contiene información de conteos de larvas de _Hyphantria cun
 
 ```{r, echo=FALSE}
 include_graphics("Webworm.jpg")
-```
-
-```{r}
-str(worms)
 ```
 
 Los datos provienen de un experimiento con un diseño de bloques en donde se evaluaron cuatro tratamientos (variable "trt"):
@@ -114,6 +106,12 @@ La variable y (conteo de larvas) tiene una distribución discreta (Poisson) con 
 
 <br>
 
+[Volver Arriba](GLM_Poisson.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Modelo
 
 Para realizar un modelo lineal generalizado (GLM) utilizamos la función `glm()` del paquete base. Un GLM puede analizar una variable respuesta que tenga una distribución diferente a la distribución normal (gausiana), solamente tenemos que indicar la distribución de los datos con el argumento `family =`
@@ -134,7 +132,7 @@ summary(glm1)
 
 Los coeficientes del modelo con distribución de Poisson están en escala logarítmica.
 
-- El intercepto es la media de la variable respuesta para el primer nivel de la variable predictora categórica o para el valor 0 de una variable predictora numérica. En este caso, la media de conteo de larvas por unidad de muestreo cuando NO se aplica insecticida ("sprayN") es de 0.11881 (en escala logarítmica).
+- El intercepto es la media de la variable respuesta para el primer nivel de la variable predictora categórica o el valor de la variable respuesta en el eje y cuando la variable predictora numérica en el eje x es igual a cero. En este caso, la media de conteo de larvas por unidad de muestreo cuando NO se aplica insecticida ("sprayN") es de 0.11881 (en escala logarítmica).
 
 Para interpretar el coeficiente tenemos que exponenciarlo (aplicar el antilogaritmo):
 
@@ -162,10 +160,10 @@ Si el factor es de 0.9 = hay una disminución del 10%
 
 *Ejemplo de aumento de salario:* 
 
-Si nuestro salario es de $600 y nos dicen que el siguiente mes recibiremos un aumento por un factor de 1.5:
+Si nuestro salario es de $1000 y nos dicen que el siguiente mes recibiremos un aumento por un factor de 1.5:
 
 ```{r}
-600*1.5
+1000*1.5
 ```
 
 Nuestro salario aumentará 50%.
@@ -175,12 +173,12 @@ Si nos dicen que el factor de aumento es de 1, el salario será el mismo porque 
 Si el factor es menor a 1, el salario disminuirá en lugar de aumentar:
 
 ```{r}
-660*0.9
+1000*0.8
 ```
 
 Volviendo a los datos de las larvas, el factor de 0.41 nos está indicando que cuando se aplica insecticida ("sprayY"), la cantidad de orugas disminuirá por un factor de 0.41. Esto quiere decir que la disminución será del 59% (1 - 0.41 = 0.59).
 
-Si tenemos 10 larvas por unidad de muestreo cuando no se aplica insecticida, ¿cuál será la cantidad de orugas que podríamos encontrar cuando si se aplicó insecticida:
+Si tenemos 10 larvas por unidad de muestreo cuando no se aplica insecticida, ¿cuál será la cantidad de larvas que podríamos encontrar cuando si se aplicó insecticida:
 
 ```{r}
 10*0.41
@@ -188,9 +186,9 @@ Si tenemos 10 larvas por unidad de muestreo cuando no se aplica insecticida, ¿c
 
 - En el summary ya no aparecen valores de R cuadrado múltiple o R cuadrado ajustado como en los modelos lineales. 
 
-- Aparecen valores de desviación nula y desviación residual del modelo.
+- Aparecen valores de **desviación nula** que indica cuánta variabilidad hay en los datos antes de incluir las variables explicativas, y nos sirve como punto de referencia; y la **desviación residual** que indica cuánta variabilidad no es explicada por el modelo y qué tan bien se ajustan las predicciones a los datos observados. Entre más baja la desviación residual respecto a la desviación nula, mejor es el ajuste.
 
-- También aparece el valor de AIC del modelo.
+- También aparece el valor de AIC del modelo en caso de realizar una selección de modelos.
 
 <br>
 
@@ -217,6 +215,12 @@ El RMSE y el Sigma se interpretan de la misma forma que en los modelos lineales.
 
 <br>
 
+[Volver Arriba](GLM_Poisson.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Gráfico del modelo
 
 ```{r, message=FALSE, warning=FALSE}
@@ -225,9 +229,9 @@ plot_model(glm1,
            terms = "spray")
 ```
 
-Observando el gráfico nos damos cuenta que el intercepto del modelo indicaba la media de la cantidad de larvas cuando no se aplicaba insecticida, pero si vemos el punto de la media para la cantidad de larvas cuando si se aplica insecticida no es el valor del coeficiente que nos aparece para "sprayY". 
+En el gráfico observamos que el intercepto del modelo indica la media de la cantidad de larvas cuando no se aplicó insecticida, y el punto cuando si se aplicó insecticida también indica la media de la cantidad de larvas. 
 
-Para determinar cuál es ese valor de la media tenemos que multiplicar el intercepto por el factor de disminución:
+Para determinar esa media con los datos de la salida del modelo tenemos que multiplicar el intercepto por el factor de disminución:
 
 ```{r}
 1.13*0.41
@@ -237,13 +241,19 @@ La media de la cantidad de larvas cuando se aplica insecticida es de 0.46 (para 
 
 <br>
 
+[Volver Arriba](GLM_Poisson.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Validación del modelo
 
 Un GLM con distribución de Poisson debe cumplir algunos supuestos diferentes a los de un modelo lineal.
 
 <br>
 
-Debemos evaluar la sobredispersión del modelo. Para eso utilizamos la función `check_overdispersion()` del paquete `performance` 
+Debemos evaluar la **sobredispersión** del modelo. Para eso utilizamos la función `check_overdispersion()` del paquete `performance` 
 
 ```{r}
 check_overdispersion(glm1)
@@ -253,7 +263,7 @@ Aquí observamos si el valor de "dispersion ratio" es igual o mayor a 1. El resu
 
 El valor de p indica la significancia de la sobredispersión, p < 0.05 = la sobredispersión es significativa; p >= 0.05 = la sobredispersión NO es significativa.
 
-La prueba también nos da el resultado textual en la parte inferior: "Overdispersion detected"
+La prueba también nos da el resultado de forma textual en la parte inferior: "Overdispersion detected"
 
 <br>
 
@@ -263,7 +273,7 @@ También se puede calcular la sobredispersión de forma manual dividiendo la des
 1767.2 / 1298
 ```
 
-Cuando hay sobredispersión en el modelo, los coeficientes están bien, pero el error estándar y los intervalos de confianza están subestimados
+Cuando hay sobredispersión en el modelo, los coeficientes están bien, pero el error estándar y los intervalos de confianza están subestimados.
 
 <br>
 
@@ -274,6 +284,12 @@ check_zeroinflation(glm1)
 ```
 
 Esta función compara los ceros predichos por el modelo contra los ceros observados y calcula una tasa dividiéndolos. Si la cantidad de ceros observados es igual que la de ceros predichos, la tasa es de 1 (no hay inflación de ceros). La cantidad de ceros observados no necesariamente tiene que ser igual a la de ceros predichos, pero ese valor debe estar dentro de un rango tolerable para que no se detecte inflación de ceros.
+
+<br>
+
+[Volver Arriba](GLM_Poisson.html)
+
+[Inicio](index.html)
 
 <br>
 
@@ -333,6 +349,30 @@ Este modelo realiza corrección similar a la del modelo con distribución quasip
 
 <br>
 
+Cuándo utilizar cada tipo de corrección:
+
+- quasipoisson: 
+
+  - cuando la sobredispersión es moderada
+  
+  - cuando no se requiera hacer selección de modelos con base en AIC
+                
+- binomial negativa: 
+
+  - cuando la sobredispersión es muy fuerte
+  
+  - cuando se realizará selección de modelos con base en AIC
+  
+  - cuando el modelo tenga inflación de ceros
+
+<br>
+
+[Volver Arriba](GLM_Poisson.html)
+
+[Inicio](index.html)
+
+<br>
+
 #### Selección de modelos
 
 ```{r}
@@ -351,8 +391,6 @@ compare_performance(glm0, glm1, glm2, glm3, glm4, glm5, rank = TRUE)
 ```
 
 La sobredispersión puede afectar la selección de los modelos, y si hubo sobredispersión en nuestro primer modelo es muy propable que también haya en el resto de modelos porque está ligada a la variable respuesta (que es la misma en todos los modelos). 
-
-Verifiquémoslo en un par de modelos:
 
 ```{r}
 check_overdispersion(glm2)
@@ -460,7 +498,13 @@ plot_model(glm2_q,
 
 <br>
 
-##### Gráfico de modelo con interacción
+[Volver Arriba](GLM_Poisson.html)
+
+[Inicio](index.html)
+
+<br>
+
+#### Gráfico de modelo con interacción
 
 En el caso de que el modelo con interacción entre las variables fuese el que mejor se ajustó a nuestros datos.
 
@@ -489,6 +533,12 @@ interaction.plot(worms$spray, worms$lead, worms$y)
 ```
 
 Si las líneas no son paralelas significa que hay una interaccion entre las variables. En este caso, las líneas no son paralelas, pero tampoco se cruzan, así que se puede decir que hay una leve interaccion entre la aplicación de insecticida y el tratamiento con arsenato de plomo que determina el efecto en el número de larvas.
+
+<br>
+
+[Volver Arriba](GLM_Poisson.html)
+
+[Inicio](index.html)
 
 <br>
 
@@ -601,4 +651,10 @@ plot_model(modswan1,
   theme_bw()
 ```
 
+<br>
+
+[Volver Arriba](GLM_Poisson.html)
+
 [Inicio](index.html)
+
+<br>

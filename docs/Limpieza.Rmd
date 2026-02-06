@@ -43,8 +43,6 @@ library(kableExtra)
 
 ### Contenido{.tabset .tabset-pills}
 
-<br>
-
 #### Introducción
 
 La limpieza y manejo de datos son procesos fundamentales en el análisis de datos. A menudo, los datos en su forma original están desordenados, incompletos o mal estructurados, lo que dificulta su análisis. Por eso, antes de realizar cualquier análisis, es crucial limpiarlos y organizarlos correctamente.
